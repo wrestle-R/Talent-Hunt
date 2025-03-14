@@ -6,6 +6,7 @@ import StudentHero from './components/Student/StudentHero';
 import MentorHero from './components/Mentor/MentorHero';
 import MentorProfile from "./components/Mentor/MentorProfile"
 import StudentProfile from "./components/Student/StudentProfile"
+import StudentNewProject from "./components/Student/StudentNewProject"
 const App = () => {
   return (
     <Router>
@@ -17,6 +18,8 @@ const App = () => {
           <Route path="/mentor/hero" element={<MentorHero />} />
           <Route path="/mentor/profile" element={<MentorProfile />} />
           <Route path="/student/profile" element={<StudentProfile />} />
+          <Route path="/student/new-project" element={<StudentNewProject />} />
+
 
 
           {/* Redirect root to register page */}
