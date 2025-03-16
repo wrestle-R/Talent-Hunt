@@ -87,9 +87,6 @@ const StudentHero = () => {
     fetchStudentProfile();
   }, []);
 
-  // Add this function inside your StudentHero component
-
-
   // Calculate profile completion percentage based on filled fields
   const calculateProfileCompletion = () => {
     const totalFields = 6; // Total number of important fields
@@ -136,59 +133,64 @@ const StudentHero = () => {
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     return diffDays;
   };
+  
   // Add this function inside your StudentHero component
-const refreshUserData = async () => {
-  try {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user) {
-      console.error("User not found in localStorage.");
-      return;
+  const refreshUserData = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user) {
+        console.error("User not found in localStorage.");
+        return;
+      }
+
+      const response = await axios.get(`http://localhost:4000/api/student/profile/${user.uid}`);
+      
+      if (response.data) {
+        // Update userData with fresh data
+        setUserData(prev => ({
+          ...prev,
+          name: response.data.name || '',
+          email: response.data.email || '',
+          profile_picture: response.data.profile_picture || '',
+          rating: response.data.rating || 0,
+          education: response.data.education || { institution: '', degree: '', graduation_year: '' },
+          interests: response.data.interests || [],
+          skills: response.data.skills || [],
+          hackathon_prev_experiences: response.data.hackathon_prev_experiences || 0,
+          projects: response.data.projects || [],
+          activities: response.data.activities || []
+        }));
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error);
     }
+  };
 
-    const response = await axios.get(`http://localhost:4000/api/student/profile/${user.uid}`);
-    
-    if (response.data) {
-      // Update userData with fresh data
-      setUserData(prev => ({
-        ...prev,
-        name: response.data.name || '',
-        email: response.data.email || '',
-        profile_picture: response.data.profile_picture || '',
-        rating: response.data.rating || 0,
-        education: response.data.education || { institution: '', degree: '', graduation_year: '' },
-        interests: response.data.interests || [],
-        skills: response.data.skills || [],
-        hackathon_prev_experiences: response.data.hackathon_prev_experiences || 0,
-        projects: response.data.projects || [],
-        activities: response.data.activities || []
-      }));
-    }
-  } catch (error) {
-    console.error("Error refreshing user data:", error);
-  }
-};
+  // Define the fixed width for the profile section
+  const profileWidth = "400px";
 
-// Then pass this function to StudentProfile
-return (
-  <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
-    {/* Left Section - Profile */}
-    <StudentProfile 
-      userData={userData}
-      calculateProfileCompletion={calculateProfileCompletion}
-      navigate={navigate}
-      refreshUserData={refreshUserData}  // Add this line
-    />
-    
-    {/* Right Section - Dashboard */}
-    <StudentDashboard 
-      userData={userData}
-      formatDate={formatDate}
-      getDaysRemaining={getDaysRemaining}
-    />
-  </div>
-);
-
-
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Left Section - Fixed Profile */}
+      <div className="fixed w-full h-screen" style={{ width: profileWidth }}>
+        <StudentProfile 
+          userData={userData}
+          calculateProfileCompletion={calculateProfileCompletion}
+          navigate={navigate}
+          refreshUserData={refreshUserData}
+        />
+      </div>
+      
+      {/* Right Section - Dashboard with left margin */}
+      <div className="flex-1" style={{ marginLeft: profileWidth }}>
+        <StudentDashboard 
+          userData={userData}
+          formatDate={formatDate}
+          getDaysRemaining={getDaysRemaining}
+        />
+      </div>
+    </div>
+  );
 };
 
 export default StudentHero;

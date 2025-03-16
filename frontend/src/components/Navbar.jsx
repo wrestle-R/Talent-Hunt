@@ -39,23 +39,27 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="bg-[#2F4156] text-white p-4 shadow-md">
-      <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold">TalentHunt</Link>
-        <div className="flex space-x-4">
-          {isLoggedIn ? (
-            <>
-              <Link to={`/${userRole}/hero`} className="hover:text-[#C8D9E6]">Profile</Link>
-              <button onClick={handleLogout} className="hover:text-[#C8D9E6]">Logout</button>
-            </>
-          ) : (
-            <>
-              <Link to="/register" className="hover:text-[#C8D9E6]">Sign Up</Link>
-            </>
-          )}
+    <>
+      <nav className="bg-[#2F4156] text-white p-4 shadow-md fixed top-0 left-0 right-0 z-50">
+        <div className="container mx-auto flex justify-between items-center">
+          <Link to="/" className="text-2xl font-bold">TalentHunt</Link>
+          <div className="flex space-x-4">
+            {isLoggedIn ? (
+              <>
+                <Link to={`/${userRole}/hero`} className="hover:text-[#C8D9E6]">Profile</Link>
+                <button onClick={handleLogout} className="hover:text-[#C8D9E6]">Logout</button>
+              </>
+            ) : (
+              <>
+                <Link to="/register" className="hover:text-[#C8D9E6]">Sign Up</Link>
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </nav>
+      </nav>
+      {/* This div adds spacing below the navbar */}
+      <div className="h-16"></div> {/* Adjust height to match your navbar height */}
+    </>
   );
 };
 

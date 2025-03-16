@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const studentSchema = new mongoose.Schema(
   {
-    firebaseUID: {type: String, required: true},
+    firebaseUID: { type: String, required: false },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     phone: { type: String },
@@ -23,7 +23,10 @@ const studentSchema = new mongoose.Schema(
         title: { type: String },
         description: { type: String },
         date: { type: Date },
-        type: { type: String, enum: ["Hackathon", "Internship", "Project", "Freelance"] },
+        type: {
+          type: String,
+          enum: ["Hackathon", "Internship", "Project", "Freelance"],
+        },
       },
     ],
     hackathon_prev_experiences: { type: Number, default: 0 }, // Past hackathons count
@@ -60,7 +63,26 @@ const studentSchema = new mongoose.Schema(
       end_time: { type: String },
     },
     goals: [{ type: String }],
-    rating: { type: Number, default: 0},
+    rating: { type: Number, default: 0 },
+    total_reviews: { type: Number, default: 0 },
+
+    teammates: [
+      {
+        id: { type: mongoose.Schema.Types.ObjectId, ref: "Student" }, // Reference to another student
+        name: { type: String },
+        email: { type: String },
+        role: { type: String }, // Role in the team
+      },
+    ],
+
+    mentors: [
+      {
+        id: { type: mongoose.Schema.Types.ObjectId, ref: "Mentor" }, // Reference to mentor
+        name: { type: String },
+        email: { type: String },
+        expertise: [{ type: String }], // Areas of expertise
+      },
+    ],
   },
   { timestamps: true }
 );

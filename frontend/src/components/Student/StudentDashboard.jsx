@@ -6,7 +6,7 @@ import {
 
 const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
   return (
-    <div className="w-full md:w-7/10 p-6">
+    <div className="w-[95%] p-6">
       {/* Header & Action Buttons */}
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-gray-800">Current Activities</h2>

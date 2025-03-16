@@ -2,7 +2,7 @@
 
   const mentorSchema = new mongoose.Schema(
     {
-      firebaseUID: {type: String, required: true},
+      firebaseUID: {type: String, required: false},
       name: { type: String, required: true },
       email: { type: String, required: true, unique: true },
       phone: { type: String },
