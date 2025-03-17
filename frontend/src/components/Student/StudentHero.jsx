@@ -19,6 +19,14 @@ const StudentHero = () => {
     rating: 0
   });
   
+  const [profileCompletion, setProfileCompletion] = useState(0);
+  const [completionDetails, setCompletionDetails] = useState({
+    completedFields: 0,
+    totalFields: 0,
+    fieldStatus: [],
+    incompleteFields: []
+  });
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,87 +44,87 @@ const StudentHero = () => {
     return () => unsubscribe();
   }, [navigate]);
 
-  useEffect(() => {
-    const fetchStudentProfile = async () => {
-      try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        if (!user) {
-          console.error("User not found in localStorage.");
-          return;
-        }
-
-        try {
-          const response = await axios.get(`http://localhost:4000/api/student/profile/${user.uid}`);
-          
-          if (response.data) {
-            // Map backend data to our component structure
-            setUserData(prev => ({
-              ...prev,
-              name: response.data.name || '',
-              email: response.data.email || '',
-              profile_picture: response.data.profile_picture || '',
-              rating: response.data.rating || 0,
-              education: response.data.education || { institution: '', degree: '', graduation_year: '' },
-              interests: response.data.interests || [],
-              skills: response.data.skills || [],
-              hackathon_prev_experiences: response.data.hackathon_prev_experiences || 0,
-              projects: response.data.projects || [],
-              activities: response.data.activities || []
-            }));
-          }
-        } catch (error) {
-          console.error("Error fetching profile:", error);
-          // Reset to empty data on error rather than keeping mock data
-          setUserData({
-            name: '',
-            email: '',
-            profile_picture: '',
-            education: { institution: '', degree: '', graduation_year: '' },
-            interests: [],
-            skills: [],
-            projects: [],
-            hackathon_prev_experiences: 0,
-            activities: []
-          });
-        }
-      } catch (error) {
-        console.error("Error in profile fetch:", error);
+  // Fetch student profile data
+  const fetchStudentProfile = async () => {
+    try {
+      const user = JSON.parse(localStorage.getItem("user"));
+      if (!user) {
+        console.error("User not found in localStorage.");
+        return;
       }
-    };
 
+      try {
+        const response = await axios.get(`http://localhost:4000/api/student/profile/${user.uid}`);
+        
+        if (response.data) {
+          // Map backend data to our component structure
+          setUserData(prev => ({
+            ...prev,
+            name: response.data.name || '',
+            email: response.data.email || '',
+            profile_picture: response.data.profile_picture || '',
+            rating: response.data.rating || 0,
+            education: response.data.education || { institution: '', degree: '', graduation_year: '' },
+            interests: response.data.interests || [],
+            skills: response.data.skills || [],
+            hackathon_prev_experiences: response.data.hackathon_prev_experiences || 0,
+            projects: response.data.projects || [],
+            activities: response.data.activities || [],
+            location: response.data.location || { city: '', country: '' },
+            social_links: response.data.social_links || { github: '', linkedin: '', portfolio: '' },
+            goals: response.data.goals || []
+          }));
+        }
+        
+        // Fetch profile completion from backend
+        fetchProfileCompletion(user.uid);
+        
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        // Reset to empty data on error rather than keeping mock data
+        setUserData({
+          name: '',
+          email: '',
+          profile_picture: '',
+          education: { institution: '', degree: '', graduation_year: '' },
+          interests: [],
+          skills: [],
+          projects: [],
+          hackathon_prev_experiences: 0,
+          activities: []
+        });
+      }
+    } catch (error) {
+      console.error("Error in profile fetch:", error);
+    }
+  };
+
+  // Fetch profile completion data from backend
+  const fetchProfileCompletion = async (uid) => {
+    try {
+      const response = await axios.get(`http://localhost:4000/api/student/profile-completion/${uid}`);
+      
+      if (response.data) {
+        setProfileCompletion(response.data.completionPercentage);
+        setCompletionDetails({
+          completedFields: response.data.completedFields,
+          totalFields: response.data.totalFields,
+          fieldStatus: response.data.fieldStatus,
+          incompleteFields: response.data.incompleteFields
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching profile completion:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchStudentProfile();
   }, []);
 
-  // Calculate profile completion percentage based on filled fields
-  const calculateProfileCompletion = () => {
-    const totalFields = 6; // Total number of important fields
-    let filledFields = 0;
-    
-    // Check if each field is properly filled
-    if (userData.name && userData.name.trim() !== '') filledFields++;
-    if (userData.email && userData.email.trim() !== '') filledFields++;
-    if (userData.profile_picture && userData.profile_picture.trim() !== '') filledFields++;
-    
-    // Check education - need both institution and degree
-    if (userData.education?.institution && userData.education?.degree && 
-        userData.education.institution.trim() !== '' && 
-        userData.education.degree.trim() !== '') {
-      filledFields++;
-    }
-    
-    // Check interests - need at least one
-    if (userData.interests && Array.isArray(userData.interests) && userData.interests.length > 0) {
-      filledFields++;
-    }
-    
-    // Check skills - need at least one
-    if (userData.skills && Array.isArray(userData.skills) && userData.skills.length > 0) {
-      filledFields++;
-    }
-    
-    // Calculate percentage and return
-    const percentage = (filledFields / totalFields) * 100;
-    return Math.round(percentage);
+  // Get appropriate button text based on completion
+  const getProfileButtonText = () => {
+    return profileCompletion === 100 ? "View Profile" : "Complete Profile";
   };
 
   // Format date to more readable format
@@ -158,8 +166,14 @@ const StudentHero = () => {
           skills: response.data.skills || [],
           hackathon_prev_experiences: response.data.hackathon_prev_experiences || 0,
           projects: response.data.projects || [],
-          activities: response.data.activities || []
+          activities: response.data.activities || [],
+          location: response.data.location || { city: '', country: '' },
+          social_links: response.data.social_links || { github: '', linkedin: '', portfolio: '' },
+          goals: response.data.goals || []
         }));
+        
+        // Also refresh the profile completion data
+        fetchProfileCompletion(user.uid);
       }
     } catch (error) {
       console.error("Error refreshing user data:", error);
@@ -175,7 +189,9 @@ const StudentHero = () => {
       <div className="fixed w-full h-screen" style={{ width: profileWidth }}>
         <StudentProfile 
           userData={userData}
-          calculateProfileCompletion={calculateProfileCompletion}
+          profileCompletion={profileCompletion}
+          completionDetails={completionDetails}
+          getProfileButtonText={getProfileButtonText}
           navigate={navigate}
           refreshUserData={refreshUserData}
         />
@@ -187,6 +203,7 @@ const StudentHero = () => {
           userData={userData}
           formatDate={formatDate}
           getDaysRemaining={getDaysRemaining}
+          profileCompletion={profileCompletion}
         />
       </div>
     </div>

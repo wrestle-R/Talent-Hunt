@@ -83,4 +83,117 @@ const updateStudentProfile = async (req, res) => {
   }
 };
 
-module.exports = { registerOrLoginStudent,getStudentProfile, updateStudentProfile };
+// Add this function to your StudentController.js file
+const calculateStudentProfileCompletion = async (req, res) => {
+  try {
+    const { uid } = req.params;
+    
+    // Only query the specific fields requested
+    const student = await Student.findOne(
+      { firebaseUID: uid },
+      {
+        name: 1,
+        email: 1,
+        phone: 1,
+        profile_picture: 1,
+        location: 1,
+        education: 1,
+        skills: 1,
+        interests: 1,
+        social_links: 1,
+        mentorship_interests: 1,
+        preferred_working_hours: 1,
+        goals: 1
+      }
+    );
+
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    // Define the specific fields to check with equal weight
+    // Total of 12 fields with equal weight
+    const fields = [
+      // Basic information
+      { name: 'name', check: () => !!student.name },
+      { name: 'email', check: () => !!student.email },
+      { name: 'phone', check: () => !!student.phone },
+      { name: 'profile_picture', check: () => !!student.profile_picture },
+      
+      // Location
+      { name: 'location', check: () => !!student.location?.city || !!student.location?.country },
+      
+      // Education
+      { name: 'education', check: () => !!student.education?.institution || !!student.education?.degree },
+      
+      // Skills & Interests
+      { name: 'skills', check: () => Array.isArray(student.skills) && student.skills.length > 0 },
+      { name: 'interests', check: () => Array.isArray(student.interests) && student.interests.length > 0 },
+      
+      // Social Links
+      { name: 'social_links', check: () => 
+        !!student.social_links?.github || 
+        !!student.social_links?.linkedin || 
+        !!student.social_links?.portfolio 
+      },
+      
+      // Mentorship
+      { name: 'mentorship_interests', check: () => 
+        student.mentorship_interests?.seeking_mentor !== undefined &&
+        (
+          !student.mentorship_interests.seeking_mentor || 
+          (student.mentorship_interests.seeking_mentor && 
+          Array.isArray(student.mentorship_interests.mentor_topics) && 
+          student.mentorship_interests.mentor_topics.length > 0)
+        )
+      },
+      
+      // Working Hours
+      { name: 'preferred_working_hours', check: () => 
+        !!student.preferred_working_hours?.start_time && 
+        !!student.preferred_working_hours?.end_time 
+      },
+      
+      // Goals
+      { name: 'goals', check: () => Array.isArray(student.goals) && student.goals.length > 0 }
+    ];
+
+    // Calculate completion percentage
+    let completedFields = 0;
+    const fieldStatus = fields.map(field => {
+      const isComplete = field.check();
+      if (isComplete) {
+        completedFields++;
+      }
+      return {
+        field: field.name,
+        complete: isComplete
+      };
+    });
+
+    const completionPercentage = Math.round((completedFields / fields.length) * 100);
+
+    // Create response
+    const response = {
+      completionPercentage,
+      completedFields,
+      totalFields: fields.length,
+      fieldStatus,
+      incompleteFields: fieldStatus.filter(f => !f.complete).map(f => f.field)
+    };
+
+    res.status(200).json(response);
+
+  } catch (error) {
+    console.error("Error calculating profile completion:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+// Don't forget to update the exports
+module.exports = { 
+  registerOrLoginStudent,
+  getStudentProfile, 
+  updateStudentProfile,
+  calculateStudentProfileCompletion 
+};

@@ -57,7 +57,6 @@ const studentSchema = new mongoose.Schema(
       seeking_mentor: { type: Boolean, default: false },
       mentor_topics: [{ type: String }], // Topics for mentorship
     },
-    timezone: { type: String },
     preferred_working_hours: {
       start_time: { type: String },
       end_time: { type: String },

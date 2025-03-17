@@ -86,8 +86,75 @@ const updateMentorProfile = async (req, res) => {
   }
 };
 
+
+const calculateMentorProfileCompletion = async (req, res) => {
+  try {
+    const { uid } = req.params;
+
+    // Fetch mentor profile with selected fields
+    const mentor = await Mentor.findOne(
+      { firebaseUID: uid },
+      {
+        name: 1,
+        email: 1,
+        phone: 1,
+        bio: 1,
+        profile_picture: 1,
+        current_role: 1,
+        years_of_experience: 1,
+        expertise: 1,
+        industries_worked_in: 1,
+        mentorship_focus_areas: 1,
+        mentorship_availability: 1,
+        social_links: 1
+      }
+    );
+
+    if (!mentor) {
+      return res.status(404).json({ message: "Mentor not found" });
+    }
+
+    // Fields to check for completion
+    const fields = [
+      { name: "name", check: () => !!mentor.name },
+      { name: "email", check: () => !!mentor.email },
+      { name: "phone", check: () => !!mentor.phone },
+      { name: "bio", check: () => !!mentor.bio },
+      { name: "profile_picture", check: () => !!mentor.profile_picture },
+      { name: "current_role", check: () => !!mentor.current_role?.title && !!mentor.current_role?.company },
+      { name: "years_of_experience", check: () => mentor.years_of_experience > 0 },
+      { name: "expertise", check: () => 
+        (mentor.expertise?.technical_skills?.length > 0 || mentor.expertise?.non_technical_skills?.length > 0)
+      },
+      { name: "industries_worked_in", check: () => mentor.industries_worked_in?.length > 0 },
+      { name: "mentorship_focus_areas", check: () => mentor.mentorship_focus_areas?.length > 0 },
+      { name: "mentorship_availability", check: () => mentor.mentorship_availability?.hours_per_week > 0 },
+      { name: "social_links", check: () => 
+        !!mentor.social_links?.linkedin || !!mentor.social_links?.github || !!mentor.social_links?.personal_website
+      }
+    ];
+
+    // Calculate completion percentage
+    let completedFields = fields.filter(field => field.check()).length;
+    const completionPercentage = Math.round((completedFields / fields.length) * 100);
+
+    // Response
+    res.status(200).json({
+      completionPercentage,
+      completedFields,
+      totalFields: fields.length,
+      incompleteFields: fields.filter(field => !field.check()).map(field => field.name)
+    });
+
+  } catch (error) {
+    console.error("Error calculating profile completion:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
 module.exports = { 
   registerOrLoginMentor,
   getMentorProfile,
-  updateMentorProfile
+  updateMentorProfile,
+  calculateMentorProfileCompletion
 };

@@ -1,10 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, Briefcase, Clock, Globe, Save, X, Plus } from 'lucide-react';
+import { User, Briefcase, Clock, Globe, Save, X, Plus, Phone, MessageSquare, Upload } from 'lucide-react';
 
 const MentorProfile = () => {
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
+    phone: '',
+    bio: '',
+    profile_picture: '',
     current_role: { title: '', company: '' },
     years_of_experience: '',
     expertise: { technical_skills: [], non_technical_skills: [] },
@@ -28,17 +32,23 @@ const MentorProfile = () => {
   const [newSoftSkill, setNewSoftSkill] = useState('');
   const [newIndustry, setNewIndustry] = useState('');
   const [newFocus, setNewFocus] = useState('');
-// Add this inside your fetchProfile function
-const user = JSON.parse(localStorage.getItem("user"));
-if (!user || !user.uid) {
-  console.error("User not found in localStorage");
-  setLoading(false);
-  return;
-}  // Fetch mentor profile
+  const [imagePreview, setImagePreview] = useState(null);
+
+  // Get user from localStorage
+  const user = JSON.parse(localStorage.getItem("user"));
+  if (!user || !user.uid) {
+    console.error("User not found in localStorage");
+  }
+
+  // Fetch mentor profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
-                
+        if (!user || !user.uid) {
+          setLoading(false);
+          return;
+        }
+        
         const response = await axios.get(
           `http://localhost:4000/api/mentor/profile/${user.uid}`,
         );
@@ -53,6 +63,11 @@ if (!user || !user.uid) {
             mentorship_availability: response.data.mentorship_availability || formData.mentorship_availability,
             social_links: response.data.social_links || formData.social_links
           });
+
+          // Set image preview if profile picture exists
+          if (response.data.profile_picture) {
+            setImagePreview(response.data.profile_picture);
+          }
         }
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -172,11 +187,15 @@ if (!user || !user.uid) {
     e.preventDefault();
     try {
       setSaving(true);
+      
+      if (!user || !user.uid) {
+        alert("User not found. Please log in again.");
+        return;
+      }
     
       await axios.put(
         `http://localhost:4000/api/mentor/profile/${user.uid}`,
         formData,
-        
       );
       
       alert("Profile updated successfully");
@@ -200,6 +219,43 @@ if (!user || !user.uid) {
             <User className="text-blue-600" /> Basic Information
           </h2>
           
+          {/* Profile Picture URL Input */}
+          <div className="mb-6">
+            <label className="block text-sm font-medium mb-2">Profile Picture URL</label>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center">
+              <div className="md:col-span-1 flex justify-center">
+                <img 
+                  src={imagePreview || 'https://via.placeholder.com/150'} 
+                  alt="Profile preview" 
+                  className="w-32 h-32 rounded-full object-cover border-4 border-gray-200"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = 'https://via.placeholder.com/150';
+                  }}
+                />
+              </div>
+              <div className="md:col-span-2">
+                <div className="flex">
+                  <div className="flex-none flex items-center bg-gray-100 px-3 border border-r-0 border-gray-300 rounded-l-md">
+                    <Globe size={16} className="text-gray-500" />
+                  </div>
+                  <input
+                    type="url"
+                    name="profile_picture"
+                    value={formData.profile_picture}
+                    onChange={(e) => {
+                      handleChange(e);
+                      setImagePreview(e.target.value);
+                    }}
+                    className="flex-1 px-3 py-2 border border-gray-300 rounded-r-md"
+                    placeholder="https://example.com/your-profile-image.jpg"
+                  />
+                </div>
+                <p className="text-xs text-gray-500 mt-1">Enter a URL to your profile picture (JPG, PNG, or WebP format)</p>
+              </div>
+            </div>
+          </div>
+          
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium mb-1">Name</label>
@@ -212,6 +268,33 @@ if (!user || !user.uid) {
               />
             </div>
             <div>
+              <label className="block text-sm font-medium mb-1">Email</label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                readOnly
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-1">Phone Number</label>
+              <div className="flex">
+                <div className="flex-none flex items-center bg-gray-100 px-3 border border-r-0 border-gray-300 rounded-l-md">
+                  <Phone size={16} className="text-gray-500" />
+                </div>
+                <input
+                  type="tel"
+                  name="phone"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-r-md"
+                  placeholder="Your contact number"
+                />
+              </div>
+            </div>
+            <div>
               <label className="block text-sm font-medium mb-1">Years of Experience</label>
               <input
                 type="number"
@@ -219,7 +302,25 @@ if (!user || !user.uid) {
                 value={formData.years_of_experience}
                 onChange={handleChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                min="0"
+                max="50"
               />
+            </div>
+            <div className="col-span-2">
+              <label className="block text-sm font-medium mb-1">Professional Bio</label>
+              <div className="flex">
+                <div className="flex-none flex items-start bg-gray-100 px-3 py-2 border border-r-0 border-gray-300 rounded-l-md">
+                  <MessageSquare size={16} className="text-gray-500 mt-1" />
+                </div>
+                <textarea
+                  name="bio"
+                  value={formData.bio}
+                  onChange={handleChange}
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-r-md h-24"
+                  placeholder="Write a short professional bio to introduce yourself to students (approximately 30 words)"
+                ></textarea>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">Include your background, expertise, and what you're passionate about.</p>
             </div>
             <div>
               <label className="block text-sm font-medium mb-1">Job Title</label>

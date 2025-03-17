@@ -1,12 +1,14 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Register from './components/Register';
 import StudentHero from './components/Student/StudentHero';
 import MentorHero from './components/Mentor/MentorHero';
-import MentorProfile from "./components/Mentor/MentorProfile"
-import StudentProfile from "./components/Student/StudentProfile"
-import StudentNewProject from "./components/Student/StudentNewProject"
+import MentorProfile from "./components/Mentor/MentorProfile";
+import StudentProfile from "./components/Student/StudentProfile";
+import StudentNewProject from "./components/Student/StudentNewProject";
+import MentorDashboard from "./components/Mentor/MentorDashboard";
+import MentorHeroProfile from "./components/Mentor/MentorHeroProfile";
 
 const App = () => {
   return (

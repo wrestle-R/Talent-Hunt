@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { GraduationCap, Code, Target, Edit, Star, Plus, ExternalLink, ChevronLeft, ChevronRight } from 'lucide-react';
 import StudentNewProject from './StudentNewProject';
 
-const StudentProfile = ({ userData, calculateProfileCompletion, navigate, refreshUserData }) => {
+const StudentHeroProfile = ({ userData, profileCompletion, completionDetails, getProfileButtonText, navigate, refreshUserData }) => {
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
   const projectsContainerRef = useRef(null);
   const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
@@ -85,14 +85,6 @@ const StudentProfile = ({ userData, calculateProfileCompletion, navigate, refres
     }
   }, [currentProjectIndex]);
 
-  // Get profile completion percentage
-  const profileCompletion = calculateProfileCompletion();
-  
-  // Get appropriate button text based on completion
-  const getProfileButtonText = () => {
-    return profileCompletion === 100 ? "View Profile" : "Complete Profile";
-  };
-
   return (
     <div className="w-full h-full bg-white shadow-lg p-6 flex flex-col">
       {/* Project Modal */}
@@ -155,6 +147,20 @@ const StudentProfile = ({ userData, calculateProfileCompletion, navigate, refres
               ></div>
             </div>
           </div>
+
+          {completionDetails.incompleteFields.length > 0 && (
+            <div className="mt-2 p-2 bg-yellow-50 rounded-md">
+              <p className="text-xs text-yellow-700 font-medium">Complete your profile by adding:</p>
+              <ul className="text-xs text-yellow-600 list-disc ml-4 mt-1">
+                {completionDetails.incompleteFields.slice(0, 3).map((field, index) => (
+                  <li key={index}>{field}</li>
+                ))}
+                {completionDetails.incompleteFields.length > 3 && (
+                  <li>...and {completionDetails.incompleteFields.length - 3} more</li>
+                )}
+              </ul>
+            </div>
+          )}
         </div>
         
         {/* Skills - Limited to top 5 */}
@@ -349,7 +355,7 @@ const StudentProfile = ({ userData, calculateProfileCompletion, navigate, refres
       
       
       {/* Hide scrollbars but maintain functionality */}
-      <style jsx>{`
+      <style>{`
         .hide-scrollbar::-webkit-scrollbar {
           display: none;
         }
@@ -367,4 +373,4 @@ const StudentProfile = ({ userData, calculateProfileCompletion, navigate, refres
   );
 };
 
-export default StudentProfile;
+export default StudentHeroProfile;
