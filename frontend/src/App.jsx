@@ -7,31 +7,35 @@ import MentorHero from './components/Mentor/MentorHero';
 import MentorProfile from "./components/Mentor/MentorProfile";
 import StudentProfile from "./components/Student/StudentProfile";
 import StudentNewProject from "./components/Student/StudentNewProject";
-import MentorDashboard from "./components/Mentor/MentorDashboard";
-import MentorHeroProfile from "./components/Mentor/MentorHeroProfile";
+import StudentDashboard from './components/Student/StudentDashboard';
+import AdminHero from './components/Admin/AdminHero';
+import TeammatesPage from './components/Student/TeammatesPage';
+import MentorsPage from './components/Student/MentorsPage';
+import { UserProvider } from '../context/UserContext';
 
 const App = () => {
   return (
-    <Router>
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <div className="flex-grow">
-          <Routes>
-            <Route path="/student/hero" element={<StudentHero />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/mentor/hero" element={<MentorHero />} />
-            <Route path="/mentor/profile" element={<MentorProfile />} />
-            <Route path="/student/profile" element={<StudentProfile />} />
-            <Route path="/student/new-project" element={<StudentNewProject />} />
-            
-            {/* Redirect root to register page */}
-            <Route path="/" element={<Register />} />
-            {/* Redirect old login path to register */}
-            <Route path="/login" element={<Register />} />
-          </Routes>
+    <UserProvider>
+      <Router>
+        <div className="min-h-screen flex flex-col">
+          <Navbar />
+          <div className="flex-grow">
+            <Routes>
+              <Route path="/student/hero" element={<StudentHero />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/mentor/hero" element={<MentorHero />} />
+              <Route path="/mentor/profile" element={<MentorProfile />} />
+              <Route path="/student/profile" element={<StudentProfile />} />
+              <Route path="/student/new-project" element={<StudentNewProject />} />
+              <Route path="/student/dashboard" element={<StudentDashboard />} />
+              <Route path="/admin/hero" element={<AdminHero />} /> 
+              <Route path="/student/teammates" element={<TeammatesPage />} />
+              <Route path="/student/mentors" element={<MentorsPage />} />
+            </Routes>
+          </div>
         </div>
-      </div>
-    </Router>
+      </Router>
+    </UserProvider>
   );
 };
 
