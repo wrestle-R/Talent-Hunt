@@ -1,5 +1,6 @@
 const Mentor = require("../models/Mentor");
 const Student = require("../models/Student");
+const Admin = require("../models/Admin"); // Add this import for Admin model
 
 // Register or login mentor
 const registerOrLoginMentor = async (req, res) => {
@@ -16,6 +17,13 @@ const registerOrLoginMentor = async (req, res) => {
     if (student) {
       // If the email exists in the Student collection, return an error
       return res.status(400).json({ message: "Email already exists as a student. Please use a different email." });
+    }
+
+    // Check if the email exists in the Admin collection
+    let admin = await Admin.findOne({ email });
+    if (admin) {
+      // If the email exists in the Admin collection, return an error
+      return res.status(400).json({ message: "Email already exists as an admin. Please use a different email." });
     }
 
     // Check if the mentor already exists by firebaseUID or email
@@ -43,7 +51,6 @@ const registerOrLoginMentor = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error", error: error.message });
   }
 };
-
 // Get mentor profile by UID
 const getMentorProfile = async (req, res) => {
   try {

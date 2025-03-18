@@ -53,10 +53,59 @@ const studentSchema = new mongoose.Schema(
       linkedin: { type: String },
       portfolio: { type: String },
     },
+    
+    // Enhanced mentorship fields
     mentorship_interests: {
       seeking_mentor: { type: Boolean, default: false },
       mentor_topics: [{ type: String }], // Topics for mentorship
     },
+    
+    // New fields for teammate search preferences
+    teammate_search: {
+      looking_for_teammates: { type: Boolean, default: false },
+      purpose: {
+        type: String,
+        enum: ["Project", "Hackathon", "Both"],
+        default: "Both"
+      },
+      desired_skills: [{ type: String }], // Skills they want in teammates
+      project_description: { type: String }, // Brief description of the project they need help with
+      team_size_preference: { type: String }, // Small, Medium, Large or specific number
+      urgency_level: {
+        type: String,
+        enum: ["Low", "Medium", "High"],
+        default: "Medium"
+      }
+    },
+    
+    // New field to track what the user is currently looking for
+    current_search_preferences: {
+      looking_for: {
+        type: String, 
+        enum: ["Teammates", "Mentors", "Both", "None"],
+        default: "None"
+      },
+      // For hackathons specifically
+      hackathon_teammate_preferences: {
+        hackathon_name: { type: String },
+        hackathon_date: { type: Date },
+        required_skills: [{ type: String }],
+        team_size: { type: Number },
+        idea_description: { type: String }
+      },
+      // For projects specifically
+      project_teammate_preferences: {
+        project_type: { type: String },
+        project_duration: { type: String },
+        required_skills: [{ type: String }],
+        commitment_level: {
+          type: String,
+          enum: ["Low", "Medium", "High"],
+          default: "Medium"
+        }
+      }
+    },
+    
     preferred_working_hours: {
       start_time: { type: String },
       end_time: { type: String },

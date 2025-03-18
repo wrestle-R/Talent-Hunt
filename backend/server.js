@@ -7,6 +7,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const studentRoutes = require("./routes/StudentRoutes");
 const mentorRoutes = require("./routes/MentorRoutes");
+const adminRoutes = require("./routes/AdminRoutes")
 
 const app = express();
 
@@ -28,6 +29,7 @@ mongoose.connect(process.env.MONGO_URL, {
 // Routes
 app.use("/api/student", studentRoutes);
 app.use("/api/mentor", mentorRoutes);
+app.use("/api/admin", adminRoutes);
 
 const server = http.createServer(app);
 
