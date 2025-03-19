@@ -12,6 +12,7 @@ import AdminHero from './components/Admin/AdminHero';
 import TeammatesPage from './components/Student/TeammatesPage';
 import MentorsPage from './components/Student/MentorsPage';
 import { UserProvider } from '../context/UserContext';
+import ManageHackathons from './components/Admin/ManageHackathons';
 
 const App = () => {
   return (
@@ -31,6 +32,8 @@ const App = () => {
               <Route path="/admin/hero" element={<AdminHero />} /> 
               <Route path="/student/teammates" element={<TeammatesPage />} />
               <Route path="/student/mentors" element={<MentorsPage />} />
+              <Route path="/admin/hackathons" element={<ManageHackathons />} /> 
+
             </Routes>
           </div>
         </div>

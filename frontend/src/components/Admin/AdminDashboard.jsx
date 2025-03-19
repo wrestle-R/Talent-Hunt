@@ -1,110 +1,263 @@
-import React, { useState, useEffect } from 'react';
-import { Users, User, Settings } from 'lucide-react';
-import axios from 'axios';
+import React, { useState } from 'react';
+import { CalendarDays, Users, Search, Bell, Shield, Code, Award, Database, Settings } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = ({ userData }) => {
-  const [admins, setAdmins] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
 
-  useEffect(() => {
-    const fetchAdmins = async () => {
-      try {
-        setLoading(true);
-        const response = await axios.get('http://localhost:4000/api/admin/all');
-        
-        if (response.data && Array.isArray(response.data.admins)) {
-          setAdmins(response.data.admins);
-        }
-      } catch (err) {
-        console.error("Error fetching admins:", err);
-        setError(`Failed to load admins: ${err.message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchAdmins();
-  }, []);
+  // Mock data for search functionality
+  const mockStudents = [
+    { id: 'st1', name: 'Alex Johnson', email: 'alex@example.com', major: 'Computer Science' },
+    { id: 'st2', name: 'Priya Patel', email: 'priya@example.com', major: 'Data Science' },
+    { id: 'st3', name: 'Marcus Lee', email: 'marcus@example.com', major: 'Software Engineering' },
+    { id: 'st4', name: 'Sarah Williams', email: 'sarah@example.com', major: 'UI/UX Design' },
+    { id: 'st5', name: 'Jamal Brown', email: 'jamal@example.com', major: 'Computer Engineering' }
+  ];
 
-  if (loading) {
-    return (
-      <div className="w-full p-6">
-        <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        </div>
-      </div>
-    );
-  }
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      const results = mockStudents.filter(student => 
+        student.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+        student.email.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setSearchResults(results);
+      setShowSearchResults(true);
+    }
+  };
 
-  if (error) {
-    return (
-      <div className="w-full p-6">
-        <div className="bg-red-50 text-red-600 p-4 rounded-lg">
-          <p>{error}</p>
-          <button 
-            className="mt-2 bg-red-100 hover:bg-red-200 text-red-700 px-4 py-2 rounded"
-            onClick={() => window.location.reload()}
-          >
-            Retry
-          </button>
-        </div>
-      </div>
-    );
-  }
+  // Dashboard sections/cards
+  const dashboardSections = [
+    {
+      title: 'Manage Hackathons',
+      description: 'Create, edit and manage hackathon events',
+      icon: <CalendarDays size={24} className="text-blue-600" />,
+      path: '/admin/hackathons',
+      bgColor: 'bg-blue-50',
+      textColor: 'text-blue-700',
+      stats: { count: 3, label: 'Active' }
+    },
+    {
+      title: 'Review Applications',
+      description: 'Review and manage hackathon applicants',
+      icon: <Users size={24} className="text-indigo-600" />,
+      path: '/admin/applications',
+      bgColor: 'bg-indigo-50',
+      textColor: 'text-indigo-700',
+      stats: { count: 42, label: 'Pending' }
+    },
+    {
+      title: 'User Management',
+      description: 'Manage students, mentors, and admins',
+      icon: <Shield size={24} className="text-purple-600" />,
+      path: '/admin/users',
+      bgColor: 'bg-purple-50',
+      textColor: 'text-purple-700',
+      stats: { count: 218, label: 'Total' }
+    },
+    {
+      title: 'Projects Review',
+      description: 'Review and moderate student projects',
+      icon: <Code size={24} className="text-teal-600" />,
+      path: '/admin/projects',
+      bgColor: 'bg-teal-50',
+      textColor: 'text-teal-700',
+      stats: { count: 16, label: 'Unreviewed' }
+    },
+    {
+      title: 'Manage Events',
+      description: 'Create and manage workshops and events',
+      icon: <Bell size={24} className="text-pink-600" />,
+      path: '/admin/events',
+      bgColor: 'bg-pink-50',
+      textColor: 'text-pink-700',
+      stats: { count: 5, label: 'Upcoming' }
+    },
+    {
+      title: 'Analytics Dashboard',
+      description: 'Platform metrics and user statistics',
+      icon: <Database size={24} className="text-amber-600" />,
+      path: '/admin/analytics',
+      bgColor: 'bg-amber-50',
+      textColor: 'text-amber-700'
+    },
+    {
+      title: 'Content Management',
+      description: 'Manage announcements and resources',
+      icon: <Award size={24} className="text-emerald-600" />,
+      path: '/admin/content',
+      bgColor: 'bg-emerald-50',
+      textColor: 'text-emerald-700'
+    },
+    {
+      title: 'Admin Settings',
+      description: 'Configure platform settings and roles',
+      icon: <Settings size={24} className="text-gray-600" />,
+      path: '/admin/settings',
+      bgColor: 'bg-gray-50',
+      textColor: 'text-gray-700'
+    }
+  ];
 
   return (
-    <div className="w-full p-6">
-      {/* Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Admin Dashboard</h2>
-        <div className="flex items-center gap-4">
-          <span className="text-gray-600">Welcome, {userData?.name || 'Admin'}</span>
-          <button className="p-2 bg-gray-100 rounded-full hover:bg-gray-200">
-            <Settings size={20} className="text-gray-600" />
+    <div className="container mx-auto py-8 px-4">
+      {/* Admin Dashboard Header */}
+      <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Admin Dashboard</h1>
+          <p className="text-gray-600">Welcome back, {userData?.name || 'Admin'}</p>
+        </div>
+        
+        {/* Search Bar */}
+        <form onSubmit={handleSearch} className="relative w-full md:w-96">
+          <input
+            type="text"
+            placeholder="Search for students..."
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            value={searchTerm}
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
+              if (e.target.value === '') {
+                setShowSearchResults(false);
+              }
+            }}
+          />
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
+          <button 
+            type="submit" 
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800"
+          >
+            Go
+          </button>
+          
+          {/* Search Results Dropdown */}
+          {showSearchResults && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-10">
+              {searchResults.length > 0 ? (
+                <div>
+                  <div className="p-2 border-b border-gray-200">
+                    <h3 className="font-medium text-sm text-gray-700">
+                      {searchResults.length} student{searchResults.length !== 1 ? 's' : ''} found
+                    </h3>
+                  </div>
+                  {searchResults.map(student => (
+                    <div 
+                      key={student.id}
+                      className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
+                      onClick={() => {
+                        // In a real app, navigate to student profile
+                        alert(`Viewing profile for ${student.name}`);
+                        setShowSearchResults(false);
+                      }}
+                    >
+                      <div className="flex items-center">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3">
+                          {student.name.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <p className="font-medium text-gray-800">{student.name}</p>
+                          <p className="text-xs text-gray-500">{student.email} • {student.major}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-4 text-center text-gray-500">
+                  No students found matching "{searchTerm}"
+                </div>
+              )}
+            </div>
+          )}
+        </form>
+      </div>
+      
+      {/* Dashboard Sections Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {dashboardSections.map((section, index) => (
+          <div 
+            key={index}
+            className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow border border-gray-100 overflow-hidden cursor-pointer"
+            onClick={() => navigate(section.path)}
+          >
+            <div className={`p-5 ${section.bgColor} border-b border-gray-100`}>
+              {section.icon}
+            </div>
+            <div className="p-5">
+              <div className="flex justify-between items-start">
+                <h3 className="font-bold text-gray-800 mb-1">{section.title}</h3>
+                {section.stats && (
+                  <div className={`${section.bgColor} ${section.textColor} text-xs font-medium px-2 py-1 rounded-full`}>
+                    {section.stats.count} {section.stats.label}
+                  </div>
+                )}
+              </div>
+              <p className="text-gray-600 text-sm">{section.description}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      
+      {/* Recent Activity Section */}
+      <div className="mt-10 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-5 border-b border-gray-200">
+          <h2 className="font-bold text-xl text-gray-800">Recent Activity</h2>
+        </div>
+        <div className="p-5">
+          <div className="space-y-4">
+            <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
+              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+                <CalendarDays size={20} className="text-blue-600" />
+              </div>
+              <div>
+                <p className="text-gray-800">New hackathon <span className="font-medium">AI Innovations 2025</span> created</p>
+                <p className="text-xs text-gray-500">Today at 10:30 AM</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
+              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+                <Users size={20} className="text-green-600" />
+              </div>
+              <div>
+                <p className="text-gray-800"><span className="font-medium">12 new students</span> registered on the platform</p>
+                <p className="text-xs text-gray-500">Yesterday at 5:45 PM</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <Shield size={20} className="text-amber-600" />
+              </div>
+              <div>
+                <p className="text-gray-800">Mentor application from <span className="font-medium">Sarah Johnson</span> approved</p>
+                <p className="text-xs text-gray-500">Yesterday at 2:15 PM</p>
+              </div>
+            </div>
+            
+            <div className="flex items-center gap-4">
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <Bell size={20} className="text-red-600" />
+              </div>
+              <div>
+                <p className="text-gray-800"><span className="font-medium">System maintenance</span> scheduled for 03/25/2025</p>
+                <p className="text-xs text-gray-500">2 days ago</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
+          <button 
+            onClick={() => navigate('/admin/activity')} 
+            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+          >
+            View All Activity →
           </button>
         </div>
       </div>
-      
-      {/* Admins List */}
-      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-        <div className="flex items-center gap-2 mb-4">
-          <User className="text-blue-600" size={24} />
-          <h3 className="font-bold text-lg">Admin Management</h3>
-        </div>
-        
-        <div className="overflow-x-auto">
-          <table className="min-w-full bg-white">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 tracking-wider">Name</th>
-                <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 tracking-wider">Email</th>
-                <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 tracking-wider">Organization</th>
-                <th className="py-3 px-4 text-left text-sm font-medium text-gray-500 tracking-wider">Role</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {admins.map(admin => (
-                <tr key={admin._id}>
-                  <td className="py-4 px-4 text-sm font-medium text-gray-900">{admin.name}</td>
-                  <td className="py-4 px-4 text-sm text-gray-500">{admin.email}</td>
-                  <td className="py-4 px-4 text-sm text-gray-500">{admin.organization}</td>
-                  <td className="py-4 px-4 text-sm text-gray-500">{admin.role}</td>
-                </tr>
-              ))}
-              {admins.length === 0 && (
-                <tr>
-                  <td colSpan="4" className="py-4 px-4 text-sm text-gray-500 text-center">
-                    No admins found
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-      
-      {/* Additional admin functionality can go here */}
     </div>
   );
 };

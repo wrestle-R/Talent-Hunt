@@ -3,8 +3,10 @@ const mongoose = require("mongoose");
 const hackathonSchema = new mongoose.Schema({
   hackathonName: { type: String, required: true },
   description: { type: String },
+  lastRegisterDate: { type: Date, required: true },
   startDate: { type: Date, required: true },
   endDate: { type: Date, required: true },
+
   mode: { type: String, enum: ["Online", "Offline", "Hybrid"], default: "Online" },
   location: { type: String, default: "Online" }, // Only applies if offline/hybrid
   
@@ -32,7 +34,7 @@ const hackathonSchema = new mongoose.Schema({
     }
   ],
 
-
+  problemStatement: [{ type: String }],
   domain: [{ type: String }], // Example: ["AI", "Web3", "Cybersecurity"]
 }, { timestamps: true });
 
