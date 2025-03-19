@@ -1,7 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { 
-  Star, Edit, Briefcase, BookOpen, Users, Cpu, Code, Target, Plus, ExternalLink, ChevronLeft, ChevronRight
-} from 'lucide-react';
+import React, { useState } from 'react';
+import { Star, Edit, Briefcase, BookOpen, Cpu, Users } from 'lucide-react';
 
 const MentorHeroProfile = ({ 
   userData, 
@@ -9,61 +7,12 @@ const MentorHeroProfile = ({
   profileCompletion, 
   completionDetails, 
   getProfileButtonText, 
-  navigate, 
-  refreshUserData 
+  navigate 
 }) => {
-  const [isNewResourceModalOpen, setIsNewResourceModalOpen] = useState(false);
-  const resourcesContainerRef = useRef(null);
-  const [currentResourceIndex, setCurrentResourceIndex] = useState(0);
   const [bioExpanded, setBioExpanded] = useState(false);
-
+  
   // Default profile picture to use when none is available
   const defaultProfilePic = "https://via.placeholder.com/150";
-  
-  // Calculate how many resources are visible
-  const calculateVisibleResources = () => {
-    if (!dashboardData?.resources?.length) return 0;
-    return Math.min(dashboardData.resources.length, 1); // Show only 1 resource at a time
-  };
-
-  // Scroll resources horizontally to specific resource
-  const scrollToResource = (index) => {
-    if (resourcesContainerRef.current && dashboardData?.resources?.length > 0) {
-      // Ensure index is in bounds
-      const safeIndex = Math.max(0, Math.min(index, dashboardData.resources.length - 1));
-      setCurrentResourceIndex(safeIndex);
-      
-      const cardWidth = 250; // Width of card + margins
-      const scrollPosition = safeIndex * cardWidth;
-      
-      resourcesContainerRef.current.scrollTo({
-        left: scrollPosition,
-        behavior: 'smooth'
-      });
-    }
-  };
-  
-  // Handle next/prev navigation
-  const handleResourceNavigation = (direction) => {
-    const totalResources = dashboardData?.resources?.length || 0;
-    let newIndex;
-    
-    if (direction === 'left') {
-      newIndex = (currentResourceIndex - 1 + totalResources) % totalResources;
-    } else {
-      newIndex = (currentResourceIndex + 1) % totalResources;
-    }
-    
-    scrollToResource(newIndex);
-  };
-
-  // Ensure container scrolls properly when current index changes
-  useEffect(() => {
-    if (resourcesContainerRef.current) {
-      const cardWidth = 250; // Width of card + margins
-      resourcesContainerRef.current.scrollLeft = currentResourceIndex * cardWidth;
-    }
-  }, [currentResourceIndex]);
 
   // Render rating stars consistently with student profile
   const renderRatingStars = (rating) => {
@@ -91,9 +40,9 @@ const MentorHeroProfile = ({
   };
 
   return (
-    <div className="w-full h-[94%]  bg-white shadow-lg p-6 flex flex-col overflow-hidden">
+    <div className="w-full h-full bg-white shadow-lg p-6 flex flex-col">
       {/* Main Content (scrollable) */}
-      <div className="flex-grow overflow-hidden mb-4">
+      <div className="flex-grow overflow-y-auto mb-4">
         {/* Top Profile Section */}
         <div className="flex-none">
           <div className="relative mb-4">
@@ -119,25 +68,25 @@ const MentorHeroProfile = ({
             {renderRatingStars(userData.rating)}
           </div>
           
-          {/* Bio - In a similar style to student's education */}
+          {/* Bio - With read more/less capability */}
           {userData.bio && (
-  <div className="bg-blue-50 p-3 rounded-lg mb-4 relative">
-    <div className={`${bioExpanded ? '' : 'h-20 overflow-hidden'}`}>
-      <p className="text-sm text-gray-700 italic">{userData.bio}</p>
-    </div>
-    
-    {userData.bio.length > 150 && (
-      <div className={`absolute bottom-0 left-0 right-0 text-center ${bioExpanded ? 'pt-2' : 'pt-8 bg-gradient-to-t from-blue-50'}`}>
-        <button 
-          onClick={() => setBioExpanded(!bioExpanded)} 
-          className="text-xs bg-white px-3 py-1 rounded-full text-blue-600 font-medium shadow-sm hover:bg-gray-50"
-        >
-          {bioExpanded ? 'Show Less' : 'Read More'}
-        </button>
-      </div>
-    )}
-  </div>
-)}
+            <div className="bg-blue-50 p-3 rounded-lg mb-4 relative">
+              <div className={`${bioExpanded ? '' : 'h-20 overflow-hidden'}`}>
+                <p className="text-sm text-gray-700 italic">{userData.bio}</p>
+              </div>
+              
+              {userData.bio.length > 150 && (
+                <div className={`absolute bottom-0 left-0 right-0 text-center ${bioExpanded ? 'pt-2' : 'pt-8 bg-gradient-to-t from-blue-50'}`}>
+                  <button 
+                    onClick={() => setBioExpanded(!bioExpanded)} 
+                    className="text-xs bg-white px-3 py-1 rounded-full text-blue-600 font-medium shadow-sm hover:bg-gray-50"
+                  >
+                    {bioExpanded ? 'Show Less' : 'Read More'}
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
           
           {/* Current Role */}
           {(userData.current_role?.title || userData.current_role?.company) && (
@@ -157,7 +106,7 @@ const MentorHeroProfile = ({
             <span>{userData.years_of_experience} years of experience</span>
           </div>
           
-          {/* Profile Completion - Matching student profile style */}
+          {/* Profile Completion */}
           <div className="w-full mb-4">
             <div className="flex justify-between text-sm mb-1">
               <span className="text-gray-600">Profile Completion</span>
@@ -170,8 +119,8 @@ const MentorHeroProfile = ({
               ></div>
             </div>
             
-            {/* Optionally show incomplete fields */}
-            {completionDetails.incompleteFields.length > 0 && (
+            {/* Show incomplete fields */}
+            {completionDetails.incompleteFields && completionDetails.incompleteFields.length > 0 && (
               <div className="mt-2 p-2 bg-yellow-50 rounded-md">
                 <p className="text-xs text-yellow-700 font-medium">Complete your profile by adding:</p>
                 <ul className="text-xs text-yellow-600 list-disc ml-4 mt-1">
@@ -187,19 +136,19 @@ const MentorHeroProfile = ({
           </div>
         </div>
         
-        {/* Stats in grid layout like student's stats */}
+        {/* Stats - Only current students and hours mentored */}
         <div className="w-full grid grid-cols-2 gap-3 mb-4">
           <div className="bg-gray-50 p-3 rounded-lg text-center">
             <p className="text-lg font-bold text-blue-700">{dashboardData.stats.studentsReached}</p>
-            <p className="text-xs text-gray-500">Current Students </p>
+            <p className="text-xs text-gray-500">Students Reached</p>
           </div>
           <div className="bg-gray-50 p-3 rounded-lg text-center">
-            <p className="text-lg font-bold text-blue-700">{dashboardData.stats.completedMentorships}</p>
-            <p className="text-xs text-gray-500">Completed</p>
+            <p className="text-lg font-bold text-blue-700">{dashboardData.stats.mentorshipHours}</p>
+            <p className="text-xs text-gray-500">Hours Mentored</p>
           </div>
         </div>
         
-        {/* Technical Skills - Similar to student's skills */}
+        {/* Technical Skills */}
         <div className="w-full mb-4">
           <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2 text-sm">
             <Cpu size={16} />
@@ -224,7 +173,7 @@ const MentorHeroProfile = ({
           </div>
         </div>
         
-        {/* Non-Technical Skills - In the same style as student's interests */}
+        {/* Non-Technical Skills */}
         <div className="w-full bg-blue-50 p-4 rounded-lg mb-4">
           <h3 className="font-semibold text-gray-700 mb-2 flex items-center gap-2 text-sm">
             <Users size={16} />
@@ -248,125 +197,7 @@ const MentorHeroProfile = ({
             )}
           </div>
         </div>
-        
-        {/* Learning Resources - Similar to student's projects carousel */}
-        {dashboardData.resources && (
-          <div className="w-full mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <h3 className="font-semibold text-gray-700 flex items-center gap-2 text-sm">
-                <Code size={16} />
-                Learning Resources
-              </h3>
-              <button 
-                className="text-xs bg-blue-600 text-white px-2 py-1 rounded flex items-center gap-1"
-                onClick={() => setIsNewResourceModalOpen(true)}
-              >
-                <Plus size={14} /> New
-              </button>
-            </div>
-            
-            {dashboardData.resources.length > 0 ? (
-              <div className="relative">
-                {dashboardData.resources.length > 1 && (
-                  <>
-                    <button 
-                      onClick={() => handleResourceNavigation('left')}
-                      className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-1.5 hover:bg-gray-100 focus:outline-none border border-gray-200"
-                      aria-label="Previous resource"
-                    >
-                      <ChevronLeft size={18} className="text-gray-600" />
-                    </button>
-                    <button 
-                      onClick={() => handleResourceNavigation('right')}
-                      className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white shadow-lg rounded-full p-1.5 hover:bg-gray-100 focus:outline-none border border-gray-200"
-                      aria-label="Next resource"
-                    >
-                      <ChevronRight size={18} className="text-gray-600" />
-                    </button>
-                  </>
-                )}
-                
-                <div className="relative overflow-hidden">
-                  <div 
-                    ref={resourcesContainerRef}
-                    className="flex overflow-x-auto hide-scrollbar scroll-smooth snap-x snap-mandatory"
-                    style={{ 
-                      scrollbarWidth: 'none',
-                      WebkitOverflowScrolling: 'touch',
-                      paddingLeft: '12px',
-                      paddingRight: '12px'
-                    }}
-                  >
-                    {dashboardData.resources.map((resource, index) => (
-                      <div 
-                        key={index} 
-                        className="bg-gray-50 p-3 rounded border border-gray-200 flex-shrink-0 w-full snap-center"
-                      >
-                        <div className="flex justify-between items-start">
-                          <h4 className="font-medium text-gray-800 mb-1 text-sm">{resource.title}</h4>
-                          {resource.url && (
-                            <a 
-                              href={resource.url} 
-                              target="_blank" 
-                              rel="noopener noreferrer"
-                              className="text-blue-600"
-                            >
-                              <ExternalLink size={14} />
-                            </a>
-                          )}
-                        </div>
-                        <p className="text-sm text-gray-600 mb-2 line-clamp-2">
-                          {resource.description || "No description provided"}
-                        </p>
-                        {resource.tags && resource.tags.length > 0 && (
-                          <div className="flex flex-wrap gap-1">
-                            {resource.tags.slice(0, 2).map((tag, tagIndex) => (
-                              <span key={tagIndex} className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded text-sm">
-                                {tag}
-                              </span>
-                            ))}
-                            {resource.tags.length > 2 && (
-                              <span className="text-sm text-blue-600">+{resource.tags.length - 2} more</span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                {dashboardData.resources.length > 1 && (
-                  <div className="flex justify-center mt-2 space-x-1">
-                    {dashboardData.resources.map((_, index) => (
-                      <button
-                        key={index}
-                        className={`w-2 h-2 rounded-full ${
-                          currentResourceIndex === index ? 'bg-blue-600' : 'bg-gray-300'
-                        }`}
-                        onClick={() => scrollToResource(index)}
-                        aria-label={`Go to resource ${index + 1}`}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="bg-gray-50 p-3 rounded border border-gray-200 text-center">
-                <p className="text-gray-500 text-sm mb-2">No learning resources added yet</p>
-                <button 
-                  className="text-blue-600 text-sm font-medium"
-                  onClick={() => setIsNewResourceModalOpen(true)}
-                >
-                  Share your first resource
-                </button>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-      
-      {/* Update Profile Button - Fixed at Bottom */}
-      <div className="flex-none w-full">
+        <div className="flex-none w-full">
         <button 
           className={`text-white py-2 px-3 rounded-lg transition-colors duration-200 w-full font-medium text-sm
             ${profileCompletion === 100 ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'}`}
@@ -375,22 +206,10 @@ const MentorHeroProfile = ({
           {getProfileButtonText()}
         </button>
       </div>
+      </div>
       
-      {/* Hide scrollbars but maintain functionality */}
-      <style>{`
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .hide-scrollbar {
-          -ms-overflow-style: none;
-          scrollbar-width: none;
-        }
-        @keyframes pulse-border {
-          0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
-          70% { box-shadow: 0 0 0 6px rgba(59, 130, 246, 0); }
-          100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
-        }
-      `}</style>
+      {/* Update Profile Button - Fixed at Bottom */}
+      
     </div>
   );
 };

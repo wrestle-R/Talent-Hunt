@@ -6,12 +6,6 @@ const StudentHeroProfile = ({ userData, profileCompletion, completionDetails, ge
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
   const projectsContainerRef = useRef(null);
   const [currentProjectIndex, setCurrentProjectIndex] = useState(0);
-  
-  // Calculate how many projects are visible
-  const calculateVisibleProjects = () => {
-    if (!userData?.projects?.length) return 0;
-    return Math.min(userData.projects.length, 1); // Show only 1 project at a time
-  };
 
   const renderRatingStars = (rating) => {
     const fullStars = Math.floor(rating || 0);

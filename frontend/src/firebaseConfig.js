@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { getAuth, GoogleAuthProvider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 
 // Your web app's Firebase configuration
@@ -19,4 +19,5 @@ const auth = getAuth(app);
 const provider = new GoogleAuthProvider();
 const analytics = getAnalytics(app);
 
-export { auth, provider, signInWithPopup, analytics };
+// Export the additional auth methods for email/password login and registration
+export { auth, provider, signInWithPopup, createUserWithEmailAndPassword, signInWithEmailAndPassword, analytics };

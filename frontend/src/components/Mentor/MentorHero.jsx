@@ -42,34 +42,22 @@ const MentorHero = () => {
   const [completionDetails, setCompletionDetails] = useState({
     completedFields: 0,
     totalFields: 0,
+    fieldStatus: [],
     incompleteFields: []
   });
+  
   const navigate = useNavigate();
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
-        // Store user in localStorage for API calls
-        localStorage.setItem("user", JSON.stringify({
-          uid: user.uid,
-          email: user.email
-        }));
-        
-        // Set email from auth
-        setUserData(prevData => ({
-          ...prevData,
-          email: user.email || prevData.email
-        }));
-        
-        // Fetch user profile data
+        // Set email from Firebase auth
+        setUserData(prev => ({...prev, email: user.email || prev.email}));
         fetchMentorProfile(user.uid);
-        // Fetch profile completion data
-        fetchProfileCompletion(user.uid);
       } else {
-        // Redirect to register if not logged in
+        setLoading(false);
         navigate('/register');
       }
-      setLoading(false);
     });
 
     return () => unsubscribe();
@@ -96,21 +84,18 @@ const MentorHero = () => {
             ...response.data.dashboardData
           }));
         }
+        
+        // Fetch profile completion
+        fetchProfileCompletion(uid);
       }
     } catch (error) {
       console.error("Error fetching mentor profile:", error);
-      
-      // If in development mode, you might want to use sample data for testing
-      if (process.env.NODE_ENV === 'development') {
-        console.log('Using sample data for development');
-        useSampleData();
-      }
     } finally {
       setLoading(false);
     }
   };
-
-  // Fetch profile completion from backend API
+  
+  // Fetch profile completion data from backend
   const fetchProfileCompletion = async (uid) => {
     try {
       const response = await axios.get(`http://localhost:4000/api/mentor/profile-completion/${uid}`);
@@ -120,26 +105,25 @@ const MentorHero = () => {
         setCompletionDetails({
           completedFields: response.data.completedFields,
           totalFields: response.data.totalFields,
+          fieldStatus: response.data.fieldStatus,
           incompleteFields: response.data.incompleteFields
         });
       }
     } catch (error) {
       console.error("Error fetching profile completion:", error);
-      // Fall back to 0% if there's an error
-      setProfileCompletion(0);
     }
   };
-
-  // Get profile button text based on completion
+  
+  // Get appropriate button text based on completion
   const getProfileButtonText = () => {
     return profileCompletion === 100 ? "View Profile" : "Complete Profile";
   };
-
-  const refreshUserData = async () => {
-    const user = auth.currentUser;
-    if (user) {
-      await fetchMentorProfile(user.uid);
-      await fetchProfileCompletion(user.uid);
+  
+  // Function to refresh user data after updates
+  const refreshUserData = () => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && user.uid) {
+      fetchMentorProfile(user.uid);
     }
   };
 
@@ -154,40 +138,39 @@ const MentorHero = () => {
     );
   }
 
-  // Update the return statement to include fixed height and sticky positioning
-return (
-  <div className="min-h-screen bg-gray-50 flex flex-col md:flex-row">
-    {/* Left Section - Profile (30%) with fixed height and sticky positioning */}
-    <div className="w-full md:w-3/10 overflow-hidden bg-white shadow-lg md:h-screen md:sticky md:top-0">
-      <MentorHeroProfile 
-        userData={userData}
-        dashboardData={dashboardData}
-        profileCompletion={profileCompletion}
-        completionDetails={completionDetails}
-        getProfileButtonText={getProfileButtonText}
-        navigate={navigate}
-        refreshUserData={refreshUserData}
-      />
-    </div>
-    
-    {/* Right Section - Dashboard (70%) */}
-    <div className="w-full md:w-7/10">
-      <MentorDashboard 
-        dashboardData={dashboardData}
-        userData={userData}
-        refreshUserData={refreshUserData}
-      />
-      
+  // Define the fixed width for the profile section
+  const profileWidth = "400px";
 
-      <MentorDashboard 
-        dashboardData={dashboardData}
-        userData={userData}
-        refreshUserData={refreshUserData}
-      />
-      {/* Remove the duplicate MentorDashboard components */}
+  return (
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Left Section - Fixed Profile */}
+      <div className="fixed w-full h-screen" style={{ width: profileWidth }}>
+        <MentorHeroProfile 
+          userData={userData}
+          dashboardData={dashboardData}
+          profileCompletion={profileCompletion}
+          completionDetails={completionDetails}
+          getProfileButtonText={getProfileButtonText}
+          navigate={navigate}
+          refreshUserData={refreshUserData}
+        />
+      </div>
+      
+      {/* Right Section - Dashboard with left margin */}
+      <div className="flex-1" style={{ marginLeft: profileWidth }}>
+        <MentorDashboard 
+          dashboardData={dashboardData}
+          userData={userData}
+          refreshUserData={refreshUserData}
+        />
+        <MentorDashboard 
+          dashboardData={dashboardData}
+          userData={userData}
+          refreshUserData={refreshUserData}
+        />
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default MentorHero;
