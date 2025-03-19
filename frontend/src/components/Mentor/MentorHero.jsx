@@ -20,7 +20,9 @@ const MentorHero = () => {
       non_technical_skills: []
     },
     rating: 0,
-    bio: ''
+    bio: '',
+    isRejected : false,
+    rejectedReason: '',
   });
   
   // Dashboard data with minimal default values

@@ -1,7 +1,7 @@
 const Admin = require("../models/Admin");
 const Hackathon = require("../models/Hackathon");
 const Student = require("../models/Student");
-
+const Mentor = require("../models/Mentor");
 // Admin authentication and profile functions
 const registerOrLoginAdmin = async (req, res) => {
   try {
@@ -472,12 +472,371 @@ const getHackathonsByAdmin = async (req, res) => {
   }
 };
 
+// Add these functions to your AdminController.js
+
+// Get all mentors with status and profile completion filtering
+const getAllMentorsForAdmin = async (req, res) => {
+  try {
+    const { status, search } = req.query;
+    let query = {};
+    
+    // Filter by status (active or rejected)
+    if (status === 'active') {
+      query.isRejected = false;
+    } else if (status === 'rejected') {
+      query.isRejected = true;
+    }
+    
+    // Add search functionality
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { 'current_role.title': { $regex: search, $options: 'i' } },
+        { 'current_role.company': { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    const mentors = await Mentor.find(query)
+      .select({
+        name: 1,
+        email: 1,
+        profile_picture: 1,
+        bio: 1,
+        current_role: 1,
+        expertise: 1,
+        years_of_experience: 1,
+        mentorship_focus_areas: 1,
+        industries_worked_in: 1,
+        isRejected: 1,
+        rejectionReason: 1,
+        rejectionDate: 1,
+        createdAt: 1,
+        social_links: 1,
+        mentorship_availability: 1,
+        phone: 1
+      })
+      .sort({ createdAt: -1 });
+      
+    // Calculate profile completion percentage for each mentor
+    const mentorsWithCompletion = mentors.map(mentor => {
+      const mentorObj = mentor.toObject();
+      
+      // Define fields to check for mentor profile completion
+      const fields = [
+        { name: 'name', check: () => !!mentor.name },
+        { name: 'email', check: () => !!mentor.email },
+        { name: 'bio', check: () => !!mentor.bio },
+        { name: 'profile_picture', check: () => !!mentor.profile_picture },
+        { name: 'current_role', check: () => !!mentor.current_role?.title || !!mentor.current_role?.company },
+        { name: 'years_of_experience', check: () => mentor.years_of_experience > 0 },
+        { name: 'expertise', check: () => Array.isArray(mentor.expertise?.technical_skills) && mentor.expertise.technical_skills.length > 0 },
+        { name: 'industries_worked_in', check: () => Array.isArray(mentor.industries_worked_in) && mentor.industries_worked_in.length > 0 },
+        { name: 'mentorship_focus_areas', check: () => Array.isArray(mentor.mentorship_focus_areas) && mentor.mentorship_focus_areas.length > 0 },
+        { name: 'social_links', check: () => !!mentor.social_links?.linkedin || !!mentor.social_links?.github || !!mentor.social_links?.personal_website },
+        { name: 'mentorship_availability', check: () => mentor.mentorship_availability?.hours_per_week > 0 || (Array.isArray(mentor.mentorship_availability?.mentorship_type) && mentor.mentorship_availability.mentorship_type.length > 0) }
+      ];
+      
+      // Calculate completion percentage
+      let completedFields = 0;
+      fields.forEach(field => {
+        if (field.check()) {
+          completedFields++;
+        }
+      });
+      
+      mentorObj.profileCompletion = Math.round((completedFields / fields.length) * 100);
+      return mentorObj;
+    });
+    
+    return res.status(200).json({
+      success: true,
+      count: mentorsWithCompletion.length,
+      mentors: mentorsWithCompletion
+    });
+    
+  } catch (error) {
+    console.error("Error fetching mentors:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve mentors",
+      error: error.message
+    });
+  }
+};
+
+// Get all students with status and profile completion filtering
+const getAllStudentsForAdmin = async (req, res) => {
+  try {
+    const { status, search } = req.query;
+    let query = {};
+    
+    // Filter by status (active or rejected)
+    if (status === 'active') {
+      query.isRejected = false;
+    } else if (status === 'rejected') {
+      query.isRejected = true;
+    }
+    
+    // Add search functionality
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { 'education.institution': { $regex: search, $options: 'i' } }
+      ];
+    }
+    
+    const students = await Student.find(query)
+      .select({
+        name: 1,
+        email: 1,
+        profile_picture: 1,
+        education: 1,
+        skills: 1,
+        interests: 1,
+        bio: 1,
+        location: 1,
+        isRejected: 1,
+        rejectionReason: 1,
+        rejectionDate: 1,
+        createdAt: 1,
+        phone: 1,
+        social_links: 1,
+        mentorship_interests: 1,
+        preferred_working_hours: 1,
+        goals: 1
+      })
+      .sort({ createdAt: -1 });
+      
+    // Calculate profile completion percentage for each student
+    const studentsWithCompletion = students.map(student => {
+      const studentObj = student.toObject();
+      
+      // Define fields to check for student profile completion
+      const fields = [
+        { name: 'name', check: () => !!student.name },
+        { name: 'email', check: () => !!student.email },
+        { name: 'profile_picture', check: () => !!student.profile_picture },
+        { name: 'location', check: () => !!student.location?.city || !!student.location?.country },
+        { name: 'education', check: () => !!student.education?.institution || !!student.education?.degree },
+        { name: 'skills', check: () => Array.isArray(student.skills) && student.skills.length > 0 },
+        { name: 'interests', check: () => Array.isArray(student.interests) && student.interests.length > 0 },
+        { name: 'bio', check: () => !!student.bio },
+        { name: 'social_links', check: () => !!student.social_links?.github || !!student.social_links?.linkedin || !!student.social_links?.portfolio },
+        { name: 'mentorship_interests', check: () => student.mentorship_interests?.seeking_mentor !== undefined },
+        { name: 'preferred_working_hours', check: () => !!student.preferred_working_hours?.start_time && !!student.preferred_working_hours?.end_time },
+        { name: 'goals', check: () => Array.isArray(student.goals) && student.goals.length > 0 }
+      ];
+      
+      // Calculate completion percentage
+      let completedFields = 0;
+      fields.forEach(field => {
+        if (field.check()) {
+          completedFields++;
+        }
+      });
+      
+      studentObj.profileCompletion = Math.round((completedFields / fields.length) * 100);
+      return studentObj;
+    });
+    
+    return res.status(200).json({
+      success: true,
+      count: studentsWithCompletion.length,
+      students: studentsWithCompletion
+    });
+    
+  } catch (error) {
+    console.error("Error fetching students:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to retrieve students",
+      error: error.message
+    });
+  }
+};
+
+// Reject a mentor
+const rejectMentor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    
+    if (!reason || reason.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: "Rejection reason is required"
+      });
+    }
+    
+    const mentor = await Mentor.findByIdAndUpdate(
+      id,
+      {
+        isRejected: true,
+        rejectionReason: reason,
+        rejectionDate: new Date()
+      },
+      { new: true }
+    );
+    
+    if (!mentor) {
+      return res.status(404).json({
+        success: false,
+        message: "Mentor not found"
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      message: "Mentor has been rejected",
+      mentor
+    });
+    
+  } catch (error) {
+    console.error("Error rejecting mentor:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to reject mentor",
+      error: error.message
+    });
+  }
+};
+
+// Restore a rejected mentor
+const restoreMentor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const mentor = await Mentor.findByIdAndUpdate(
+      id,
+      {
+        isRejected: false,
+        rejectionReason: null,
+        rejectionDate: null
+      },
+      { new: true }
+    );
+    
+    if (!mentor) {
+      return res.status(404).json({
+        success: false,
+        message: "Mentor not found"
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      message: "Mentor has been restored",
+      mentor
+    });
+    
+  } catch (error) {
+    console.error("Error restoring mentor:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to restore mentor",
+      error: error.message
+    });
+  }
+};
+
+// Reject a student
+const rejectStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    
+    if (!reason || reason.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: "Rejection reason is required"
+      });
+    }
+    
+    const student = await Student.findByIdAndUpdate(
+      id,
+      {
+        isRejected: true,
+        rejectionReason: reason,
+        rejectionDate: new Date()
+      },
+      { new: true }
+    );
+    
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      message: "Student has been rejected",
+      student
+    });
+    
+  } catch (error) {
+    console.error("Error rejecting student:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to reject student",
+      error: error.message
+    });
+  }
+};
+
+// Restore a rejected student
+const restoreStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    const student = await Student.findByIdAndUpdate(
+      id,
+      {
+        isRejected: false,
+        rejectionReason: null,
+        rejectionDate: null
+      },
+      { new: true }
+    );
+    
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+    
+    return res.status(200).json({
+      success: true,
+      message: "Student has been restored",
+      student
+    });
+    
+  } catch (error) {
+    console.error("Error restoring student:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to restore student",
+      error: error.message
+    });
+  }
+};
+
+
 module.exports = {
   // Admin authentication and profile
   registerOrLoginAdmin,
   getAdminProfile,
   updateAdminProfile,
-  
+  getAllMentorsForAdmin,
+  getAllStudentsForAdmin,
+  rejectMentor,
+  restoreMentor,
+  rejectStudent,
+  restoreStudent,  
   // Hackathon management
   getAllHackathons,
   getHackathonById,

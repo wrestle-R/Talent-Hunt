@@ -65,6 +65,8 @@ const mentorSchema = new mongoose.Schema(
         progress: { type: String }, // Example: "Beginner to Intermediate in JavaScript"
       },
     ],
+    isRejected: { type: Boolean, required: true, default: false},
+    rejectionReason: {type: String},
   },
   { timestamps: true }
 );

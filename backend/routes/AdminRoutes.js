@@ -6,6 +6,14 @@ const {
   getAdminProfile,
   updateAdminProfile,
   
+  // User moderation
+  getAllMentorsForAdmin,
+  getAllStudentsForAdmin,
+  rejectMentor,
+  restoreMentor,
+  rejectStudent,
+  restoreStudent,
+  
   // Hackathon management
   getAllHackathons,
   getHackathonById,
@@ -22,16 +30,22 @@ router.post("/registerOrLogin", registerOrLoginAdmin);
 router.get("/profile/:uid", getAdminProfile);
 router.put("/profile/:uid", updateAdminProfile);
 
+// Admin user moderation routes
+router.get("/mentors", getAllMentorsForAdmin);
+router.put("/mentors/:id/reject", rejectMentor);
+router.put("/mentors/:id/restore", restoreMentor);
+router.get("/students", getAllStudentsForAdmin);
+router.put("/students/:id/reject", rejectStudent);
+router.put("/students/:id/restore", restoreStudent);
+
 // Admin hackathon management routes
 router.get("/hackathons", getAllHackathons);
 router.get("/hackathons/stats", getHackathonStats);
 router.get("/hackathons/:id", getHackathonById);
-// Changed from "/:uid/hackathons" to "/hackathons" to match frontend
 router.post("/hackathons", createHackathon);
 router.put("/hackathons/:id", updateHackathon);
 router.delete("/hackathons/:id", deleteHackathon);
 router.put("/hackathons/:hackathonId/applicants/:applicantId", updateApplicantStatus);
-// Keep this route for specific admin hackathons
 router.get("/:uid/hackathons", getHackathonsByAdmin);
 
 module.exports = router;

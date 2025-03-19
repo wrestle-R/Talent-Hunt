@@ -13,6 +13,9 @@ import TeammatesPage from './components/Student/TeammatesPage';
 import MentorsPage from './components/Student/MentorsPage';
 import { UserProvider } from '../context/UserContext';
 import ManageHackathons from './components/Admin/ManageHackathons';
+import HackathonPage from './components/Student/HackathonPage';
+import HackathonDetail from './components/Student/HackathonDetail';
+import AdminModeration from './components/Admin/AdminModeration';
 
 const App = () => {
   return (
@@ -28,12 +31,16 @@ const App = () => {
               <Route path="/mentor/profile" element={<MentorProfile />} />
               <Route path="/student/profile" element={<StudentProfile />} />
               <Route path="/student/new-project" element={<StudentNewProject />} />
-              <Route path="/student/dashboard" element={<StudentDashboard />} />
               <Route path="/admin/hero" element={<AdminHero />} /> 
               <Route path="/student/teammates" element={<TeammatesPage />} />
               <Route path="/student/mentors" element={<MentorsPage />} />
-              <Route path="/admin/hackathons" element={<ManageHackathons />} /> 
+              <Route path="/admin/hackathons" element={<ManageHackathons />} />
+              <Route path="/admin/applications" element={<AdminModeration />} /> 
 
+              
+              {/* New Hackathon routes */}
+              <Route path="/student/hackathons" element={<HackathonPage />} />
+              <Route path="/student/hackathon/:id" element={<HackathonDetail />} />
             </Routes>
           </div>
         </div>

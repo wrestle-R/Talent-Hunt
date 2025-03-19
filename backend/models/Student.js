@@ -74,7 +74,6 @@ const studentSchema = new mongoose.Schema(
       urgency_level: {
         type: String,
         enum: ["Low", "Medium", "High"],
-        default: "Medium"
       }
     },
     
@@ -131,6 +130,9 @@ const studentSchema = new mongoose.Schema(
         expertise: [{ type: String }], // Areas of expertise
       },
     ],
+    isRejected: {type: Boolean, required: true, default: false},
+    rejectionReason: {type: String},
+
   },
   { timestamps: true }
 );
