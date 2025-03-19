@@ -69,9 +69,17 @@ def add_mentor(request: FilePathRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/recommend_students")
-def recommend_student(query: str):
+def recommend_student(user_input: dict):
     try:
         model = ChatMistralAI(model='mistral-small-latest')
+
+        prompt = ChatPromptTemplate.from_messages([
+            ('system', "Based on the data passed to you, create a RAG query to recommend teammates to that would help the user for the particular competition. Only return the RAG query and nothing else."),
+            ("human", "{user_input}")
+        ])
+
+        chain = model | prompt | StrOutputParser()
+        query = chain.invoke({"user_input": user_input})
 
         current_dir = os.path.dirname(__file__)
         persistance_dir = os.path.join(current_dir, 'db', 'students_data')
@@ -100,8 +108,19 @@ def recommend_student(query: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/recommend_mentors")
-def recommend_mentor(query: str):
+def recommend_mentor(user_input: dict):
     try:
+        
+        model = ChatMistralAI(model='mistral-small-latest')
+
+        prompt = ChatPromptTemplate.from_messages([
+            ('system', "Based on the data passed to you, create a RAG query to recommend teammates to that would help the user for the particular competition. Only return the RAG query and nothing else."),
+            ("human", "{user_input}")
+        ])
+
+        chain = model | prompt | StrOutputParser()
+        query = chain.invoke({"user_input": user_input})
+
         current_dir = os.path.dirname(__file__)
         persistance_dir = os.path.join(current_dir, 'db', 'mentors_data')
         embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
@@ -109,8 +128,6 @@ def recommend_mentor(query: str):
         db = Chroma(persist_directory=persistance_dir, embedding_function=embeddings)
         retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": 5})
         relevant_docs = retriever.invoke(query)
-
-        model = ChatMistralAI(model='mistral-small-latest')
 
         processed_docs = [doc.page_content.replace("{", "{{").replace("}", "}}") for doc in relevant_docs]
         relevant_docs_content = "\n\n".join(processed_docs)
