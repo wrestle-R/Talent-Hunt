@@ -291,7 +291,7 @@ const getAllMentors = async (req, res) => {
       const completionPercentage = Math.round((completedFields / fields.length) * 100);
       
       // Only include if profile completion is at least 75%
-      if (completionPercentage >= 75) {
+      if (completionPercentage >= 50) {
         // Create a cleaned mentor object with only the necessary fields for display
         const cleanedMentor = {
           _id: mentor._id,
@@ -332,8 +332,6 @@ const getAllMentors = async (req, res) => {
     });
   }
 };
-
-
 
 // Update the getAllStudents function to exclude the current user
 const getAllStudents = async (req, res) => {
@@ -559,7 +557,7 @@ const getRecommendedTeammates = async (req, res) => {
       const completionPercentage = Math.round((completedFields / fields.length) * 100);
 
       // Only include if profile completion is at least 75%
-      if (completionPercentage >= 75) {
+      if (completionPercentage >= 50) {
         // Remove fields used only for calculation before sending to client
         const cleanedTeammate = {
           _id: teammate._id,
@@ -714,7 +712,7 @@ const getRecommendedMentors = async (req, res) => {
       const completionPercentage = Math.round((completedFields / fields.length) * 100);
       
       // Only include if profile completion is at least 75%
-      if (completionPercentage >= 75) {
+      if (completionPercentage >= 50) {
         // Create a cleaned version of the mentor object to return
         const cleanedMentor = {
           _id: mentor._id,
