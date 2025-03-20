@@ -23,40 +23,36 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
         // Get current user from localStorage
         const currentUser = JSON.parse(localStorage.getItem("user")) || {};
         
-        // Get user ID
+        // Get user ID and email
         const uid = userData?.firebaseUID || currentUser?.uid || '';
+        const userEmail = userData?.email || currentUser?.email || '';
         
         let response;
         
         if (isRecommendations) {
           // Fetch recommended teammates for dashboard
           response = await axios.get(`http://localhost:4000/api/student/recommended-teammates/${uid}`);
-          if (response.data && Array.isArray(response.data)) {
-            setTeammates(response.data);
-          } else if (response.data && Array.isArray(response.data.teammates)) {
-            setTeammates(response.data.teammates);
-          } else {
-            setTeammates([]);
-          }
         } else {
           // Fetch all teammates for full page view
-          // Get email from either props or localStorage
-          const userEmail = userData?.email || currentUser?.email || '';
-          
-          // Exclude current user with both email and UID for reliability
-          response = await axios.get(`http://localhost:4000/api/student/all?excludeEmail=${userEmail}&excludeUID=${uid}`);
-          
-          if (response.data && Array.isArray(response.data.students)) {
-            setTeammates(response.data.students);
-          } else if (response.data && Array.isArray(response.data)) {
-            setTeammates(response.data);
-          } else {
-            setTeammates([]);
-          }
+          response = await axios.get(`http://localhost:4000/api/student/all-students/${uid}`);
+        }
+        
+        // Process the response based on its structure
+        if (response.data && Array.isArray(response.data)) {
+          // If the response is a direct array
+          setTeammates(response.data.filter(student => student.email !== userEmail && student.uid !== uid));
+        } else if (response.data && Array.isArray(response.data.students)) {
+          // If the response has a 'students' property that is an array
+          setTeammates(response.data.students.filter(student => student.email !== userEmail && student.uid !== uid));
+        } else if (response.data && Array.isArray(response.data.teammates)) {
+          // If the response has a 'teammates' property that is an array
+          setTeammates(response.data.teammates);
+        } else {
+          setTeammates([]);
         }
       } catch (err) {
         console.error("Error fetching teammates:", err);
-        setError(`API request failed: ${err.message}`);
+        setError(`Failed to load teammates: ${err.message}`);
       } finally {
         setLoading(false);
       }
@@ -114,6 +110,7 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
         <div className="flex justify-center items-center h-40">
           <div className="text-center text-gray-500">
             <p className="mb-2">Failed to load teammate suggestions.</p>
+            <p className="text-xs mb-3 text-red-500">{error}</p>
             <button 
               onClick={() => window.location.reload()} 
               className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-sm"

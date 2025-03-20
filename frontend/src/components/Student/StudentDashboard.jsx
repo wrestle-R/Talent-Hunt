@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   GraduationCap, BookOpen, Trophy, Calendar, 
   Clock, Code, Users, Zap, ChevronRight, Bell,
@@ -7,6 +7,7 @@ import {
 import DisplayMentors from './DisplayMentors';
 import DisplayTeammates from './DisplayTeammates';
 import { Link } from 'react-router-dom';
+import UpcomingHackathons from './UpcomingHackathons';
 
 const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
   // Add state to track what we're showing in full-page mode
@@ -166,6 +167,24 @@ const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
             </div>
           </div>
         </div>
+      </div>
+      
+      {/* Add Upcoming Hackathons section */}
+      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-lg flex items-center gap-2">
+            <Trophy className="text-purple-600" />
+            Upcoming Hackathons
+          </h3>
+          <Link
+            to="/student/hackathons" 
+            className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center"
+          >
+            View All <ChevronRight size={16} />
+          </Link>
+        </div>
+        
+        <UpcomingHackathons limit={3} layout='grid'/>
       </div>
       
       {/* Team and Mentor Suggestions - Side by Side in one row each */}

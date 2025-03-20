@@ -1,8 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { User, GraduationCap, Code, Award, Briefcase, Globe, Save, X, Plus, Clock, Target, Users } from 'lucide-react';
+import { User, GraduationCap, Code, Award, Briefcase, Globe, Save, X, Plus, Clock, Target, Users, CheckCircle } from 'lucide-react';
 
 const StudentProfile = () => {
+  // Add toast state
+  const [toast, setToast] = useState({
+    show: false,
+    message: '',
+    type: 'success' // 'success' or 'error'
+  });
+
   // Initialize form data with all schema fields
   const [formData, setFormData] = useState({
     name: '',
@@ -268,10 +275,27 @@ const StudentProfile = () => {
       if (!user?.uid) return;
     
       await axios.put(`http://localhost:4000/api/student/profile/${user.uid}`, formData);
-      alert("Profile updated successfully");
+      
+      // Show success toast
+      setToast({
+        show: true,
+        message: 'Profile updated successfully',
+        type: 'success'
+      });
+
+      // Auto-hide toast after 3 seconds
+      setTimeout(() => {
+        setToast(prev => ({ ...prev, show: false }));
+      }, 3000);
     } catch (error) {
       console.error("Error updating profile:", error);
-      alert("Failed to update profile");
+      
+      // Show error toast
+      setToast({
+        show: true,
+        message: 'Failed to update profile. Please try again.',
+        type: 'error'
+      });
     } finally {
       setSaving(false);
     }
@@ -1139,7 +1163,7 @@ const StudentProfile = () => {
   };
 
   return (
-    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen">
+    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen relative">
       <form onSubmit={handleSubmit}>
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-6">
@@ -1193,7 +1217,7 @@ const StudentProfile = () => {
               Experience
             </button>
             <button 
-              onClick={() => setActiveTab('connections')} 
+              onClick={() => setActiveTab('connections')}   
               className={`px-4 py-2 rounded-lg ${activeTab === 'connections' 
                 ? 'bg-blue-600 text-white' 
                 : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
@@ -1230,6 +1254,49 @@ const StudentProfile = () => {
           </div>
         </div>
       </form>
+
+      {/* Add Toast Component */}
+      {toast.show && (
+        <div 
+          className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-slide-up ${
+            toast.type === 'success' 
+              ? 'bg-green-100 text-green-800 border-l-4 border-green-500' 
+              : 'bg-red-100 text-red-800 border-l-4 border-red-500'
+          }`}
+          style={{ zIndex: 1000 }}
+        >
+          {toast.type === 'success' ? (
+            <CheckCircle className="text-green-600" size={20} />
+          ) : (
+            <X className="text-red-600" size={20} />
+          )}
+          <span className="font-medium">{toast.message}</span>
+          <button 
+            onClick={() => setToast(prev => ({ ...prev, show: false }))}
+            className="ml-3 text-gray-500 hover:text-gray-700"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
+
+      {/* Add animation styles */}
+      <style jsx>{`
+        @keyframes slide-up {
+          from {
+            transform: translateY(100%);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
+        }
+        
+        .animate-slide-up {
+          animation: slide-up 0.3s ease-out forwards;
+        }
+      `}</style>
     </div>
   );
 };

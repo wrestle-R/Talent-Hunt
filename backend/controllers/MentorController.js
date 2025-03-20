@@ -2,7 +2,6 @@ const Mentor = require("../models/Mentor");
 const Student = require("../models/Student");
 const Admin = require("../models/Admin"); // Add this import for Admin model
 
-// Register or login mentor
 const registerOrLoginMentor = async (req, res) => {
   try {
     const {
@@ -92,7 +91,6 @@ const updateMentorProfile = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 
 const calculateMentorProfileCompletion = async (req, res) => {
   try {
