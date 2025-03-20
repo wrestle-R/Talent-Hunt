@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { useUser } from '../../../context/UserContext';
-import DisplayTeammates from '../../components/Student/DisplayTeammates';
+import DisplayTeammates from './Dashboard/DisplayTeammates';
 
 const TeammatesPage = () => {
   const { userData, isLoading } = useUser();

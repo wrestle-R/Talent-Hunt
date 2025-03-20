@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Briefcase, ChevronRight, MessageCircle, Search, Filter, User, Star, MapPin, GraduationCap } from 'lucide-react';
 import axios from 'axios';
-import { useUser } from '../../../context/UserContext';
+import { useUser } from '../../../../context/UserContext';
+import ChatModal from '../ChatModal';
 
 // This component can be used in both dashboard and full page view
 const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommendations = false }) => {
@@ -14,6 +15,28 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [expertiseFilter, setExpertiseFilter] = useState('');
+  
+  // Chat modal state
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeChatUser, setActiveChatUser] = useState(null);
+
+  // Function to handle opening chat
+  const handleOpenChat = (mentor) => {
+    console.log("Opening chat with mentor:", mentor);
+    // Ensure mentor has _id field
+    if (mentor && mentor._id) {
+      setActiveChatUser(mentor);
+      setIsChatOpen(true);
+    } else {
+      console.error("Cannot open chat: mentor is missing _id", mentor);
+    }
+  };
+
+  // Function to handle closing chat
+  const handleCloseChat = () => {
+    setIsChatOpen(false);
+    setActiveChatUser(null);
+  };
 
   useEffect(() => {
     const fetchMentors = async () => {
@@ -30,7 +53,7 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
         
         if (isRecommendations) {
           // Fetch recommended mentors for dashboard
-          response = await axios.get(`http://localhost:4000/api/student//recommended-mentors/${uid}`);
+          response = await axios.get(`http://localhost:4000/api/student/recommended-mentors/${uid}`);
           if (response.data && Array.isArray(response.data)) {
             setMentors(response.data);
           } else if (response.data && Array.isArray(response.data.mentors)) {
@@ -126,7 +149,7 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
   }
 
   return (
-    <div className={`${isFullPage ? 'bg-white rounded-xl shadow-md p-6 min-h-[600px]' : ''}`}>
+    <div className={`${isFullPage ? 'bg-white rounded-xl shadow-md p-6 min-h-[600px]' : ''} relative`}>
       {isFullPage && (
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-lg flex items-center gap-2">
@@ -209,10 +232,13 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
                 </p>
               
                 <div className="flex gap-2 mt-2">
-                  <button className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm flex items-center flex-1 justify-center">
+                  <button 
+                    onClick={() => handleOpenChat(mentor)}
+                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm flex items-center flex-1 justify-center hover:bg-gray-200"
+                  >
                     <MessageCircle size={14} className="mr-1" /> Message
                   </button>
-                  <button className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm flex-1">
+                  <button className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm flex-1 hover:bg-indigo-200">
                     Request Mentoring
                   </button>
                 </div>
@@ -240,6 +266,15 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
           </button>
         </div>
       )}
+      
+      {/* Chat Modal */}
+      <ChatModal 
+        isOpen={isChatOpen} 
+        onClose={handleCloseChat} 
+        user={activeChatUser} 
+        currentUser={userData}
+      />
+      
     </div>
   );
 };

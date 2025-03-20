@@ -10,11 +10,11 @@ import StudentNewProject from "./components/Student/StudentNewProject";
 import StudentDashboard from './components/Student/StudentDashboard';
 import AdminHero from './components/Admin/AdminHero';
 import TeammatesPage from './components/Student/TeammatesPage';
-import MentorsPage from './components/Student/MentorsPage';
+import MentorsPage from './components/Student/Dashboard/MentorsPage';
 import { UserProvider } from '../context/UserContext';
 import ManageHackathons from './components/Admin/ManageHackathons';
-import HackathonPage from './components/Student/HackathonPage';
-import HackathonDetail from './components/Student/HackathonDetail';
+import HackathonPage from './components/Student/Dashboard/HackathonPage';
+import HackathonDetail from './components/Student/Dashboard/HackathonDetail';
 import AdminModeration from './components/Admin/AdminModeration';
 import HackathonStatus from './components/Student/Hackathon/HacakthonStatus';
 

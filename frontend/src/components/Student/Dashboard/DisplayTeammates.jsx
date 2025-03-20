@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Users, ChevronRight, MessageCircle, Search, Filter, User, BookOpen, MapPin, Briefcase, Code } from 'lucide-react';
+import { Users, ChevronRight, MessageCircle, Search, Filter, User, BookOpen, MapPin, Briefcase, Code, X, Send, Paperclip, ChevronLeft } from 'lucide-react';
 import axios from 'axios';
-import { useUser } from '../../../context/UserContext';
+import { useUser } from '../../../../context/UserContext';
+import ChatModal from '../ChatModal';
 
 // This component can be used in both dashboard and full page view
 const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecommendations = false }) => {
@@ -14,6 +15,30 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
   const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [skillFilter, setSkillFilter] = useState('');
+  
+  // Chat modal state
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeChatUser, setActiveChatUser] = useState(null);
+
+ // Update the handleOpenChat function to ensure proper IDs are passed
+
+// Function to handle opening chat
+const handleOpenChat = (teammate) => {
+  console.log("Opening chat with teammate:", teammate);
+  // Ensure teammate has _id field
+  if (teammate && teammate._id) {
+    setActiveChatUser(teammate);
+    setIsChatOpen(true);
+  } else {
+    console.error("Cannot open chat: teammate is missing _id", teammate);
+  }
+};
+
+  // Function to handle closing chat
+  const handleCloseChat = () => {
+    setIsChatOpen(false);
+    setActiveChatUser(null);
+  };
 
   useEffect(() => {
     const fetchTeammates = async () => {
@@ -124,7 +149,7 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
   }
 
   return (
-    <div className={`${isFullPage ? 'bg-white rounded-xl shadow-md p-6 min-h-[600px]' : ''}`}>
+    <div className={`${isFullPage ? 'bg-white rounded-xl shadow-md p-6 min-h-[600px]' : ''} relative`}>
       {isFullPage && (
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-lg flex items-center gap-2">
@@ -218,10 +243,13 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
                 )}
               
                 <div className="flex gap-2 mt-2">
-                  <button className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm flex items-center flex-1 justify-center">
+                  <button 
+                    onClick={() => handleOpenChat(teammate)} 
+                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm flex items-center flex-1 justify-center hover:bg-gray-200"
+                  >
                     <MessageCircle size={14} className="mr-1" /> Chat
                   </button>
-                  <button className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-sm flex-1">
+                  <button className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-sm flex-1 hover:bg-emerald-200">
                     Connect
                   </button>
                 </div>
@@ -249,6 +277,15 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
           </button>
         </div>
       )}
+      
+      {/* Chat Modal */}
+      <ChatModal 
+        isOpen={isChatOpen} 
+        onClose={handleCloseChat} 
+        user={activeChatUser} 
+        currentUser={userData}
+      />
+      
     </div>
   );
 };

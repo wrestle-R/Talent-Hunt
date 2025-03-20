@@ -8,6 +8,8 @@ const UpcomingHackathons = ({ limit = 3, layout = "list" }) => {
   const [hackathons, setHackathons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const role = localStorage.userRole
+  console.log(role)
 
   useEffect(() => {
     const fetchHackathons = async () => {

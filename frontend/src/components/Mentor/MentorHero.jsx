@@ -165,11 +165,7 @@ const MentorHero = () => {
           userData={userData}
           refreshUserData={refreshUserData}
         />
-        <MentorDashboard 
-          dashboardData={dashboardData}
-          userData={userData}
-          refreshUserData={refreshUserData}
-        />
+        
       </div>
     </div>
   );

@@ -2,6 +2,8 @@ const Student = require("../models/Student");
 const Mentor = require("../models/Mentor");
 const Admin = require("../models/Admin"); // Add this import
 const Hackathon = require("../models/Hackathon"); // Add this line
+const Message = require('../models/Message');
+
 
 const registerOrLoginStudent = async (req, res) => {
   try {
@@ -1091,8 +1093,390 @@ const getAllTeammates = async (req, res) => {
   }
 };
 
-// Update the exports to include all functions
-module.exports = { 
+// Add this function to get student conversations
+const getStudentConversations = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+    
+    // Find most recent messages between student and mentors/other students
+    const recentMessages = await Message.aggregate([
+      // Match messages involving this student
+      { 
+        $match: { 
+          $or: [
+            { senderId: studentId },
+            { receiverId: studentId }
+          ] 
+        } 
+      },
+      // Sort by time descending
+      { $sort: { createdAt: -1 } },
+      // Group by the conversation partner (the other person)
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$senderId", studentId] },
+              "$receiverId",
+              "$senderId"
+            ]
+          },
+          lastMessage: { $first: "$message" },
+          lastMessageTime: { $first: "$createdAt" },
+          unreadCount: { 
+            $sum: { 
+              $cond: [
+                { $and: [
+                  { $eq: ["$receiverId", studentId] },
+                  { $eq: ["$isRead", false] }
+                ]},
+                1,
+                0
+              ] 
+            }
+          },
+          messages: { $push: "$$ROOT" }
+        }
+      },
+      // Sort conversations by most recent message
+      { $sort: { lastMessageTime: -1 } },
+      // Limit to last 10 conversations
+      { $limit: 10 }
+    ]);
+
+    // Fetch user details for each conversation
+    const conversationsWithDetails = await Promise.all(
+      recentMessages.map(async (conv) => {
+        // First try to find user in Mentor collection
+        let user = await Mentor.findById(conv._id, 'name email profile_picture organization');
+        let userType = 'mentor';
+        
+        // If not found in mentors, check Students (for student-to-student chats)
+        if (!user) {
+          user = await Student.findById(conv._id, 'name email profile_picture education');
+          userType = 'student';
+        }
+        
+        if (!user) {
+          // Fallback for users that might be deleted
+          return {
+            userId: conv._id,
+            name: "Unknown User",
+            profilePicture: null,
+            userType: 'unknown',
+            lastMessage: conv.lastMessage,
+            lastMessageTime: conv.lastMessageTime,
+            unreadCount: conv.unreadCount
+          };
+        }
+        
+        return {
+          userId: conv._id,
+          name: user.name,
+          email: user.email,
+          profilePicture: user.profile_picture,
+          affiliation: userType === 'mentor' ? user.organization : (user.education?.institution || ''),
+          userType,
+          lastMessage: conv.lastMessage,
+          lastMessageTime: conv.lastMessageTime,
+          unreadCount: conv.unreadCount
+        };
+      })
+    );
+    
+    return res.status(200).json(conversationsWithDetails);
+    
+  } catch (error) {
+    console.error('Error fetching student conversations:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Add this function to mark messages as read
+const markStudentMessagesAsRead = async (req, res) => {
+  try {
+    const { studentId, senderId } = req.params;
+    
+    if (!studentId || !senderId) {
+      return res.status(400).json({ error: 'Both student ID and sender ID are required' });
+    }
+    
+    // Update all unread messages from this sender to this student
+    const result = await Message.updateMany(
+      { 
+        senderId: senderId,
+        receiverId: studentId,
+        isRead: false
+      },
+      { $set: { isRead: true } }
+    );
+    
+    return res.status(200).json({ 
+      success: true,
+      messagesMarkedRead: result.modifiedCount 
+    });
+    
+  } catch (error) {
+    console.error('Error marking messages as read:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+
+// Add this function to get student-mentor conversations only
+const getMentorConversations = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+    
+    // Find most recent messages between student and mentors only
+    const recentMessages = await Message.aggregate([
+      // Match messages involving this student
+      { 
+        $match: { 
+          $or: [
+            { senderId: studentId },
+            { receiverId: studentId }
+          ] 
+        } 
+      },
+      // Sort by time descending
+      { $sort: { createdAt: -1 } },
+      // Group by the conversation partner (the other person)
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$senderId", studentId] },
+              "$receiverId",
+              "$senderId"
+            ]
+          },
+          lastMessage: { $first: "$message" },
+          lastMessageTime: { $first: "$createdAt" },
+          unreadCount: { 
+            $sum: { 
+              $cond: [
+                { $and: [
+                  { $eq: ["$receiverId", studentId] },
+                  { $eq: ["$isRead", false] }
+                ]},
+                1,
+                0
+              ] 
+            }
+          },
+          messages: { $push: "$$ROOT" }
+        }
+      },
+      // Sort conversations by most recent message
+      { $sort: { lastMessageTime: -1 } }
+    ]);
+
+    // Filter and fetch only mentor user details
+    const mentorConversations = await Promise.all(
+      recentMessages.map(async (conv) => {
+        // Try to find the user in Mentor collection
+        const mentor = await Mentor.findById(conv._id, 'name email profile_picture current_role expertise organization');
+        
+        // Skip if not a mentor
+        if (!mentor) {
+          return null;
+        }
+        
+        return {
+          userId: conv._id,
+          name: mentor.name,
+          email: mentor.email,
+          profilePicture: mentor.profile_picture,
+          affiliation: mentor.organization || (mentor.current_role?.company || ''),
+          expertise: mentor.expertise?.technical_skills || [],
+          lastMessage: conv.lastMessage,
+          lastMessageTime: conv.lastMessageTime,
+          unreadCount: conv.unreadCount
+        };
+      })
+    );
+    
+    // Filter out null values (non-mentors) and limit if needed
+    const filteredMentorConversations = mentorConversations
+      .filter(conv => conv !== null);
+    
+    return res.status(200).json(filteredMentorConversations);
+    
+  } catch (error) {
+    console.error('Error fetching mentor conversations:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Add these functions to your StudentController.js file
+// Get student projects
+const getStudentProjects = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+    
+    // Find the student
+    const student = await Student.findById(studentId);
+    
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Return the projects array
+    return res.status(200).json({
+      success: true,
+      projects: student.projects || []
+    });
+    
+  } catch (error) {
+    console.error('Error fetching student projects:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Add a project
+const addStudentProject = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const projectData = req.body;
+    
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+    
+    // Validate required fields
+    if (!projectData.name || !projectData.description || !projectData.tech_stack) {
+      return res.status(400).json({ error: 'Project name, description, and tech stack are required' });
+    }
+    
+    // Find the student
+    const student = await Student.findById(studentId);
+    
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Initialize projects array if it doesn't exist
+    if (!student.projects) {
+      student.projects = [];
+    }
+    
+    // Add new project with an _id
+    const newProject = {
+      _id: new mongoose.Types.ObjectId(),
+      ...projectData
+    };
+    
+    student.projects.push(newProject);
+    await student.save();
+    
+    return res.status(201).json({
+      success: true,
+      message: 'Project added successfully',
+      project: newProject
+    });
+    
+  } catch (error) {
+    console.error('Error adding student project:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Update a project
+const updateStudentProject = async (req, res) => {
+  try {
+    const { studentId, projectId } = req.params;
+    const projectData = req.body;
+    
+    if (!studentId || !projectId) {
+      return res.status(400).json({ error: 'Student ID and Project ID are required' });
+    }
+    
+    // Find the student
+    const student = await Student.findById(studentId);
+    
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Find the project index
+    const projectIndex = student.projects.findIndex(
+      project => project._id.toString() === projectId
+    );
+    
+    if (projectIndex === -1) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    // Update the project
+    student.projects[projectIndex] = {
+      _id: student.projects[projectIndex]._id, // Keep the original ID
+      ...projectData
+    };
+    
+    await student.save();
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Project updated successfully',
+      project: student.projects[projectIndex]
+    });
+    
+  } catch (error) {
+    console.error('Error updating student project:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Delete a project
+const deleteStudentProject = async (req, res) => {
+  try {
+    const { studentId, projectId } = req.params;
+    
+    if (!studentId || !projectId) {
+      return res.status(400).json({ error: 'Student ID and Project ID are required' });
+    }
+    
+    // Find the student
+    const student = await Student.findById(studentId);
+    
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Remove the project
+    student.projects = student.projects.filter(
+      project => project._id.toString() !== projectId
+    );
+    
+    await student.save();
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Project deleted successfully'
+    });
+    
+  } catch (error) {
+    console.error('Error deleting student project:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Add these to your exports
+module.exports = {
+  // ...existing exports
   registerOrLoginStudent,
   getStudentProfile, 
   updateStudentProfile,
@@ -1102,11 +1486,18 @@ module.exports = {
   getRecommendedTeammates,
   getRecommendedMentors,
   getAllTeammates,
-  // New hackathon-related functions
   getUpcomingHackathons,
   getPastHackathons,
   getRegisteredHackathons,
   getHackathonById,
-  registerForHackathon
+  registerForHackathon,
+  getStudentConversations,
+  markStudentMessagesAsRead,
+  getMentorConversations,
+  // New project endpoints
+  getStudentProjects,
+  addStudentProject,
+  updateStudentProject,
+  deleteStudentProject
 };
 
