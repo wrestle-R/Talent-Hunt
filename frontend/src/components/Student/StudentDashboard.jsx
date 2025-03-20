@@ -8,11 +8,13 @@ import DisplayMentors from './DisplayMentors';
 import DisplayTeammates from './DisplayTeammates';
 import { Link } from 'react-router-dom';
 import UpcomingHackathons from './UpcomingHackathons';
+import HackathonStatus from './Hackathon/HacakthonStatus';
 
 const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
   // Add state to track what we're showing in full-page mode
   const [showAllMentors, setShowAllMentors] = useState(false);
   const [showAllTeammates, setShowAllTeammates] = useState(false);
+  const [showAllApplications, setShowAllApplications] = useState(false);
   
   // Return different view based on what should be shown in full-page
   if (showAllMentors) {
@@ -48,6 +50,18 @@ const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
         </div>
         
         <DisplayTeammates userData={userData} isFullPage={true} />
+      </div>
+    );
+  }
+
+  // Show all hackathon applications full-page
+  if (showAllApplications) {
+    return (
+      <div className="w-[95%]">
+        <HackathonStatus 
+          isFullPage={true} 
+          onBack={() => setShowAllApplications(false)} 
+        />
       </div>
     );
   }
@@ -121,7 +135,22 @@ const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
               </button>
             </div>
             
-            {/* User's ongoing activities could go here */}
+            {/* Hackathon application status */}
+            <div className="bg-purple-50 border border-purple-200 p-4 rounded-lg flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <Trophy className="text-purple-600" size={22} />
+                <div>
+                  <h4 className="font-medium text-gray-800">Track your hackathon applications</h4>
+                  <p className="text-sm text-gray-600">View status and updates for hackathons you've applied to</p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setShowAllApplications(true)}
+                className="bg-purple-600 text-white px-3 py-1 rounded-lg text-sm"
+              >
+                View Status
+              </button>
+            </div>
           </div>
         </div>
         
@@ -165,8 +194,26 @@ const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
                 <span className="text-lg font-bold text-emerald-700">1</span>
               </div>
             </div>
+            
+            {/* New stats for hackathon applications */}
+            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
+              <div className="flex items-center gap-2">
+                <div className="bg-purple-100 p-2 rounded-lg">
+                  <Trophy className="text-purple-600" size={18} />
+                </div>
+                <span className="text-gray-700">Hackathon Applications</span>
+              </div>
+              <div className="text-right">
+                <span className="text-lg font-bold text-purple-700">5</span>
+              </div>
+            </div>
           </div>
         </div>
+      </div>
+      
+      {/* Hackathon Applications Component */}
+      <div className="mb-6">
+        <HackathonStatus limit={3} />
       </div>
       
       {/* Add Upcoming Hackathons section */}

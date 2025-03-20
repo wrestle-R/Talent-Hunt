@@ -16,6 +16,7 @@ import ManageHackathons from './components/Admin/ManageHackathons';
 import HackathonPage from './components/Student/HackathonPage';
 import HackathonDetail from './components/Student/HackathonDetail';
 import AdminModeration from './components/Admin/AdminModeration';
+import HackathonStatus from './components/Student/Hackathon/HacakthonStatus';
 
 const App = () => {
   return (
@@ -41,6 +42,8 @@ const App = () => {
               {/* New Hackathon routes */}
               <Route path="/student/hackathons" element={<HackathonPage />} />
               <Route path="/student/hackathon/:id" element={<HackathonDetail />} />
+              <Route path="/student/hackathon-status" element={<HackathonStatus />} />
+
             </Routes>
           </div>
         </div>
