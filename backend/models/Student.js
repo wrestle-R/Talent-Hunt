@@ -69,21 +69,32 @@ const studentSchema = new mongoose.Schema(
     },
 
     // New fields for teammate search preferences
-    teammate_search: {
-      looking_for_teammates: { type: Boolean, default: false },
-      purpose: {
-        type: String,
-        enum: ["Project", "Hackathon", "Both"],
-        default: "Both",
-      },
-      desired_skills: [{ type: String }], // Skills they want in teammates
-      project_description: { type: String }, // Brief description of the project they need help with
-      team_size_preference: { type: String }, // Small, Medium, Large or specific number
-      urgency_level: {
-        type: String,
-        enum: ["Low", "Medium", "High"],
-      },
-    },
+// Update the teammate_search field in the schema
+teammate_search: {
+  looking_for_teammates: { type: Boolean, default: false },
+  purpose: {
+    type: String,
+    enum: ["Project", "Hackathon", "Both", "Not specified"],
+    default: "Not specified"
+  },
+  // For Both option, include fields for both project and hackathon
+  project_preferences: {
+    description: String,
+    team_size: String,
+    tech_stack: [String]
+  },
+  hackathon_preferences: {
+    preferred_type: String,
+    team_size: String,
+    tech_stack: [String]
+  },
+  desired_skills: [{ type: String }],
+  urgency_level: {
+    type: String,
+    enum: ["Low", "Medium", "High"],
+    default: "Medium"
+  }
+},
 
     // New field to track what the user is currently looking for
     current_search_preferences: {

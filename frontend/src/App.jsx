@@ -27,7 +27,11 @@ import ProjectManagement from "./components/Moderator/Projects/ProjectManagement
 import ProjectDetail from "./components/Moderator/Projects/ProjectDetail";
 import NotesManagement from "./components/Moderator/Projects/NotesManagement";
 import NoteDetail from "./components/Moderator/Projects/NoteDetail";
+import TeammateProfile from './components/Student/Dashboard/TeammateProfile'
+import MentorDetail from "./components/Student/Dashboard/MentorDetail"
 
+const role = localStorage.userRole
+console.log(role)
 const App = () => {
   return (
     <UserProvider>
@@ -44,7 +48,9 @@ const App = () => {
               <Route path="/student/mentors" element={<MentorsPage />} />
               <Route path="/student/conversations" element={<AllConversationsPage/>}/>
               <Route path="/student/projects" element={<AllProjectsPage/>} />
-              
+              <Route path="/student/teammate/:teammateId" element={<TeammateProfile />} />
+              <Route path="/student/mentor/:mentorId" element={<MentorDetail />} />
+
               {/* Hackathon Routes */}
               <Route path="/student/hackathons" element={<HackathonPage />} />
               <Route path="/student/hackathon/:id" element={<HackathonDetail />} />
@@ -84,7 +90,21 @@ const App = () => {
               <Route path="/moderator/note/:noteId" element={<NoteDetail />} />
               
               {/* Default Route */}
+              {role == 'admin' &&(
+              <Route path="/" element={<AdminHero />} />
+
+              )}
+
+              {role == 'mentor' &&(
+              <Route path="/" element={<MentorHero />} />
+
+              )}
+              {
+                role == 'student' && (
               <Route path="/" element={<StudentHero />} />
+
+                )
+              }
             </Routes>
           </div>
         </div>

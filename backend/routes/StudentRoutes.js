@@ -21,7 +21,11 @@ const {
   getStudentProjects,
   addStudentProject,
   updateStudentProject,
-  deleteStudentProject
+  deleteStudentProject,
+  getPotentialTeammates,
+  getTeammateById,
+  getMentorById,
+
 } = require("../controllers/StudentController");
 
 // Existing routes
@@ -51,5 +55,13 @@ router.get("/projects/:studentId", getStudentProjects);
 router.post("/projects/:studentId", addStudentProject);
 router.put("/projects/:studentId/:projectId", updateStudentProject);
 router.delete("/projects/:studentId/:projectId", deleteStudentProject);
+
+// Add these new routes to your existing routes
+router.get("/teammates/:uid", getPotentialTeammates);
+router.get("/teammate/:teammateId", getTeammateById);
+
+// Add this route
+router.get("/mentor/:mentorId", getMentorById);
+
 
 module.exports = router;

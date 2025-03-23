@@ -1552,6 +1552,368 @@ const deleteStudentProject = async (req, res) => {
   }
 };
 
+const getPotentialTeammates = async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { purpose, skills } = req.query;
+    
+    // Find the current student to get their email
+    const currentStudent = await Student.findOne({ firebaseUID: uid });
+    
+    if (!currentStudent) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Student not found" 
+      });
+    }
+
+    // Base query to exclude current user and rejected students
+    let query = {
+      $and: [
+        { firebaseUID: { $ne: uid } },
+        { email: { $ne: currentStudent.email } },
+        { isRejected: false },
+        { 'teammate_search.looking_for_teammates': true }
+      ]
+    };
+    
+    // Add filter for purpose (Project, Hackathon, Both)
+    if (purpose && purpose !== 'all') {
+      if (purpose === 'Both') {
+        // If looking for both, include students who are:
+        // 1. Looking for both
+        // 2. Looking for either Project or Hackathon
+        query.$and.push({
+          $or: [
+            { 'teammate_search.purpose': 'Both' },
+            { 'teammate_search.purpose': 'Project' },
+            { 'teammate_search.purpose': 'Hackathon' }
+          ]
+        });
+      } else {
+        // If looking for specific purpose, include:
+        // 1. Students looking for that specific purpose
+        // 2. Students looking for both
+        query.$and.push({
+          $or: [
+            { 'teammate_search.purpose': purpose },
+            { 'teammate_search.purpose': 'Both' }
+          ]
+        });
+      }
+    }
+
+    // Rest of your existing query logic...
+    const potentialTeammates = await Student.find(query)
+      .select({
+        firebaseUID: 1,
+        name: 1,
+        email: 1,
+        profile_picture: 1,
+        education: 1,
+        skills: 1,
+        interests: 1,
+        location: 1,
+        bio: 1,
+        teammate_search: 1,
+        current_search_preferences: 1
+      });
+
+    const formattedTeammates = potentialTeammates.map(teammate => {
+      const profileCompletion = calculateProfileCompletionPercentage(teammate);
+      
+      // Enhanced lookingFor object with better handling of Both
+      const lookingFor = {
+        purpose: teammate.teammate_search?.purpose || 'Not specified',
+        desiredSkills: teammate.teammate_search?.desired_skills || [],
+        urgencyLevel: teammate.teammate_search?.urgency_level || 'Medium',
+        
+        // Include both project and hackathon info when purpose is 'Both'
+        projectInfo: (teammate.teammate_search?.purpose === 'Project' || teammate.teammate_search?.purpose === 'Both') 
+          ? {
+              description: teammate.teammate_search?.project_preferences?.description || '',
+              teamSize: teammate.teammate_search?.project_preferences?.team_size || '',
+              techStack: teammate.teammate_search?.project_preferences?.tech_stack || []
+            }
+          : null,
+        
+        hackathonInfo: (teammate.teammate_search?.purpose === 'Hackathon' || teammate.teammate_search?.purpose === 'Both')
+          ? {
+              preferredType: teammate.teammate_search?.hackathon_preferences?.preferred_type || '',
+              teamSize: teammate.teammate_search?.hackathon_preferences?.team_size || '',
+              techStack: teammate.teammate_search?.hackathon_preferences?.tech_stack || []
+            }
+          : null
+      };
+
+      return {
+        _id: teammate._id,
+        firebaseUID: teammate.firebaseUID,
+        name: teammate.name,
+        email: teammate.email,
+        profile_picture: teammate.profile_picture,
+        education: teammate.education,
+        skills: teammate.skills || [],
+        interests: teammate.interests || [],
+        location: teammate.location,
+        bio: teammate.bio || '',
+        profileCompletion,
+        lookingFor
+      };
+    });
+
+    // Filter by minimum profile completion
+    const eligibleTeammates = formattedTeammates.filter(
+      teammate => teammate.profileCompletion >= 50
+    );
+
+    res.status(200).json({
+      success: true,
+      count: eligibleTeammates.length,
+      teammates: eligibleTeammates
+    });
+  } catch (error) {
+    console.error("Error fetching potential teammates:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to retrieve potential teammates", 
+      error: error.message 
+    });
+  }
+};
+
+// Get teammate details by ID
+const getTeammateById = async (req, res) => {
+  try {
+    const { teammateId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(teammateId)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid teammate ID format" 
+      });
+    }
+    
+    const teammate = await Student.findById(teammateId)
+      .select({
+        firebaseUID: 1,
+        name: 1,
+        email: 1,
+        profile_picture: 1,
+        education: 1,
+        skills: 1,
+        interests: 1,
+        location: 1,
+        projects: 1,
+        bio: 1,
+        social_links: 1,
+        preferred_working_hours: 1,
+        goals: 1,
+        achievements: 1,
+        teammate_search: 1,
+        current_search_preferences: 1
+      });
+    
+    if (!teammate) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Teammate not found" 
+      });
+    }
+    
+    // Format what they're looking for
+    const lookingFor = {
+      isLookingForTeammates: teammate.teammate_search?.looking_for_teammates || false,
+      purpose: teammate.teammate_search?.purpose || 'Not specified',
+      desiredSkills: teammate.teammate_search?.desired_skills || [],
+      projectDescription: teammate.teammate_search?.project_description || '',
+      teamSizePreference: teammate.teammate_search?.team_size_preference || '',
+      urgencyLevel: teammate.teammate_search?.urgency_level || 'Medium',
+      hackathonDetails: teammate.current_search_preferences?.hackathon_teammate_preferences || null,
+      projectDetails: teammate.current_search_preferences?.project_teammate_preferences || null
+    };
+    
+    // Format filtered projects (only approved ones)
+    const approvedProjects = teammate.projects
+      ?.filter(project => 
+        project.status?.toLowerCase() === 'approved' && 
+        !project.isDeleted
+      )
+      .map(project => ({
+        _id: project._id,
+        name: project.name,
+        description: project.description,
+        tech_stack: project.tech_stack || [],
+        github_link: project.github_link,
+        live_demo: project.live_demo
+      })) || [];
+    
+    // Calculate profile completion
+    const profileCompletion = calculateProfileCompletionPercentage(teammate);
+    
+    // Format response
+    const formattedTeammate = {
+      _id: teammate._id,
+      firebaseUID: teammate.firebaseUID,
+      name: teammate.name,
+      email: teammate.email,
+      profile_picture: teammate.profile_picture,
+      education: teammate.education,
+      skills: teammate.skills || [],
+      interests: teammate.interests || [],
+      location: teammate.location,
+      bio: teammate.bio || '',
+      social_links: teammate.social_links,
+      preferred_working_hours: teammate.preferred_working_hours,
+      goals: teammate.goals || [],
+      achievements: teammate.achievements || [],
+      projects: approvedProjects,
+      profileCompletion,
+      lookingFor
+    };
+    
+    res.status(200).json({
+      success: true,
+      teammate: formattedTeammate
+    });
+    
+  } catch (error) {
+    console.error("Error fetching teammate details:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to retrieve teammate details", 
+      error: error.message 
+    });
+  }
+};
+
+// Helper function to calculate profile completion percentage
+const calculateProfileCompletionPercentage = (student) => {
+  if (!student) return 0;
+  
+  // Define fields to check for profile completion
+  const fields = [
+    { name: 'name', check: () => !!student.name },
+    { name: 'email', check: () => !!student.email },
+    { name: 'profile_picture', check: () => !!student.profile_picture },
+    { name: 'location', check: () => !!student.location?.city || !!student.location?.country },
+    { name: 'education', check: () => !!student.education?.institution || !!student.education?.degree },
+    { name: 'skills', check: () => Array.isArray(student.skills) && student.skills.length > 0 },
+    { name: 'interests', check: () => Array.isArray(student.interests) && student.interests.length > 0 },
+    { name: 'bio', check: () => !!student.bio },
+    { name: 'social_links', check: () => 
+      !!student.social_links?.github || 
+      !!student.social_links?.linkedin || 
+      !!student.social_links?.portfolio 
+    },
+    { name: 'preferred_working_hours', check: () => 
+      !!student.preferred_working_hours?.start_time && 
+      !!student.preferred_working_hours?.end_time 
+    }
+  ];
+  
+  // Count completed fields
+  const completedFields = fields.filter(field => field.check()).length;
+  const totalFields = fields.length;
+  
+  // Calculate percentage
+  return Math.round((completedFields / totalFields) * 100);
+};
+
+// Get mentor details by ID
+const getMentorById = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(mentorId)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid mentor ID format" 
+      });
+    }
+    
+    const mentor = await Mentor.findById(mentorId)
+      .select({
+        name: 1,
+        title: 1,
+        bio: 1,
+        profile_picture: 1,
+        skills: 1,
+        years_of_experience: 1,
+        education: 1,
+        current_company: 1,
+        location: 1,
+        languages: 1,
+        availability_status: 1,
+        mentor_topics: 1,
+        average_rating: 1,
+        total_reviews: 1,
+        social_links: 1,
+        current_role: 1,
+        expertise: 1,
+        mentorship_focus_areas: 1,
+        mentorship_availability: 1,
+        industries_worked_in: 1,
+        achievements: 1,
+        projects: 1,
+        work_experience: 1,
+        email: 1,
+        phone: 1,
+        preferred_contact_method: 1
+      });
+    
+    if (!mentor) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Mentor not found" 
+      });
+    }
+    
+    // Format for consistent response
+    const formattedMentor = {
+      _id: mentor._id,
+      name: mentor.name,
+      title: mentor.title || mentor.current_role,
+      bio: mentor.bio,
+      profilePicture: mentor.profile_picture,
+      skills: mentor.skills || [],
+      expertise: mentor.expertise || [],
+      yearsOfExperience: mentor.years_of_experience,
+      education: mentor.education,
+      currentCompany: mentor.current_company,
+      location: mentor.location,
+      languages: mentor.languages || [],
+      availabilityStatus: mentor.availability_status,
+      mentorTopics: mentor.mentor_topics || [],
+      mentorshipFocusAreas: mentor.mentorship_focus_areas || [],
+      averageRating: mentor.average_rating || 0,
+      totalReviews: mentor.total_reviews || 0,
+      socialLinks: mentor.social_links || {},
+      mentorshipAvailability: mentor.mentorship_availability || {},
+      industriesWorkedIn: mentor.industries_worked_in || [],
+      achievements: mentor.achievements || [],
+      projects: mentor.projects || [],
+      workExperience: mentor.work_experience || [],
+      email: mentor.email,
+      phone: mentor.phone,
+      preferredContactMethod: mentor.preferred_contact_method || 'email'
+    };
+    
+    res.status(200).json({
+      success: true,
+      mentor: formattedMentor
+    });
+    
+  } catch (error) {
+    console.error("Error fetching mentor details:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to retrieve mentor details", 
+      error: error.message 
+    });
+  }
+};
+
 // Add these to your exports
 module.exports = {
   // ...existing exports
@@ -1576,6 +1938,9 @@ module.exports = {
   getStudentProjects,
   addStudentProject,
   updateStudentProject,
-  deleteStudentProject
+  deleteStudentProject,
+  getTeammateById,
+  getPotentialTeammates,
+  getMentorById,
 };
 

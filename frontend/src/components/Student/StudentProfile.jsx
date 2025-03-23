@@ -804,7 +804,7 @@ const StudentProfile = () => {
                     <div>
                       <label className="block text-sm font-medium mb-1">I'm looking for teammates for:</label>
                       <div className="grid grid-cols-3 gap-2">
-                        {['Project', 'Hackathon', 'Both'].map((option) => (
+                        {['Project', 'Hackathon'].map((option) => (
                           <label key={option} className="flex items-center p-2 border rounded-md cursor-pointer hover:bg-blue-50">
                             <input
                               type="radio"
