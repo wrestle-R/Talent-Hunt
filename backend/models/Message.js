@@ -14,6 +14,11 @@ const MessageSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // Add isTeamMessage flag to differentiate team messages from direct messages
+    isTeamMessage: {
+      type: Boolean,
+      default: false
+    },
     // Message reporting functionality
     isReported: {
       type: Boolean,
@@ -74,6 +79,8 @@ const MessageSchema = new mongoose.Schema(
 // Create indexes for frequently accessed fields to improve query performance
 MessageSchema.index({ senderId: 1, receiverId: 1 });
 MessageSchema.index({ receiverId: 1, createdAt: -1 });
+// Add index for team messages
+MessageSchema.index({ receiverId: 1, isTeamMessage: 1, createdAt: -1 });
 MessageSchema.index({ isReported: 1 }); // For quickly finding reported messages
 MessageSchema.index({ "reportDetails.status": 1 }); // For filtering by report status
 MessageSchema.index({ "reportDetails.reportedAt": -1 }); // For sorting by report date

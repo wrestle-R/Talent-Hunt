@@ -29,6 +29,11 @@ import NotesManagement from "./components/Moderator/Projects/NotesManagement";
 import NoteDetail from "./components/Moderator/Projects/NoteDetail";
 import TeammateProfile from './components/Student/Dashboard/TeammateProfile'
 import MentorDetail from "./components/Student/Dashboard/MentorDetail"
+import CreateTeam from "./components/Student/Dashboard/Team/CreateTeam"
+import TeamDetails from "./components/Student/Dashboard/Team/TeamDetails"
+import JoinTeam from "./components/Student/Dashboard/Team/JoinTeam"
+import TeamManage from './components/Student/Dashboard/Team/TeamManage';
+
 
 const role = localStorage.userRole
 console.log(role)
@@ -50,6 +55,11 @@ const App = () => {
               <Route path="/student/projects" element={<AllProjectsPage/>} />
               <Route path="/student/teammate/:teammateId" element={<TeammateProfile />} />
               <Route path="/student/mentor/:mentorId" element={<MentorDetail />} />
+              <Route path="/student/team/create" element={<CreateTeam />} />
+              <Route path="/student/team/join" element={<JoinTeam />} />
+              <Route path="/student/team/:teamId" element={<TeamDetails />} />
+              <Route path="/student/team/manage/:teamId" element={<TeamManage />} />
+
 
               {/* Hackathon Routes */}
               <Route path="/student/hackathons" element={<HackathonPage />} />

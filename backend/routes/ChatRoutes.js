@@ -7,28 +7,25 @@ const {
     saveMessage,
     markMessagesAsRead,
     getUnreadMessageCount,
-    reportMessage
+    reportMessage,
+    // Add these new imports
+    getTeamMessages,
+    saveTeamMessage,
+    markTeamMessagesAsRead
 } = require('../controllers/ChatController');
 
-// Get messages between two users
+// Existing routes
 router.get('/messages/:senderId/:receiverId', getMessages);
-
-// Save a new message
 router.post('/messages', saveMessage);
-
-// Get user's conversations
 router.get('/conversations/:userId', getConversations);
-
-// Get recent conversations with details
 router.get('/conversations/details/:userId', getConversationsWithDetails);
-
-// Mark messages as read
 router.put('/messages/read/:senderId/:receiverId', markMessagesAsRead);
-
-// Get unread message count
 router.get('/unread/:userId', getUnreadMessageCount);
-
-// Report a message
 router.post('/messages/report', reportMessage);
+
+// Add team chat routes
+router.get('/team-messages/:teamId', getTeamMessages);
+router.post('/team-messages', saveTeamMessage);
+router.put('/team-messages/read/:userId/:teamId', markTeamMessagesAsRead);
 
 module.exports = router;

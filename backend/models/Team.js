@@ -37,6 +37,33 @@ const teamSchema = new mongoose.Schema(
       ref: "Student",
       required: true
     },
+
+    // sent to potentional teamates
+    invitations: [
+      {
+        recipientId: {
+          type: mongoose.Schema.Types.ObjectId,
+          refPath: "invitations.recipientType"
+        },
+        recipientType: {
+          type: String,
+          enum: ["Student", "Mentor"]
+        },
+        message: { type: String },
+        role: { type: String }, // Proposed role in the team
+        invitedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Student"
+        },
+        sentAt: { type: Date, default: Date.now },
+        expiresAt: { type: Date },
+        status: {
+          type: String,
+          enum: ["pending", "accepted", "declined", "expired"],
+          default: "pending"
+        }
+      }
+    ],
     members: [
       {
         student: {
@@ -45,18 +72,7 @@ const teamSchema = new mongoose.Schema(
         },
         role: {
           type: String,
-          enum: [
-            "Frontend Developer", 
-            "Backend Developer", 
-            "Full Stack Developer", 
-            "UI/UX Designer", 
-            "Data Scientist", 
-            "DevOps Engineer", 
-            "Project Manager", 
-            "QA Engineer", 
-            "Content Creator",
-            "Other"
-          ]
+          
         },
         customRole: {
           type: String, // For when "Other" is selected
@@ -306,7 +322,8 @@ const teamSchema = new mongoose.Schema(
             "hackathon_completed",
             "dissolution_requested",
             "dissolution_cancelled",
-            "team_dissolved"
+            "team_dissolved",
+            "team_updated"
           ]
         },
         description: { type: String },
@@ -345,8 +362,8 @@ const teamSchema = new mongoose.Schema(
       }
     ],
     
-    // Invitations sent to potential members
-    pendingInvitations: [
+    // recieved from to potential members
+    applications: [
       {
         recipientId: {
           type: mongoose.Schema.Types.ObjectId,

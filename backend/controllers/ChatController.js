@@ -246,3 +246,69 @@ exports.reportMessage = async (req, res) => {
     return res.status(500).json({ error: 'Server error' });
   }
 };
+
+// Add these functions to your existing ChatController.js file
+
+// Get team messages
+exports.getTeamMessages = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    
+    console.log(`Fetching messages for team ${teamId}`);
+    
+    // Fetch messages for this team, sorted by time
+    const messages = await Message.find({
+      receiverId: teamId,
+      isTeamMessage: true
+    }).sort({ createdAt: 1 });
+    
+    console.log(`Found ${messages.length} team messages`);
+    return res.status(200).json(messages);
+  } catch (error) {
+    console.error('Error fetching team messages:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Save team message
+exports.saveTeamMessage = async (req, res) => {
+  try {
+    const { senderId, teamId, message } = req.body;
+    
+    console.log("Saving team message via API:", { senderId, teamId, message });
+    
+    if (!senderId || !teamId || !message) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+    
+    const newMessage = new Message({
+      senderId,
+      receiverId: teamId,
+      message,
+      isTeamMessage: true
+    });
+    
+    const savedMessage = await newMessage.save();
+    console.log("Team message saved:", savedMessage);
+    
+    return res.status(201).json(savedMessage);
+  } catch (error) {
+    console.error('Error saving team message:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};
+
+// Mark team messages as read
+exports.markTeamMessagesAsRead = async (req, res) => {
+  try {
+    const { userId, teamId } = req.params;
+    
+    // This is a placeholder for when you implement read receipts
+    // You would add logic here to mark messages as read
+    
+    return res.status(200).json({ message: 'Team messages marked as read' });
+  } catch (error) {
+    console.error('Error marking team messages as read:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};

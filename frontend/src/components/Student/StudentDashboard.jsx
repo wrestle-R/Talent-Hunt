@@ -12,6 +12,7 @@ import UpcomingHackathons from './Dashboard/UpcomingHackathons';
 import HackathonStatus from './Hackathon/HacakthonStatus';
 import StudentConversation from './Dashboard/StudentConversation';
 import StudentProjects from './Dashboard/StudentProjects';
+import TeamOverview from './Dashboard/Team/TeamOverview';
 
 const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
   // Add state to track what we're showing in full-page mode
@@ -91,8 +92,6 @@ const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
     );
   }
   
- 
-  
   // Show all projects full-page
   if (showAllProjects) {
     return (
@@ -140,7 +139,10 @@ const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
         </div>
       </div>
 
-      
+      {/* Team Overview Component */}
+      <div className="mb-6">
+        <TeamOverview />
+      </div>
       
       {/* Conversations component */}
       <div className="mb-6">
