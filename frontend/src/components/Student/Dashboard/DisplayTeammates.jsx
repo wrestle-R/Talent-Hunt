@@ -3,6 +3,7 @@ import { Users, ChevronRight, MessageCircle, Search, Filter, User, BookOpen, Map
 import axios from 'axios';
 import { useUser } from '../../../../context/UserContext';
 import ChatModal from '../ChatModal';
+import StudentPlaceholder from "../../../public/student_placeholder.png"
 
 // This component can be used in both dashboard and full page view
 const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecommendations = false }) => {
@@ -197,7 +198,7 @@ const handleOpenChat = (teammate) => {
             <div key={teammate._id} className="flex flex-col bg-gray-50 rounded-lg border border-gray-200 overflow-hidden h-[280px]">
               <div className="p-4 flex items-start space-x-3 flex-1">
                 <img 
-                  src={teammate.profile_picture || 'https://randomuser.me/api/portraits/lego/1.jpg'} 
+                  src={teammate.profile_picture || StudentPlaceholder} 
                   alt={teammate.name} 
                   className="w-16 h-16 rounded-full object-cover"
                   onError={(e) => {

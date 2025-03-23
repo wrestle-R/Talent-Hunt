@@ -3,6 +3,7 @@ const Mentor = require("../models/Mentor");
 const Admin = require("../models/Admin"); // Add this import
 const Hackathon = require("../models/Hackathon"); // Add this line
 const Message = require('../models/Message');
+const mongoose = require('mongoose')
 
 
 const registerOrLoginStudent = async (req, res) => {

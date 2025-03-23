@@ -3,6 +3,7 @@ import { Briefcase, ChevronRight, MessageCircle, Search, Filter, User, Star, Map
 import axios from 'axios';
 import { useUser } from '../../../../context/UserContext';
 import ChatModal from '../ChatModal';
+import MentorPlaceholder from '../../../public/mentor_placeholder.png'
 
 // This component can be used in both dashboard and full page view
 const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommendations = false }) => {
@@ -197,7 +198,7 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
             <div key={mentor._id} className="flex flex-col bg-gray-50 rounded-lg border border-gray-200 overflow-hidden h-[280px]">
               <div className="p-4 flex items-start space-x-3 flex-1">
                 <img 
-                  src={mentor.profilePicture || 'https://randomuser.me/api/portraits/lego/2.jpg'} 
+                  src={mentor.profilePicture || MentorPlaceholder} 
                   alt={mentor.name} 
                   className="w-16 h-16 rounded-full object-cover"
                   onError={(e) => {

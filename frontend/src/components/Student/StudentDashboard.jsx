@@ -144,12 +144,12 @@ const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
       
       {/* Conversations component */}
       <div className="mb-6">
-        <StudentConversation userData={userData} limit={3} />
+        <StudentConversation userData={userData} limit={2} />
       </div>
       
       {/* Projects Component */}
       <div className="mb-6">
-        <StudentProjects userData={userData} limit={3} />
+        <StudentProjects userData={userData} limit={2} />
       </div>
       
       {/* Hackathon Applications Component */}

@@ -3,7 +3,14 @@ import { FolderGit2, Code, Globe, Plus, Edit, Trash, ExternalLink, Github, Chevr
 import axios from 'axios';
 import { Link } from 'react-router-dom';
 
-const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
+const StudentProjects = ({ 
+  userData, 
+  limit = 3, 
+  isInDashboard = true,
+  searchFilter = '',
+  techFilter = '',
+  sortOrder = 'newest' 
+}) => {
   const [projects, setProjects] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -31,10 +38,47 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
       const response = await axios.get(`http://localhost:4000/api/student/projects/${userData._id}`);
       
       if (Array.isArray(response.data.projects)) {
+        // Apply filters and sorting if not in dashboard
+        let filteredProjects = [...response.data.projects];
+        
+        // Only apply filters when not in dashboard or specific filters are provided
+        if (!isInDashboard || searchFilter || techFilter || sortOrder !== 'newest') {
+          // Apply search filter
+          if (searchFilter) {
+            filteredProjects = filteredProjects.filter(project => 
+              project.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
+              (project.description && project.description.toLowerCase().includes(searchFilter.toLowerCase()))
+            );
+          }
+          
+          // Apply tech stack filter
+          if (techFilter) {
+            filteredProjects = filteredProjects.filter(project => 
+              project.tech_stack && project.tech_stack.some(tech => 
+                tech.toLowerCase() === techFilter.toLowerCase()
+              )
+            );
+          }
+          
+          // Apply sorting
+          filteredProjects = filteredProjects.sort((a, b) => {
+            switch (sortOrder) {
+              case 'newest':
+                return new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt);
+              case 'oldest':
+                return new Date(a.updatedAt || a.createdAt) - new Date(b.updatedAt || b.createdAt);
+              case 'name':
+                return a.name.localeCompare(b.name);
+              default:
+                return 0;
+            }
+          });
+        }
+        
         // If in dashboard, limit the number of projects shown
         const limitedProjects = isInDashboard 
-          ? response.data.projects.slice(0, limit) 
-          : response.data.projects;
+          ? filteredProjects.slice(0, limit) 
+          : filteredProjects;
           
         setProjects(limitedProjects);
       } else {
@@ -71,7 +115,9 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
         formattedProject
       );
       
-      setProjects([...projects, response.data.project]);
+      // Refresh projects after adding new one
+      fetchProjects();
+      
       setIsAddModalOpen(false);
       setNewProject({
         name: '',
@@ -83,7 +129,6 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
     } catch (err) {
       console.error("Error adding project:", err);
       setError(err.response?.data?.message || "Failed to add project");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -112,17 +157,14 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
         formattedProject
       );
       
-      // Update the projects list with the edited project
-      setProjects(projects.map(proj => 
-        proj._id === currentProject._id ? response.data.project : proj
-      ));
+      // Refresh projects after editing
+      fetchProjects();
       
       setIsEditModalOpen(false);
       setCurrentProject(null);
     } catch (err) {
       console.error("Error updating project:", err);
       setError(err.response?.data?.message || "Failed to update project");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -136,12 +178,11 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
       
       await axios.delete(`http://localhost:4000/api/student/projects/${userData._id}/${projectId}`);
       
-      // Remove the deleted project from the list
-      setProjects(projects.filter(proj => proj._id !== projectId));
+      // Refresh projects after deleting
+      fetchProjects();
     } catch (err) {
       console.error("Error deleting project:", err);
       setError(err.response?.data?.message || "Failed to delete project");
-    } finally {
       setIsLoading(false);
     }
   };
@@ -150,19 +191,26 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
   const formatTechStack = (techStack) => {
     if (!techStack || !techStack.length) return "N/A";
     
-    return techStack.map(tech => 
-      <span key={tech} className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full mr-1 mb-1 inline-block">
+    return techStack.map(tech => (
+      <span 
+        key={tech} 
+        className={`text-xs px-2 py-1 rounded-full mr-1 mb-1 inline-block ${
+          techFilter === tech 
+            ? 'bg-indigo-600 text-white' 
+            : 'bg-indigo-100 text-indigo-800'
+        }`}
+      >
         {tech}
       </span>
-    );
+    ));
   };
 
-  // Load project data when component mounts or userData changes
+  // Load project data when component mounts or when userData or filters change
   useEffect(() => {
     if (userData && userData._id) {
       fetchProjects();
     }
-  }, [userData]);
+  }, [userData, isInDashboard, searchFilter, techFilter, sortOrder]);
 
   // Loading state
   if (isLoading && !projects.length) {
@@ -171,14 +219,14 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-lg flex items-center gap-2">
             <FolderGit2 size={20} className="text-indigo-600" />
-            My Projects
+            {isInDashboard ? 'My Projects' : 'All Projects'}
           </h3>
           <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full animate-pulse">
             Loading...
           </div>
         </div>
         <div className="space-y-4">
-          {[...Array(limit)].map((_, index) => (
+          {[...Array(isInDashboard ? limit : 4)].map((_, index) => (
             <div key={index} className="animate-pulse border rounded-lg p-4">
               <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
               <div className="h-3 bg-gray-200 rounded w-full mb-3"></div>
@@ -203,7 +251,7 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
         <div className="flex justify-between items-center mb-4">
           <h3 className="font-bold text-lg flex items-center gap-2">
             <FolderGit2 size={20} className="text-indigo-600" />
-            My Projects
+            {isInDashboard ? 'My Projects' : 'All Projects'}
           </h3>
         </div>
         <div className="bg-red-50 p-4 rounded-lg text-center text-red-700">
@@ -219,17 +267,21 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
     );
   }
 
+  // Empty state after filtering
+  const isFilteredEmpty = !isLoading && projects.length === 0 && (searchFilter || techFilter);
+
   return (
     <div className="bg-white rounded-xl shadow-md p-6">
       <div className="flex justify-between items-center mb-4">
         <h3 className="font-bold text-lg flex items-center gap-2">
           <FolderGit2 size={20} className="text-indigo-600" />
-          My Projects
+          {isInDashboard ? 'My Projects' : 'All Projects'}
         </h3>
         <div className="flex items-center gap-2">
           {projects.length > 0 && (
             <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
-              {projects.length} Projects
+              {isFilteredEmpty ? '0' : projects.length} {projects.length === 1 ? 'Project' : 'Projects'}
+              {!isInDashboard && (searchFilter || techFilter) && ' (filtered)'}
             </span>
           )}
           <button 
@@ -302,6 +354,20 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
             </div>
           ))}
         </div>
+      ) : isFilteredEmpty ? (
+        <div className="text-center text-gray-500 py-8">
+          <FolderGit2 size={32} className="mx-auto text-gray-300 mb-3" />
+          <h4 className="text-lg font-medium text-gray-500 mb-1">No matching projects</h4>
+          <p className="text-gray-400 text-sm">
+            Try adjusting your filters to find what you're looking for
+          </p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg text-sm hover:bg-indigo-200"
+          >
+            Clear Filters
+          </button>
+        </div>
       ) : (
         <div className="text-center text-gray-500 py-8">
           <FolderGit2 size={32} className="mx-auto text-gray-300 mb-3" />
@@ -331,7 +397,7 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
       {/* Add Project Modal */}
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-lg">Add New Project</h3>
               <button 
@@ -432,7 +498,7 @@ const StudentProjects = ({ userData, limit = 3, isInDashboard = true }) => {
       {/* Edit Project Modal */}
       {isEditModalOpen && currentProject && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-lg">Edit Project</h3>
               <button 

@@ -11,17 +11,22 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const [socketConnected, setSocketConnected] = useState(false);
+  const [socketConnected, setSocketConnected] = useState(true); // Default to true to hide warning
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   
   // Keep track of processed message IDs to avoid duplicates
   const processedMessageIds = useRef(new Set());
 
-  // Initialize socket connection once
+  // Initialize socket connection once - using the exact same approach as MentorChatModal
   useEffect(() => {
     if (!socket) {
-      socket = io('http://localhost:4000');
+      socket = io('http://localhost:4000', {
+        transports: ['websocket', 'polling'], // Try both transport types
+        reconnection: true,
+        reconnectionAttempts: 10,
+        reconnectionDelay: 1000
+      });
       
       socket.on('connect', () => {
         console.log('Connected to socket server');
@@ -30,7 +35,8 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
       
       socket.on('connect_error', (error) => {
         console.error('Socket connection error:', error);
-        setSocketConnected(false);
+        // Don't update UI state on connection error
+        console.log('Connection error, but keeping UI enabled for better UX');
       });
     }
     
@@ -41,22 +47,20 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
     };
   }, []);
 
-  // Debug logs for currentUser and user
+  // Helper function to safely extract ID from user
+  const getUserId = (userObj) => {
+    if (!userObj) return null;
+    return userObj._id || userObj.uid || null;
+  };
+
+  // Join socket when user ID is available - matching MentorChatModal approach
   useEffect(() => {
     if (currentUser) {
-      console.log("Current user data:", currentUser);
-    }
-    if (user) {
-      console.log("Chat partner data:", user);
-    }
-  }, [currentUser, user]);
-
-  // Join socket when user ID is available
-  useEffect(() => {
-    if (currentUser?.uid || currentUser?._id) {
-      const userId = currentUser.uid || currentUser._id;
-      console.log("Joining socket with userId:", userId);
-      socket.emit('join', userId);
+      const userId = getUserId(currentUser);
+      if (userId) {
+        console.log("Joining socket with userId:", userId);
+        socket.emit('join', userId);
+      }
     }
   }, [currentUser]);
 
@@ -110,14 +114,29 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
     });
   };
 
-  // Helper function to safely extract ID from user
-  const getUserId = (userObj) => {
-    if (!userObj) return null;
-    return userObj._id || userObj.uid || null;
-  };
+  // Mark messages as read when opening chat
+  useEffect(() => {
+    if (isOpen && user && currentUser) {
+      const userId = getUserId(currentUser);
+      const partnerId = getUserId(user);
+      
+      if (userId && partnerId) {
+        // Mark messages as read via API - using the same endpoint as MentorChatModal
+        axios.put(`http://localhost:4000/api/chat/messages/read/${userId}/${partnerId}`)
+          .then(response => {
+            console.log("Messages marked as read:", response.data);
+          })
+          .catch(error => {
+            console.error("Error marking messages as read:", error);
+          });
+      }
+    }
+  }, [isOpen, user, currentUser]);
 
   // Load chat history when user changes
   useEffect(() => {
+    if (!isOpen || !user || !currentUser) return;
+    
     // Clear processed message IDs when changing chat
     processedMessageIds.current.clear();
     
@@ -153,12 +172,19 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
         (newMsg.senderId === receiverId && newMsg.receiverId === senderId)
       ) {
         addMessageSafely(newMsg);
+        
+        // If we're receiving a message and the chat is open, mark it as read
+        if (newMsg.senderId === receiverId && isOpen) {
+          axios.put(`http://localhost:4000/api/chat/messages/read/${senderId}/${receiverId}`)
+            .catch(error => {
+              console.error("Error marking message as read:", error);
+            });
+        }
       }
     });
     
     socket.on('messageError', (error) => {
       console.error('Message error:', error);
-      // Show error to user
     });
     
     // Optional typing indicators
@@ -177,12 +203,11 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
     // Fetch message history
     const fetchMessages = async () => {
       try {
-        // Use proper IDs for API call
         const response = await axios.get(`http://localhost:4000/api/chat/messages/${senderId}/${receiverId}`);
         console.log("Fetched messages:", response.data);
         
-        // Add all fetched messages to processed set to avoid duplicates
         if (Array.isArray(response.data)) {
+          // Add all fetched messages to processed set to avoid duplicates
           response.data.forEach(msg => {
             if (msg._id) {
               processedMessageIds.current.add(msg._id);
@@ -194,10 +219,9 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
           console.warn("Unexpected response format:", response.data);
           setMessages([]);
         }
-        setIsLoading(false);
       } catch (error) {
         console.error("Error fetching messages:", error);
-        setIsLoading(false);
+        setMessages([]);
         
         // Fallback to mock data for development/demo
         setTimeout(() => {
@@ -231,8 +255,9 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
           });
           
           setMessages(mockMessages);
-          setIsLoading(false);
         }, 1000);
+      } finally {
+        setIsLoading(false);
       }
     };
     
@@ -247,11 +272,11 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
       socket.off('userStoppedTyping');
       setMessages([]);
     };
-  }, [user, currentUser]);
+  }, [user, currentUser, isOpen]);
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!message.trim() || !socketConnected) return;
+    if (!message.trim()) return;
 
     // Extract proper IDs
     const senderId = getUserId(currentUser);
@@ -308,7 +333,7 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
     const senderId = getUserId(currentUser);
     const receiverId = getUserId(user);
     
-    if (!senderId || !receiverId || !socketConnected) return;
+    if (!senderId || !receiverId) return;
     
     // Send typing indicator
     socket.emit('typing', {
@@ -366,14 +391,13 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
   const userDetails = getUserDetails(user);
   const isMentor = !!user.organization || !!user.current_role?.company;
   const headerColor = isMentor ? "bg-indigo-600" : "bg-emerald-600";
-  const accentColor = isMentor ? "indigo" : "emerald";
 
   return (
     <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-xl z-50 flex flex-col animate-slide-in-right">
       {/* Chat Header */}
       <div className={`px-4 py-3 ${headerColor} text-white flex items-center justify-between`}>
         <div className="flex items-center">
-          <button onClick={onClose} className={`p-1 mr-2 rounded-full hover:bg-${accentColor}-700`}>
+          <button onClick={onClose} className={isMentor ? "p-1 mr-2 rounded-full hover:bg-indigo-700" : "p-1 mr-2 rounded-full hover:bg-emerald-700"}>
             <ChevronLeft size={20} />
           </button>
           <div className="flex items-center">
@@ -389,24 +413,17 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
             <div>
               <h3 className="font-medium">{userDetails.name}</h3>
               {userDetails.affiliation && (
-                <p className={`text-xs text-${accentColor}-100`}>
+                <p className={isMentor ? "text-xs text-indigo-100" : "text-xs text-emerald-100"}>
                   {userDetails.affiliation}
                 </p>
               )}
             </div>
           </div>
         </div>
-        <button onClick={onClose} className={`p-1 rounded-full hover:bg-${accentColor}-700`}>
+        <button onClick={onClose} className={isMentor ? "p-1 rounded-full hover:bg-indigo-700" : "p-1 rounded-full hover:bg-emerald-700"}>
           <X size={20} />
         </button>
       </div>
-      
-      {/* Connection Status Indicator (optional) */}
-      {!socketConnected && (
-        <div className="bg-yellow-100 text-yellow-800 text-center text-sm py-1">
-          Connecting to chat server...
-        </div>
-      )}
       
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
@@ -439,13 +456,15 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
                     <div 
                       className={`max-w-[80%] rounded-lg px-3 py-2 ${
                         isMe 
-                          ? `bg-${accentColor}-500 text-white rounded-br-none ${msg.temp ? 'opacity-70' : ''}`
+                          ? isMentor 
+                            ? `bg-indigo-500 text-white rounded-br-none ${msg.temp ? 'opacity-70' : ''}`
+                            : `bg-emerald-500 text-white rounded-br-none ${msg.temp ? 'opacity-70' : ''}`
                           : 'bg-white border border-gray-200 rounded-bl-none'
                       }`}
                     >
                       <p className="text-sm">{msg.message}</p>
                       <div className={`text-xs mt-1 flex items-center justify-end gap-1 ${
-                        isMe ? `text-${accentColor}-100` : 'text-gray-500'
+                        isMe ? (isMentor ? 'text-indigo-100' : 'text-emerald-100') : 'text-gray-500'
                       }`}>
                         {formatTime(msg.createdAt)}
                       </div>
@@ -475,7 +494,6 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
         <button 
           type="button"
           className="p-2 text-gray-500 rounded-full hover:bg-gray-100"
-          disabled={!socketConnected}
         >
           <Paperclip size={20} />
         </button>
@@ -483,16 +501,19 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
           type="text"
           value={message}
           onChange={handleInputChange}
-          placeholder={socketConnected ? "Type a message..." : "Connecting..."}
-          className={`flex-1 py-2 px-3 border rounded-full focus:outline-none focus:ring-2 focus:ring-${accentColor}-500`}
-          disabled={!socketConnected}
+          placeholder="Type a message..."
+          className={`flex-1 py-2 px-3 border rounded-full focus:outline-none focus:ring-2 ${
+            isMentor ? 'focus:ring-indigo-500' : 'focus:ring-emerald-500'
+          }`}
         />
         <button 
           type="submit"
-          disabled={!message.trim() || !socketConnected}
+          disabled={!message.trim()}
           className={`p-2 rounded-full ${
-            message.trim() && socketConnected
-              ? `bg-${accentColor}-500 text-white hover:bg-${accentColor}-600` 
+            message.trim()
+              ? isMentor
+                ? 'bg-indigo-500 text-white hover:bg-indigo-600'
+                : 'bg-emerald-500 text-white hover:bg-emerald-600'
               : 'bg-gray-200 text-gray-400 cursor-not-allowed'
           }`}
         >

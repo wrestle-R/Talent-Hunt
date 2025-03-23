@@ -7,7 +7,6 @@ import MentorHero from './components/Mentor/MentorHero';
 import MentorProfile from "./components/Mentor/MentorProfile";
 import StudentProfile from "./components/Student/StudentProfile";
 import StudentNewProject from "./components/Student/StudentNewProject";
-import StudentDashboard from './components/Student/StudentDashboard';
 import AdminHero from './components/Admin/AdminHero';
 import TeammatesPage from './components/Student/TeammatesPage';
 import MentorsPage from './components/Student/Dashboard/MentorsPage';
@@ -17,7 +16,8 @@ import HackathonPage from './components/Student/Dashboard/HackathonPage';
 import HackathonDetail from './components/Student/Dashboard/HackathonDetail';
 import AdminModeration from './components/Admin/AdminModeration';
 import HackathonStatus from './components/Student/Hackathon/HacakthonStatus';
-
+import AllConversationsPage from './components/Student/Dashboard/AllConversationPage';
+import AllProjectsPage from './components/Student/Dashboard/AllProjectsPage';
 const App = () => {
   return (
     <UserProvider>
@@ -37,8 +37,8 @@ const App = () => {
               <Route path="/student/mentors" element={<MentorsPage />} />
               <Route path="/admin/hackathons" element={<ManageHackathons />} />
               <Route path="/admin/applications" element={<AdminModeration />} /> 
-
-              
+              <Route path="/student/conversations" element={<AllConversationsPage/>}/>
+              <Route path='/student/projects' element={<AllProjectsPage/>} />
               {/* New Hackathon routes */}
               <Route path="/student/hackathons" element={<HackathonPage />} />
               <Route path="/student/hackathon/:id" element={<HackathonDetail />} />
