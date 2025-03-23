@@ -124,10 +124,10 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
   // Load projects and unread notes on component mount
   useEffect(() => {
     fetchProjects();
-    fetchUnreadNotes();
+  
     
     // Refresh unread notes count every minute
-    const interval = setInterval(fetchUnreadNotes, 60000);
+    const interval = setInterval(60000);
     
     return () => clearInterval(interval);
   }, []);
@@ -265,7 +265,6 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
       alert('Note sent successfully');
       
       // Refresh unread notes count
-      fetchUnreadNotes();
     } catch (error) {
       console.error('Error sending note:', error);
       alert(`Failed to send note: ${error.response?.data?.error || error.message}`);
