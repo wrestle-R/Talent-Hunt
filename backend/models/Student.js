@@ -38,6 +38,14 @@ const studentSchema = new mongoose.Schema(
         tech_stack: [{ type: String }],
         github_link: { type: String },
         live_demo: { type: String },
+        // Additional fields for project status, notes, and moderation
+        status: { type: String,enum: ['Pending','Rejected' ,'Approved','pending','rejected' ,'approved' ], default: 'Pending' },
+        moderatorNotes: { type: String },
+        moderatedAt: { type: Date },
+        isDeleted: { type: Boolean, default: false },
+        deletedAt: { type: Date },
+        deletedReason: { type: String },
+        isFlagged: { type: Boolean, default: false },
       },
     ],
     achievements: [
@@ -53,20 +61,20 @@ const studentSchema = new mongoose.Schema(
       linkedin: { type: String },
       portfolio: { type: String },
     },
-    
+
     // Enhanced mentorship fields
     mentorship_interests: {
       seeking_mentor: { type: Boolean, default: false },
       mentor_topics: [{ type: String }], // Topics for mentorship
     },
-    
+
     // New fields for teammate search preferences
     teammate_search: {
       looking_for_teammates: { type: Boolean, default: false },
       purpose: {
         type: String,
         enum: ["Project", "Hackathon", "Both"],
-        default: "Both"
+        default: "Both",
       },
       desired_skills: [{ type: String }], // Skills they want in teammates
       project_description: { type: String }, // Brief description of the project they need help with
@@ -74,15 +82,15 @@ const studentSchema = new mongoose.Schema(
       urgency_level: {
         type: String,
         enum: ["Low", "Medium", "High"],
-      }
+      },
     },
-    
+
     // New field to track what the user is currently looking for
     current_search_preferences: {
       looking_for: {
-        type: String, 
+        type: String,
         enum: ["Teammates", "Mentors", "Both", "None"],
-        default: "None"
+        default: "None",
       },
       // For hackathons specifically
       hackathon_teammate_preferences: {
@@ -90,7 +98,7 @@ const studentSchema = new mongoose.Schema(
         hackathon_date: { type: Date },
         required_skills: [{ type: String }],
         team_size: { type: Number },
-        idea_description: { type: String }
+        idea_description: { type: String },
       },
       // For projects specifically
       project_teammate_preferences: {
@@ -100,11 +108,11 @@ const studentSchema = new mongoose.Schema(
         commitment_level: {
           type: String,
           enum: ["Low", "Medium", "High"],
-          default: "Medium"
-        }
-      }
+          default: "Medium",
+        },
+      },
     },
-    
+
     preferred_working_hours: {
       start_time: { type: String },
       end_time: { type: String },
@@ -130,9 +138,9 @@ const studentSchema = new mongoose.Schema(
         expertise: [{ type: String }], // Areas of expertise
       },
     ],
-    isRejected: {type: Boolean, required: true, default: false},
-    rejectionReason: {type: String},
 
+    isRejected: { type: Boolean, required: true, default: false },
+    rejectionReason: { type: String },
   },
   { timestamps: true }
 );

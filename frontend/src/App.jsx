@@ -14,10 +14,20 @@ import { UserProvider } from '../context/UserContext';
 import ManageHackathons from './components/Admin/ManageHackathons';
 import HackathonPage from './components/Student/Dashboard/HackathonPage';
 import HackathonDetail from './components/Student/Dashboard/HackathonDetail';
-import AdminModeration from './components/Admin/AdminModeration';
+import AdminModeration from './components/Moderator/ModeratorModeration';
 import HackathonStatus from './components/Student/Hackathon/HacakthonStatus';
 import AllConversationsPage from './components/Student/Dashboard/AllConversationPage';
 import AllProjectsPage from './components/Student/Dashboard/AllProjectsPage';
+import ModeratorDashboard from './components/Moderator/ModeratorDashboard';
+import Messages from "./components/Moderator/Messages/Messages";
+import MessageDetails from "./components/Moderator/Messages/MessageDetails";
+import ConversationView from "./components/Moderator/Messages/ConversationView";
+import UserMessages from "./components/Moderator/Messages/UserMessages";
+import ProjectManagement from "./components/Moderator/Projects/ProjectManagement";
+import ProjectDetail from "./components/Moderator/Projects/ProjectDetail";
+import NotesManagement from "./components/Moderator/Projects/NotesManagement";
+import NoteDetail from "./components/Moderator/Projects/NoteDetail";
+
 const App = () => {
   return (
     <UserProvider>
@@ -26,24 +36,55 @@ const App = () => {
           <Navbar />
           <div className="flex-grow">
             <Routes>
+              {/* Student Routes */}
               <Route path="/student/hero" element={<StudentHero />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/mentor/hero" element={<MentorHero />} />
-              <Route path="/mentor/profile" element={<MentorProfile />} />
               <Route path="/student/profile" element={<StudentProfile />} />
               <Route path="/student/new-project" element={<StudentNewProject />} />
-              <Route path="/admin/hero" element={<AdminHero />} /> 
               <Route path="/student/teammates" element={<TeammatesPage />} />
               <Route path="/student/mentors" element={<MentorsPage />} />
-              <Route path="/admin/hackathons" element={<ManageHackathons />} />
-              <Route path="/admin/applications" element={<AdminModeration />} /> 
               <Route path="/student/conversations" element={<AllConversationsPage/>}/>
-              <Route path='/student/projects' element={<AllProjectsPage/>} />
-              {/* New Hackathon routes */}
+              <Route path="/student/projects" element={<AllProjectsPage/>} />
+              
+              {/* Hackathon Routes */}
               <Route path="/student/hackathons" element={<HackathonPage />} />
               <Route path="/student/hackathon/:id" element={<HackathonDetail />} />
               <Route path="/student/hackathon-status" element={<HackathonStatus />} />
-
+              
+              {/* Mentor Routes */}
+              <Route path="/mentor/hero" element={<MentorHero />} />
+              <Route path="/mentor/profile" element={<MentorProfile />} />
+              
+              {/* Admin Routes */}
+              <Route path="/admin/hero" element={<AdminHero />} /> 
+              <Route path="/admin/hackathons" element={<ManageHackathons />} />
+              
+              {/* Auth Routes */}
+              <Route path="/register" element={<Register />} />
+              
+              {/* Moderator Routes */}
+              <Route path="/moderator/users" element={<AdminModeration />} /> 
+              <Route path="/moderator/dashboard" element={<ModeratorDashboard/>} />
+              
+              {/* Moderator Message Routes */}
+              <Route path="/moderator/messages" element={<Messages/>} />
+              <Route path="/moderator/message/:messageId" element={<MessageDetails/>} />
+              <Route path="/moderator/conversation/:user1/:user2" element={<ConversationView/>} />
+              <Route path="/moderator/user-messages/:userId" element={<UserMessages/>} />
+              
+              {/* Moderator Project Routes */}
+              <Route path="/moderator/projects" element={<ProjectManagement />} />
+              <Route path="/moderator/project/:projectId" element={<ProjectDetail />} />
+              <Route path="/moderator/projects/flagged" element={<ProjectManagement flaggedOnly={true} />} />
+              <Route path="/moderator/projects/pending" element={<ProjectManagement statusFilter="Pending" />} />
+              <Route path="/moderator/projects/approved" element={<ProjectManagement statusFilter="Approved" />} />
+              <Route path="/moderator/projects/rejected" element={<ProjectManagement statusFilter="Rejected" />} />
+              
+              {/* Moderator Notes Routes */}
+              <Route path="/moderator/notes" element={<NotesManagement />} />
+              <Route path="/moderator/note/:noteId" element={<NoteDetail />} />
+              
+              {/* Default Route */}
+              <Route path="/" element={<StudentHero />} />
             </Routes>
           </div>
         </div>

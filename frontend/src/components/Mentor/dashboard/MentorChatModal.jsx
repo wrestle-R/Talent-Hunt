@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { X, Send, Paperclip, ChevronLeft, MessageCircle } from 'lucide-react';
+import { X, Send, Paperclip, ChevronLeft, MessageCircle, Flag, AlertCircle } from 'lucide-react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
+import toast from 'react-hot-toast';
 
 // Create socket instance (outside component to persist between renders)
 let socket;
@@ -12,6 +13,13 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [socketConnected, setSocketConnected] = useState(false);
+  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [messageToReport, setMessageToReport] = useState(null);
+  const [reportReason, setReportReason] = useState('');
+  const [additionalInfo, setAdditionalInfo] = useState('');
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
+  const [messageContextMenu, setMessageContextMenu] = useState({ isOpen: false, messageId: null, x: 0, y: 0 });
+  
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   
@@ -48,6 +56,21 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
       socket.emit('join', mentorData._id);
     }
   }, [mentorData]);
+
+  // Click outside to close context menu
+  useEffect(() => {
+    if (messageContextMenu.isOpen) {
+      const handleClickOutside = () => {
+        setMessageContextMenu({ isOpen: false, messageId: null, x: 0, y: 0 });
+      };
+      
+      document.addEventListener('click', handleClickOutside);
+      
+      return () => {
+        document.removeEventListener('click', handleClickOutside);
+      };
+    }
+  }, [messageContextMenu.isOpen]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -311,6 +334,65 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
     }, 2000);
   };
 
+  // Handle message context menu
+  const handleMessageContextMenu = (e, messageId) => {
+    e.preventDefault();
+    
+    // Only allow reporting messages from the other person
+    const clickedMessage = messages.find(msg => msg._id === messageId);
+    if (!clickedMessage || clickedMessage.senderId === getUserId(mentorData)) {
+      return;
+    }
+    
+    // Position context menu
+    setMessageContextMenu({
+      isOpen: true,
+      messageId,
+      x: e.clientX,
+      y: e.clientY
+    });
+  };
+
+  // Open report modal
+  const openReportModal = (messageId) => {
+    const messageObj = messages.find(msg => msg._id === messageId);
+    setMessageToReport(messageObj);
+    setIsReportModalOpen(true);
+    setMessageContextMenu({ isOpen: false, messageId: null, x: 0, y: 0 });
+  };
+
+  // Handle report submission
+  const handleReportSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!messageToReport || !reportReason) {
+      toast.error("Please select a reason for reporting");
+      return;
+    }
+    
+    try {
+      setIsSubmittingReport(true);
+      
+      const response = await axios.post('http://localhost:4000/api/chat/messages/report', {
+        messageId: messageToReport._id,
+        reportedBy: getUserId(mentorData),
+        reason: reportReason,
+        additionalInfo
+      });
+      
+      toast.success("Message reported successfully. Our moderators will review it.");
+      setIsReportModalOpen(false);
+      setReportReason('');
+      setAdditionalInfo('');
+      setMessageToReport(null);
+    } catch (error) {
+      console.error("Error reporting message:", error);
+      toast.error(error.response?.data?.error || "Failed to report message");
+    } finally {
+      setIsSubmittingReport(false);
+    }
+  };
+
   const formatTime = (timestamp) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -385,14 +467,26 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
                   <div 
                     key={msg._id} 
                     className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
+                    onContextMenu={(e) => handleMessageContextMenu(e, msg._id)}
                   >
                     <div 
                       className={`max-w-[80%] rounded-lg px-3 py-2 ${
                         isMe 
                           ? `bg-blue-500 text-white rounded-br-none ${msg.temp ? 'opacity-70' : ''}`
-                          : 'bg-white border border-gray-200 rounded-bl-none'
+                          : 'bg-white border border-gray-200 rounded-bl-none relative group'
                       }`}
                     >
+                      {!isMe && (
+                        <button 
+                          className="absolute right-0 top-0 -mt-1 -mr-1 p-1 rounded-full bg-white shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openReportModal(msg._id);
+                          }}
+                        >
+                          <Flag size={12} className="text-red-500" />
+                        </button>
+                      )}
                       <p className="text-sm">{msg.message}</p>
                       <div className={`text-xs mt-1 flex items-center justify-end gap-1 ${
                         isMe ? 'text-blue-100' : 'text-gray-500'
@@ -419,6 +513,21 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
           </div>
         )}
       </div>
+      
+      {/* Context Menu */}
+      {messageContextMenu.isOpen && (
+        <div 
+          className="fixed bg-white shadow-lg rounded-md py-1 z-50 w-48 border border-gray-200"
+          style={{ top: messageContextMenu.y, left: messageContextMenu.x }}
+        >
+          <button 
+            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
+            onClick={() => openReportModal(messageContextMenu.messageId)}
+          >
+            <Flag size={16} className="mr-2" /> Report Message
+          </button>
+        </div>
+      )}
       
       {/* Chat Input */}
       <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-200 flex gap-2">
@@ -449,6 +558,111 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
           <Send size={20} />
         </button>
       </form>
+      
+      {/* Report Modal */}
+      {isReportModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center">
+                <AlertCircle size={20} className="text-red-500 mr-2" />
+                Report Message
+              </h3>
+              <button 
+                onClick={() => {
+                  setIsReportModalOpen(false);
+                  setReportReason('');
+                  setAdditionalInfo('');
+                  setMessageToReport(null);
+                }}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            
+            <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <p className="text-sm text-gray-600">Message content:</p>
+              <p className="text-gray-800 mt-1">{messageToReport?.message}</p>
+            </div>
+            
+            <form onSubmit={handleReportSubmit}>
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for reporting*
+                </label>
+                <select
+                  value={reportReason}
+                  onChange={(e) => setReportReason(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  required
+                >
+                  <option value="">Select a reason</option>
+                  <option value="harassment">Harassment</option>
+                  <option value="inappropriate_content">Inappropriate Content</option>
+                  <option value="spam">Spam</option>
+                  <option value="hate_speech">Hate Speech</option>
+                  <option value="threats">Threats</option>
+                  <option value="misinformation">Misinformation</option>
+                  <option value="personal_information">Personal Information</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Additional information (optional)
+                </label>
+                <textarea
+                  value={additionalInfo}
+                  onChange={(e) => setAdditionalInfo(e.target.value)}
+                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  placeholder="Please provide any additional details"
+                  rows="3"
+                  maxLength="500"
+                />
+              </div>
+              
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsReportModalOpen(false);
+                    setReportReason('');
+                    setAdditionalInfo('');
+                    setMessageToReport(null);
+                  }}
+                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingReport || !reportReason}
+                  className={`px-4 py-2 bg-red-600 text-white rounded-lg text-sm flex items-center ${
+                    isSubmittingReport || !reportReason ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-700'
+                  }`}
+                >
+                  {isSubmittingReport ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Flag size={16} className="mr-2" />
+                      Submit Report
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

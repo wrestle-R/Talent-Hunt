@@ -1323,6 +1323,7 @@ const getMentorConversations = async (req, res) => {
 const getStudentProjects = async (req, res) => {
   try {
     const { studentId } = req.params;
+    const { search, techFilter } = req.query;
     
     if (!studentId) {
       return res.status(400).json({ error: 'Student ID is required' });
@@ -1335,15 +1336,91 @@ const getStudentProjects = async (req, res) => {
       return res.status(404).json({ error: 'Student not found' });
     }
     
-    // Return the projects array
+    // Get all projects, regardless of status
+    let projects = student.projects || [];
+    
+    // Apply search filter if provided
+    if (search) {
+      const searchLower = search.toLowerCase();
+      projects = projects.filter(project => 
+        (project.name && project.name.toLowerCase().includes(searchLower)) ||
+        (project.description && project.description.toLowerCase().includes(searchLower)) ||
+        (project.tech_stack && project.tech_stack.some(tech => 
+          tech.toLowerCase().includes(searchLower)
+        ))
+      );
+    }
+    
+    // Apply tech stack filter if provided
+    if (techFilter) {
+      const techFilterLower = techFilter.toLowerCase();
+      projects = projects.filter(project => 
+        project.tech_stack && project.tech_stack.some(tech => 
+          tech.toLowerCase().includes(techFilterLower)
+        )
+      );
+    }
+    
+    // Don't show deleted projects by default
+    projects = projects.filter(project => !project.isDeleted);
+    
+    // Format projects for consistency and ensure status is included
+    const formattedProjects = projects.map(project => ({
+      _id: project._id,
+      name: project.name,
+      description: project.description,
+      tech_stack: project.tech_stack || [],
+      techStack: project.tech_stack || [], // Include both naming conventions for flexibility
+      github_link: project.github_link,
+      githubLink: project.github_link, // Include both naming conventions
+      live_demo: project.live_demo,
+      liveDemo: project.live_demo, // Include both naming conventions
+      status: project.status || 'Pending', // Default to 'Pending' if no status
+      createdAt: project.createdAt || null,
+      updatedAt: project.updatedAt || null,
+      moderatorNotes: project.moderatorNotes || '',
+      isFlagged: project.isFlagged || false
+    }));
+    
+    // Sort projects by creation date (newest first) if available
+    formattedProjects.sort((a, b) => {
+      if (a.createdAt && b.createdAt) {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+      return 0;
+    });
+    
+    // Calculate counts by status for the frontend
+    const statusCounts = {
+      Total: formattedProjects.length,
+      Pending: formattedProjects.filter(p => p.status === 'Pending').length,
+      Approved: formattedProjects.filter(p => p.status === 'Approved').length,
+      Rejected: formattedProjects.filter(p => p.status === 'Rejected').length
+    };
+    
     return res.status(200).json({
       success: true,
-      projects: student.projects || []
+      count: formattedProjects.length,
+      statusCounts: statusCounts,
+      projects: formattedProjects
     });
     
   } catch (error) {
     console.error('Error fetching student projects:', error);
-    return res.status(500).json({ error: 'Server error', message: error.message });
+    
+    // More detailed error handling
+    if (error.name === 'CastError') {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid student ID format' 
+      });
+    }
+    
+    return res.status(500).json({ 
+      success: false,
+      error: 'Server error', 
+      message: error.message 
+    });
   }
 };
 

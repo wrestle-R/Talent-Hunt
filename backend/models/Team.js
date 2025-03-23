@@ -66,6 +66,13 @@ const teamSchema = new mongoose.Schema(
           type: String,
           trim: true
         }],
+        skills: [{ type: String }], // Aligned with Student model's skills
+        institution: { type: String }, // From student's education.institution
+        experience: { 
+          type: String,
+          enum: ["Beginner", "Intermediate", "Advanced", "Expert"],
+          default: "Intermediate"
+        },
         joinedAt: {
           type: Date,
           default: Date.now
@@ -79,6 +86,15 @@ const teamSchema = new mongoose.Schema(
           type: String,
           enum: ["pending", "accepted", "declined"],
           default: "accepted" // For directly added members
+        },
+        preferredWorkingHours: {
+          startTime: { type: String },
+          endTime: { type: String }
+        },
+        workingStyle: {
+          type: String,
+          enum: ["Independent", "Collaborative", "Flexible"],
+          default: "Flexible"
         }
       }
     ],
@@ -88,7 +104,7 @@ const teamSchema = new mongoose.Schema(
       type: Number,
       default: 7,
       min: 1,
-      max: 7
+      max: 15 // Increased max size
     },
     
     // Mentor association
@@ -98,6 +114,7 @@ const teamSchema = new mongoose.Schema(
         ref: "Mentor"
       },
       name: { type: String },
+      expertise: [{ type: String }], // Matching mentors.expertise in Student model
       joinedAt: { type: Date },
       status: {
         type: String,
@@ -163,7 +180,13 @@ const teamSchema = new mongoose.Schema(
                   enum: ["pending", "in-progress", "completed", "blocked"],
                   default: "pending"
                 },
-                deadline: { type: Date }
+                deadline: { type: Date },
+                priority: {
+                  type: String,
+                  enum: ["low", "medium", "high", "critical"],
+                  default: "medium"
+                },
+                timeEstimate: { type: Number } // Hours estimated
               }
             ]
           }
@@ -181,11 +204,28 @@ const teamSchema = new mongoose.Schema(
               default: "pending"
             }
           }
+        ],
+        
+        // Project resources and documentation
+        resources: [
+          {
+            title: { type: String },
+            type: { 
+              type: String,
+              enum: ["document", "design", "api", "database", "other"]
+            },
+            link: { type: String },
+            addedBy: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: "Student"
+            },
+            addedAt: { type: Date, default: Date.now }
+          }
         ]
       }
     ],
     
-    // Hackathons the team is participating in
+    // Hackathons the team is participating in - aligned with Student experience
     hackathons: [
       {
         hackathonId: {
@@ -203,7 +243,9 @@ const teamSchema = new mongoose.Schema(
         projectDescription: { type: String },
         solutionUrl: { type: String },
         presentationUrl: { type: String },
+        demoVideo: { type: String },
         ranking: { type: Number }, // Final position in the hackathon
+        achievement: { type: String }, // Any special recognition
         
         // For tracking member participation specific to this hackathon
         participants: [
@@ -261,7 +303,10 @@ const teamSchema = new mongoose.Schema(
             "hackathon_registered", 
             "mentor_joined",
             "project_completed",
-            "hackathon_completed"
+            "hackathon_completed",
+            "dissolution_requested",
+            "dissolution_cancelled",
+            "team_dissolved"
           ]
         },
         description: { type: String },
@@ -271,20 +316,11 @@ const teamSchema = new mongoose.Schema(
         },
         userType: {
           type: String,
-          enum: ["Student", "Mentor"]
+          enum: ["Student", "Mentor", "Admin"]
         },
         timestamp: { type: Date, default: Date.now }
       }
     ],
-    
-    // Team statistics and achievements
-    statistics: {
-      totalProjects: { type: Number, default: 0 },
-      completedProjects: { type: Number, default: 0 },
-      totalHackathons: { type: Number, default: 0 },
-      hackathonWins: { type: Number, default: 0 },
-      hackathonPlacements: { type: Number, default: 0 } // Top 3 finishes
-    },
     
     // Team recruitment and requests
     isRecruiting: { type: Boolean, default: false },
@@ -298,6 +334,8 @@ const teamSchema = new mongoose.Schema(
           ref: "Student"
         },
         message: { type: String },
+        skills: [{ type: String }], // Matching Student model's skills
+        institution: { type: String }, // From student's education
         requestDate: { type: Date, default: Date.now },
         status: {
           type: String,
@@ -341,6 +379,70 @@ const teamSchema = new mongoose.Schema(
       default: "active"
     },
     
+    // Dissolution related fields
+    dissolutionRequest: {
+      isRequested: { type: Boolean, default: false },
+      requestedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        refPath: "dissolutionRequest.requesterType"
+      },
+      requesterType: {
+        type: String,
+        enum: ["Student", "Mentor", "Admin"]
+      },
+      reason: { type: String },
+      requestedAt: { type: Date },
+      votingDeadline: { type: Date }, // Optional democratic dissolution
+      votes: [
+        {
+          memberId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Student"
+          },
+          vote: { type: Boolean }, // true = agree to dissolve
+          votedAt: { type: Date, default: Date.now }
+        }
+      ]
+    },
+    
+    // Team admin/moderator (can be different from leader)
+    moderators: [
+      {
+        studentId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Student"
+        },
+        addedAt: { type: Date, default: Date.now },
+        addedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Student"
+        },
+        permissions: [
+          {
+            type: String,
+            enum: [
+              "add_members", 
+              "remove_members", 
+              "edit_team", 
+              "manage_projects", 
+              "dissolve_team"
+            ]
+          }
+        ]
+      }
+    ],
+    
+    // Team achievements beyond hackathons
+    achievements: [
+      {
+        title: { type: String },
+        description: { type: String },
+        date: { type: Date },
+        awardedBy: { type: String },
+        proofLink: { type: String }
+      }
+    ],
+    
     // Dates
     formationDate: { 
       type: Date, 
@@ -349,6 +451,9 @@ const teamSchema = new mongoose.Schema(
     lastActivityDate: { 
       type: Date, 
       default: Date.now 
+    },
+    dissolutionDate: {
+      type: Date
     }
   },
   { timestamps: true }
@@ -364,6 +469,8 @@ teamSchema.index({ "hackathons.hackathonId": 1 });
 teamSchema.index({ status: 1 });
 teamSchema.index({ isRecruiting: 1 });
 teamSchema.index({ techStack: 1 });
+teamSchema.index({ "dissolutionRequest.isRequested": 1 });
+teamSchema.index({ "moderators.studentId": 1 });
 
 const Team = mongoose.model("Team", teamSchema);
 module.exports = Team;

@@ -6,7 +6,8 @@ const {
     getConversationsWithDetails,
     saveMessage,
     markMessagesAsRead,
-    getUnreadMessageCount
+    getUnreadMessageCount,
+    reportMessage
 } = require('../controllers/ChatController');
 
 // Get messages between two users
@@ -26,5 +27,8 @@ router.put('/messages/read/:senderId/:receiverId', markMessagesAsRead);
 
 // Get unread message count
 router.get('/unread/:userId', getUnreadMessageCount);
+
+// Report a message
+router.post('/messages/report', reportMessage);
 
 module.exports = router;

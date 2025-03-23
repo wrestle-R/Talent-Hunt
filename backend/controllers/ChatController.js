@@ -201,3 +201,48 @@ exports.getUnreadMessageCount = async (req, res) => {
     return res.status(500).json({ error: 'Server error' });
   }
 };
+
+exports.reportMessage = async (req, res) => {
+  try {
+    const { messageId, reportedBy, reason, additionalInfo } = req.body;
+
+    if (!messageId || !reportedBy || !reason) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Check if the message exists
+    const message = await Message.findById(messageId);
+    if (!message) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    // Check if already reported
+    if (message.isReported) {
+      return res.status(400).json({ 
+        error: 'This message has already been reported',
+        status: message.reportDetails.status 
+      });
+    }
+
+    // Update message with report details
+    message.isReported = true;
+    message.reportDetails = {
+      reportedBy,
+      reportedAt: new Date(),
+      reason,
+      additionalInfo: additionalInfo || '',
+      status: 'pending'
+    };
+
+    const updatedMessage = await message.save();
+    
+    console.log("Message reported successfully:", updatedMessage);
+    return res.status(200).json({ 
+      message: 'Message reported successfully',
+      reportId: updatedMessage._id
+    });
+  } catch (error) {
+    console.error('Error reporting message:', error);
+    return res.status(500).json({ error: 'Server error' });
+  }
+};

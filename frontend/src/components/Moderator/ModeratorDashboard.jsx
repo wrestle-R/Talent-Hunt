@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { CalendarDays, Users, Search, Bell, Shield, Database, FileText, FileBarChart } from 'lucide-react';
+import { Users, Search, Bell, Shield, Flag, File, Ban, MessageSquare, UserCog, UserX, UserCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const AdminDashboard = ({ userData }) => {
+const ModeratorDashboard = ({ userData }) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -29,69 +29,78 @@ const AdminDashboard = ({ userData }) => {
     }
   };
 
-  // Dashboard sections/cards - streamlined for admin
+  // Dashboard sections/cards
   const dashboardSections = [
     {
-      title: 'Manage Hackathons',
-      description: 'Create, edit and manage hackathon events',
-      icon: <CalendarDays size={24} className="text-blue-600" />,
-      path: '/admin/hackathons',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-700',
-      stats: { count: 3, label: 'Active' }
-    },
-    {
-      title: 'Review Hackathon Applications',
-      description: 'Review and manage hackathon applicants',
+      title: 'User Management',
+      description: 'Review, approve and manage student accounts',
       icon: <Users size={24} className="text-indigo-600" />,
-      path: '/admin/hackathon_applications',
+      path: '/moderator/users',
       bgColor: 'bg-indigo-50',
       textColor: 'text-indigo-700',
-      stats: { count: 42, label: 'Pending' }
+      stats: { count: 218, label: 'Active' }
     },
     {
-      title: 'Manage Events',
-      description: 'Create and manage workshops and events',
-      icon: <Bell size={24} className="text-pink-600" />,
-      path: '/admin/events',
-      bgColor: 'bg-pink-50',
-      textColor: 'text-pink-700',
-      stats: { count: 5, label: 'Upcoming' }
+      title: 'Project Managing',
+      description: 'Managing Projects of students',
+      icon: <Ban size={24} className="text-red-600" />,
+      path: '/moderator/projects',
+      bgColor: 'bg-red-50',
+      textColor: 'text-red-700',
+      stats: { count: 5, label: 'New' }
     },
     {
-      title: 'Analytics Dashboard',
-      description: 'Platform metrics and user statistics',
-      icon: <Database size={24} className="text-amber-600" />,
-      path: '/admin/analytics',
+      title: 'Messages Moderation',
+      description: 'Review reported messages',
+      icon: <MessageSquare size={24} className="text-amber-600" />,
+      path: '/moderator/messages',
       bgColor: 'bg-amber-50',
-      textColor: 'text-amber-700'
+      textColor: 'text-amber-700',
+      stats: { count: 12, label: 'Pending' }
     },
     {
-      title: 'Generate Hacakthon Reports',
-      description: 'Create comprehensive student reports',
-      icon: <FileBarChart size={24} className="text-emerald-600" />,
-      path: '/admin/reports/generate',
+      title: 'Team Dissolution',
+      description: 'Review team dissolution requests',
+      icon: <UserX size={24} className="text-purple-600" />,
+      path: '/moderator/teams/dissolution',
+      bgColor: 'bg-purple-50',
+      textColor: 'text-purple-700',
+      stats: { count: 3, label: 'Requests' }
+    },
+    {
+      title: 'Student Reports',
+      description: 'Generate and review student activity reports',
+      icon: <File size={24} className="text-emerald-600" />,
+      path: '/moderator/reports',
       bgColor: 'bg-emerald-50',
       textColor: 'text-emerald-700'
     },
-   
+    {
+      title: 'Verification Requests',
+      description: 'Review and approve verification requests',
+      icon: <UserCheck size={24} className="text-blue-600" />,
+      path: '/moderator/verifications',
+      bgColor: 'bg-blue-50',
+      textColor: 'text-blue-700',
+      stats: { count: 8, label: 'Pending' }
+    }
   ];
 
   return (
     <div className="container mx-auto py-8 px-4">
-      {/* Admin Dashboard Header */}
+      {/* Moderator Dashboard Header */}
       <div className="mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Admin Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {userData?.name || 'Admin'}</p>
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Moderator Dashboard</h1>
+          <p className="text-gray-600">Welcome back, {userData?.name || 'Moderator'}</p>
         </div>
         
         {/* Search Bar */}
         <form onSubmit={handleSearch} className="relative w-full md:w-96">
           <input
             type="text"
-            placeholder="Search for students..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Search for users..."
+            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
@@ -103,7 +112,7 @@ const AdminDashboard = ({ userData }) => {
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
           <button 
             type="submit" 
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800"
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-indigo-600 hover:text-indigo-800"
           >
             Go
           </button>
@@ -115,7 +124,7 @@ const AdminDashboard = ({ userData }) => {
                 <div>
                   <div className="p-2 border-b border-gray-200">
                     <h3 className="font-medium text-sm text-gray-700">
-                      {searchResults.length} student{searchResults.length !== 1 ? 's' : ''} found
+                      {searchResults.length} user{searchResults.length !== 1 ? 's' : ''} found
                     </h3>
                   </div>
                   {searchResults.map(student => (
@@ -123,12 +132,13 @@ const AdminDashboard = ({ userData }) => {
                       key={student.id}
                       className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
                       onClick={() => {
+                        // In a real app, navigate to student profile
                         alert(`Viewing profile for ${student.name}`);
                         setShowSearchResults(false);
                       }}
                     >
                       <div className="flex items-center">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center mr-3">
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center mr-3">
                           {student.name.charAt(0).toUpperCase()}
                         </div>
                         <div>
@@ -141,7 +151,7 @@ const AdminDashboard = ({ userData }) => {
                 </div>
               ) : (
                 <div className="p-4 text-center text-gray-500">
-                  No students found matching "{searchTerm}"
+                  No users found matching "{searchTerm}"
                 </div>
               )}
             </div>
@@ -175,60 +185,80 @@ const AdminDashboard = ({ userData }) => {
         ))}
       </div>
       
-      {/* Recent Activity Section */}
+      {/* Recent Reports Section */}
       <div className="mt-10 bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-5 border-b border-gray-200">
-          <h2 className="font-bold text-xl text-gray-800">Recent Activity</h2>
+          <h2 className="font-bold text-xl text-gray-800">Recent Reports</h2>
         </div>
         <div className="p-5">
           <div className="space-y-4">
             <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
-              <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
-                <CalendarDays size={20} className="text-blue-600" />
+              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+                <Flag size={20} className="text-red-600" />
               </div>
               <div>
-                <p className="text-gray-800">New hackathon <span className="font-medium">AI Innovations 2025</span> created</p>
+                <p className="text-gray-800">Message reported by <span className="font-medium">Maria Garcia</span> for harassment</p>
                 <p className="text-xs text-gray-500">Today at 10:30 AM</p>
               </div>
+              <div className="ml-auto">
+                <button className="bg-red-50 text-red-700 px-3 py-1 rounded-lg text-sm">
+                  Review
+                </button>
+              </div>
             </div>
             
             <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
-              <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                <FileText size={20} className="text-green-600" />
+              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
+                <UserCog size={20} className="text-amber-600" />
               </div>
               <div>
-                <p className="text-gray-800"><span className="font-medium">25 student reports</span> generated and published</p>
+                <p className="text-gray-800"><span className="font-medium">Team Swift Coders</span> requested dissolution</p>
                 <p className="text-xs text-gray-500">Yesterday at 5:45 PM</p>
               </div>
+              <div className="ml-auto">
+                <button className="bg-amber-50 text-amber-700 px-3 py-1 rounded-lg text-sm">
+                  Review
+                </button>
+              </div>
             </div>
             
             <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
-              <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
-                <Bell size={20} className="text-pink-600" />
+              <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center flex-shrink-0">
+                <Shield size={20} className="text-purple-600" />
               </div>
               <div>
-                <p className="text-gray-800">New workshop <span className="font-medium">Web3 Fundamentals</span> scheduled</p>
+                <p className="text-gray-800">Account verification request from <span className="font-medium">David Chen</span></p>
                 <p className="text-xs text-gray-500">Yesterday at 2:15 PM</p>
+              </div>
+              <div className="ml-auto">
+                <button className="bg-purple-50 text-purple-700 px-3 py-1 rounded-lg text-sm">
+                  Verify
+                </button>
               </div>
             </div>
             
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                <Shield size={20} className="text-red-600" />
+              <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
+                <Ban size={20} className="text-indigo-600" />
               </div>
               <div>
-                <p className="text-gray-800"><span className="font-medium">3 messages</span> flagged for inappropriate content</p>
+                <p className="text-gray-800"><span className="font-medium">2 accounts</span> flagged for spam activity</p>
                 <p className="text-xs text-gray-500">2 days ago</p>
+              </div>
+              <div className="ml-auto">
+                <button className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg text-sm">
+                  Review
+                </button>
               </div>
             </div>
           </div>
         </div>
         <div className="px-5 py-3 bg-gray-50 border-t border-gray-100">
           <button 
-            onClick={() => navigate('/admin/activity')} 
-            className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+            onClick={() => navigate('/moderator/reports/all')} 
+            className="text-indigo-600 hover:text-indigo-800 text-sm font-medium"
           >
-            View All Activity →
+            View All Reports →
           </button>
         </div>
       </div>
@@ -236,4 +266,4 @@ const AdminDashboard = ({ userData }) => {
   );
 };
 
-export default AdminDashboard;
+export default ModeratorDashboard;

@@ -9,7 +9,9 @@ const studentRoutes = require("./routes/StudentRoutes");
 const mentorRoutes = require("./routes/MentorRoutes");
 const adminRoutes = require("./routes/AdminRoutes");
 const chatRoutes = require("./routes/ChatRoutes");
-const Message = require("./models/Message");
+const Message = require("./models/Message");// Add this line with the other requires
+const moderatorRoutes = require("./routes/ModeratorRoutes");
+
 
 const app = express();
 
@@ -41,6 +43,8 @@ app.use("/api/student", studentRoutes);
 app.use("/api/mentor", mentorRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/moderator",moderatorRoutes);
+
 
 const server = http.createServer(app);
 
