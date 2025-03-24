@@ -9,23 +9,25 @@ import CurrentMentorshipsCard from './Team/CurrentMentorshipsCard';
 import TeamMembersList from './Team/TeamMembersList';
 import TeamProjectsCard from './Team/TeamProjectsCard';
 import TeamMemberProfile from './Team/TeamMemberProfile';
+import { toast } from 'react-hot-toast';
 
-const MentorDashboard = ({ 
-  hackathonData = [], 
-  isLoading = false,
-  refreshHackathons,
-  userData
-}) => {
+const MentorDashboard = ({ userData, refreshUserData }) => {
   // States
   const [conversations, setConversations] = useState([]);
+  const [activeMentorships, setActiveMentorships] = useState([]);
+  const [teamApplications, setTeamApplications] = useState([]);
+  const [mentorshipLoading, setMentorshipLoading] = useState(true);
   const [conversationsLoading, setConversationsLoading] = useState(true);
+  const [applicationsLoading, setApplicationsLoading] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeStudent, setActiveStudent] = useState(null);
   const [dashboardRefreshTrigger, setDashboardRefreshTrigger] = useState(0);
   const [selectedTeam, setSelectedTeam] = useState(null);
   const [selectedMember, setSelectedMember] = useState(null);
   const [isProfileOpen, setIsProfileOpen] = useState(false);
-
+  const [hackathonData, setHackathonData] = useState([]);
+  const [hackathonLoading, setHackathonLoading] = useState(true);
+  
   // Format time for messages
   const formatTimeAgo = (dateString) => {
     const now = new Date();
@@ -55,8 +57,56 @@ const MentorDashboard = ({
   // Dashboard refresh
   const refreshDashboard = () => {
     setDashboardRefreshTrigger(prev => prev + 1);
+    fetchAllData();
+    toast.success("Dashboard refreshed");
+  };
+
+  // Fetch all dashboard data
+  const fetchAllData = () => {
+    fetchActiveMentorships();
+    fetchTeamApplications();
     fetchConversations();
-    if (refreshHackathons) refreshHackathons();
+    fetchHackathons();
+  };
+
+  // Fetch active mentorships
+  const fetchActiveMentorships = async () => {
+    if (!userData?._id) {
+      setMentorshipLoading(false);
+      return;
+    }
+    
+    try {
+      setMentorshipLoading(true);
+      const response = await axios.get(`http://localhost:4000/api/mentor/active-mentorships/${userData._id}`);
+      console.log("Mentorships data:", response.data);
+      setActiveMentorships(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error fetching active mentorships:", error);
+      setActiveMentorships([]);
+    } finally {
+      setMentorshipLoading(false);
+    }
+  };
+
+  // Fetch team applications
+  const fetchTeamApplications = async () => {
+    if (!userData?._id) {
+      setApplicationsLoading(false);
+      return;
+    }
+    
+    try {
+      setApplicationsLoading(true);
+      const response = await axios.get(`http://localhost:4000/api/mentor/team-applications/${userData._id}`);
+      console.log("Applications data:", response.data);
+      setTeamApplications(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error fetching team applications:", error);
+      setTeamApplications([]);
+    } finally {
+      setApplicationsLoading(false);
+    }
   };
 
   // Fetch conversations
@@ -69,6 +119,7 @@ const MentorDashboard = ({
     try {
       setConversationsLoading(true);
       const response = await axios.get(`http://localhost:4000/api/mentor/conversations/${userData._id}`);
+      console.log("Conversations data:", response.data);
       setConversations(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
       console.error("Error fetching conversations:", error);
@@ -78,18 +129,88 @@ const MentorDashboard = ({
     }
   };
 
+  // Fetch upcoming hackathons
+  const fetchHackathons = async () => {
+    try {
+      setHackathonLoading(true);
+      const response = await axios.get('http://localhost:4000/api/hackathons/upcoming');
+      console.log("Hackathons data:", response.data);
+      setHackathonData(response.data);
+    } catch (error) {
+      console.error("Error fetching hackathons:", error);
+      setHackathonData([]);
+    } finally {
+      setHackathonLoading(false);
+    }
+  };
+
   // Team and member actions
-  const handleViewTeam = (team) => {
-    setSelectedTeam(team);
+  const handleViewTeam = async (team) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/api/mentor/team/${team._id}?mentorId=${userData._id}`
+      );
+      
+      if (response.data && response.data.success) {
+        console.log("Full team data:", response.data.team);
+        setSelectedTeam({
+          ...team,
+          ...response.data.team,
+          performanceMetrics: response.data.performanceMetrics
+        });
+      } else {
+        throw new Error("Failed to fetch complete team data");
+      }
+    } catch (error) {
+      console.error("Error fetching team details:", error);
+      toast.error("Could not load team details");
+      // Still set the basic team info we already have
+      setSelectedTeam(team);
+    }
   };
 
   const handleBackToDashboard = () => {
     setSelectedTeam(null);
   };
 
-  const handleViewMemberProfile = (member) => {
-    setSelectedMember(member);
-    setIsProfileOpen(true);
+  const handleViewMemberProfile = async (memberId) => {
+    try {
+      // First find the member in the current team to get basic info
+      const memberBasicInfo = selectedTeam.members.find(
+        m => m.student._id.toString() === memberId.toString()
+      );
+      
+      if (!memberBasicInfo) {
+        throw new Error("Member not found in team");
+      }
+      
+      // Now fetch detailed profile
+      const response = await axios.get(
+        `http://localhost:4000/api/mentor/student-profile/${memberId}?mentorId=${userData._id}`
+      );
+      
+      if (response.data && response.data.success) {
+        console.log("Member profile data:", response.data);
+        
+        setSelectedMember({
+          ...memberBasicInfo,
+          ...response.data.student,
+          feedback: response.data.feedback || []
+        });
+        
+        setIsProfileOpen(true);
+      } else {
+        throw new Error("Failed to fetch member profile");
+      }
+    } catch (error) {
+      console.error("Error fetching member profile:", error);
+      toast.error("Could not load member profile");
+      // Fall back to basic info if available
+      if (memberBasicInfo) {
+        setSelectedMember(memberBasicInfo);
+        setIsProfileOpen(true);
+      }
+    }
   };
 
   const handleCloseProfile = () => {
@@ -100,19 +221,22 @@ const MentorDashboard = ({
   // Initial data fetch
   useEffect(() => {
     if (userData?._id) {
-      fetchConversations();
+      fetchAllData();
       
       // Set up polling every 5 minutes
-      const interval = setInterval(fetchConversations, 300000);
+      const interval = setInterval(fetchAllData, 300000);
       return () => clearInterval(interval);
     }
-  }, [userData]);
+  }, [userData?._id]);
 
   // Loading state
-  if (isLoading) {
+  if (!userData?._id) {
     return (
       <div className="flex justify-center items-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mb-4"></div>
+          <p className="text-gray-600">Loading mentor dashboard...</p>
+        </div>
       </div>
     );
   }
@@ -143,14 +267,18 @@ const MentorDashboard = ({
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
               <TeamApplicationsCard 
+                applications={teamApplications}
                 mentorData={userData}
                 onRefresh={refreshDashboard}
+                isLoading={applicationsLoading}
                 key={`applications-${dashboardRefreshTrigger}`}
               />
               
               <CurrentMentorshipsCard 
+                mentorships={activeMentorships}
                 mentorData={userData}
                 onViewTeam={handleViewTeam}
+                isLoading={mentorshipLoading}
                 key={`mentorships-${dashboardRefreshTrigger}`}
               />
             </div>
@@ -176,7 +304,12 @@ const MentorDashboard = ({
                   <Award size={20} className="text-purple-600" />
                   Upcoming Hackathons
                 </h3>
-                <UpcomingHackathons limit={4} layout="grid" />
+                <UpcomingHackathons 
+                  limit={4} 
+                  layout="grid" 
+                  customData={hackathonData}
+                  isLoading={hackathonLoading}
+                />
               </div>
             </div>
           </section>
@@ -207,11 +340,24 @@ const MentorDashboard = ({
                     <Users size={24} className="text-emerald-600" />
                   )}
                 </div>
-                <div>
-                  <h2 className="text-xl font-bold">{selectedTeam.name}</h2>
-                  <p className="text-gray-500 text-sm">
-                    {selectedTeam.members?.length || 0} members • Mentoring since {new Date(selectedTeam.mentorJoinedDate).toLocaleDateString()}
-                  </p>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-xl font-bold">{selectedTeam.name}</h2>
+                      <p className="text-gray-500 text-sm">
+                        {selectedTeam.members?.length || 0} members • Mentoring since {new Date(selectedTeam.mentorJoinedDate || selectedTeam.mentor?.joinedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    
+                    {/* Performance Score */}
+                    {selectedTeam.performanceMetrics && (
+                      <div className="bg-emerald-50 text-emerald-800 px-4 py-2 rounded-lg text-center">
+                        <div className="text-sm uppercase font-semibold tracking-wide">Team Score</div>
+                        <div className="text-2xl font-bold">{selectedTeam.performanceMetrics.overallRating || '7.5'}/10</div>
+                      </div>
+                    )}
+                  </div>
+                  
                   {selectedTeam.description && (
                     <p className="text-gray-700 mt-2 max-w-2xl">
                       {selectedTeam.description}
