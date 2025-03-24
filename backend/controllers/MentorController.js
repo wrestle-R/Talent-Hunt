@@ -5,7 +5,7 @@ const Hackathon = require('../models/Hackathon')
 // Add this import at the top
 const Message = require("../models/Message");
 const mongoose =require('mongoose')
-
+const Team = require('../models/Team')
 
 
 
@@ -394,6 +394,563 @@ const markMessagesAsRead = async (req, res) => {
   }
 };
 
+
+// Improved getTeamApplications function that fetches from Mentor schema
+const getTeamApplications = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+    
+    if (!mentorId) {
+      return res.status(400).json({ error: 'Mentor ID is required' });
+    }
+    
+    console.log(`Fetching applications for mentor ID: ${mentorId}`);
+    
+    // Find the mentor with their applications
+    const mentor = await Mentor.findById(mentorId).populate({
+      path: 'applications.student',
+      select: 'name description members techStack leader'
+    });
+    
+    if (!mentor) {
+      return res.status(404).json({ error: 'Mentor not found' });
+    }
+    
+    // Filter to get only pending applications
+    const pendingApplications = mentor.applications.filter(app => app.status === 'pending');
+    
+    console.log(`Found ${pendingApplications.length} pending applications for mentor ${mentor.name}`);
+    
+    // Format the applications for the response
+    const formattedApplications = await Promise.all(pendingApplications.map(async (app) => {
+      // If team is not populated or doesn't exist, return minimal info
+      if (!app.student) {
+        return {
+          applicationId: app._id,
+          teamId: app.student,
+          teamName: "Unknown Team",
+          message: app.message || '',
+          applicationDate: app.application_date,
+          status: app.status
+        };
+      }
+      
+      // Return full team details
+      return {
+        applicationId: app._id,
+        teamId: app.student._id,
+        teamName: app.student.name,
+        description: app.student.description,
+        memberCount: app.student.members?.length || 0,
+        techStack: app.student.techStack || [],
+        message: app.message || '',
+        applicationDate: app.application_date,
+        leader: app.student.leader,
+        status: app.status
+      };
+    }));
+    
+    return res.status(200).json(formattedApplications);
+  } catch (error) {
+    console.error('Error fetching team applications:', error);
+    return res.status(500).json({ 
+      error: 'Server error', 
+      message: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+};
+
+const handleTeamApplication = async (req, res) => {
+  try {
+    const { mentorId, teamId, action } = req.params;
+    
+    if (!mentorId || !teamId || !action) {
+      return res.status(400).json({ error: 'Mentor ID, team ID, and action are required' });
+    }
+    
+    if (action !== 'accept' && action !== 'reject') {
+      return res.status(400).json({ error: 'Invalid action. Must be "accept" or "reject"' });
+    }
+    
+    // Find the mentor
+    const mentor = await Mentor.findById(mentorId);
+    if (!mentor) {
+      return res.status(404).json({ error: 'Mentor not found' });
+    }
+    
+    // Find the team
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ error: 'Team not found' });
+    }
+    
+    // 1. Update the application status in mentor schema
+    const mentorApplicationIndex = mentor.applications.findIndex(
+      app => app.student && app.student.toString() === teamId && app.status === 'pending'
+    );
+    
+    if (mentorApplicationIndex === -1) {
+      return res.status(404).json({ error: 'Application not found or already processed in mentor records' });
+    }
+    
+    mentor.applications[mentorApplicationIndex].status = action === 'accept' ? 'accepted' : 'rejected';
+    
+    // 2. Update the corresponding application in the team schema
+    const teamApplicationIndex = team.applications.findIndex(
+      app => 
+        app.recipientId && 
+        app.recipientId.toString() === mentorId && 
+        app.recipientType === 'Mentor' && 
+        app.status === 'pending'
+    );
+    
+    if (teamApplicationIndex !== -1) {
+      // If found, update the application status in team schema
+      team.applications[teamApplicationIndex].status = action === 'accept' ? 'accepted' : 'declined';
+    } else {
+      console.log(`Warning: No corresponding application found in team ${team.name} for mentor ${mentor.name}`);
+    }
+    
+    // 3. If accepting, update both schemas with additional mentorship details
+    if (action === 'accept') {
+      // Update the team with mentor information
+      team.mentor = {
+        mentorId: mentor._id,
+        name: mentor.name,
+        expertise: [
+          ...(mentor.expertise?.technical_skills || []), 
+          ...(mentor.expertise?.non_technical_skills || [])
+        ],
+        joinedAt: new Date(),
+        status: 'active',
+        invitationStatus: 'accepted',
+        feedbackLog: []
+      };
+      
+      // Add to team activity log
+      team.activityLog.push({
+        action: 'mentor_joined',
+        description: `${mentor.name} joined as team mentor`,
+        userId: mentor._id,
+        userType: 'Mentor',
+        timestamp: new Date()
+      });
+      
+      // Update the team's last activity date
+      team.lastActivityDate = new Date();
+      
+      // Optionally add the team to mentor's mentees list (if you track active mentorships there)
+      const teamLeaderInfo = team.members.find(m => m.student.toString() === team.leader.toString());
+      const leaderName = teamLeaderInfo ? teamLeaderInfo.role : 'Team Leader';
+      
+      // Check if team is already in mentor's mentees list
+      const existingMenteeIndex = mentor.mentees.findIndex(
+        mentee => mentee.id && mentee.id.toString() === teamId
+      );
+      
+      if (existingMenteeIndex === -1) {
+        // Add team to mentor's mentees list
+        mentor.mentees.push({
+          id: team._id,
+          name: team.name,
+          email: leaderName, // Using the role field to store leader role as we're using Team ID instead of Student ID
+          goals: team.techStack || [],
+          progress: 'Mentorship started'
+        });
+      }
+    }
+    
+    // 4. Save both documents
+    await Promise.all([
+      mentor.save(),
+      team.save()
+    ]);
+    
+    return res.status(200).json({ 
+      success: true, 
+      message: `Application ${action === 'accept' ? 'accepted' : 'rejected'} successfully`,
+      team: {
+        id: team._id,
+        name: team.name,
+        memberCount: team.members.length,
+        techStack: team.techStack
+      }
+    });
+  } catch (error) {
+    console.error(`Error handling team application:`, error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Add this function to get student profile details
+const getStudentProfile = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { mentorId } = req.query;
+    
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+    
+    // Find the student
+    const student = await Student.findById(studentId).select(
+      'name email profile_picture bio education experience projects skills social_links'
+    );
+    
+    if (!student) {
+      return res.status(404).json({ success: false, message: 'Student not found' });
+    }
+    
+    // Get any feedback provided by this mentor to this student
+    let feedback = [];
+    if (mentorId) {
+      // Find teams where this student is a member and the mentor is mentoring
+      const teams = await Team.find({
+        'members.student': studentId,
+        'mentor.mentorId': mentorId
+      });
+      
+      // Extract feedback from teams
+      feedback = teams.reduce((allFeedback, team) => {
+        const memberFeedback = team.members.find(
+          m => m.student.toString() === studentId
+        )?.feedback || [];
+        
+        return [...allFeedback, ...memberFeedback.map(fb => ({
+          ...fb,
+          teamName: team.name,
+          teamId: team._id
+        }))];
+      }, []);
+    }
+    
+    return res.status(200).json({
+      success: true,
+      student,
+      feedback
+    });
+  } catch (error) {
+    console.error("Error fetching student profile:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// Add this function to submit feedback for a team member
+const submitMemberFeedback = async (req, res) => {
+  try {
+    const { teamId, memberId } = req.params;
+    const { mentorId, feedback } = req.body;
+    
+    if (!teamId || !memberId || !mentorId || !feedback) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Team ID, member ID, mentor ID and feedback are required' 
+      });
+    }
+    
+    // Find the team
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Team not found' });
+    }
+    
+    // Verify this mentor is associated with this team
+    if (team.mentor?.mentorId.toString() !== mentorId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'You are not authorized to provide feedback for this team' 
+      });
+    }
+    
+    // Find the member in the team
+    const memberIndex = team.members.findIndex(
+      m => m.student.toString() === memberId
+    );
+    
+    if (memberIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Member not found in team' });
+    }
+    
+    // Get mentor details
+    const mentor = await Mentor.findById(mentorId).select('name');
+    
+    // Add feedback to the member
+    if (!team.members[memberIndex].feedback) {
+      team.members[memberIndex].feedback = [];
+    }
+    
+    team.members[memberIndex].feedback.push({
+      content: feedback,
+      date: new Date(),
+      mentorId: mentorId,
+      mentorName: mentor?.name || 'Mentor'
+    });
+    
+    // Save the team
+    await team.save();
+    
+    // Add to team activity log
+    team.activityLog.push({
+      action: 'feedback_provided',
+      description: `Mentor provided feedback for team member ${team.members[memberIndex].student}`,
+      userId: mentorId,
+      userType: 'Mentor',
+      timestamp: new Date()
+    });
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Feedback submitted successfully'
+    });
+  } catch (error) {
+    console.error("Error submitting member feedback:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// Add this function to submit feedback for a project
+const submitProjectFeedback = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { mentorId, projectId, feedback } = req.body;
+    
+    if (!teamId || !mentorId || !projectId || !feedback) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Team ID, mentor ID, project ID, and feedback are required' 
+      });
+    }
+    
+    // Find the team
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Team not found' });
+    }
+    
+    // Verify this mentor is associated with this team
+    if (team.mentor?.mentorId.toString() !== mentorId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'You are not authorized to provide feedback for this team' 
+      });
+    }
+    
+    // Find the project in the team
+    const projectIndex = team.projects.findIndex(
+      p => p._id.toString() === projectId
+    );
+    
+    if (projectIndex === -1) {
+      return res.status(404).json({ success: false, message: 'Project not found in team' });
+    }
+    
+    // Get mentor details
+    const mentor = await Mentor.findById(mentorId).select('name');
+    
+    // Add feedback to the project
+    if (!team.projects[projectIndex].feedback) {
+      team.projects[projectIndex].feedback = [];
+    }
+    
+    team.projects[projectIndex].feedback.push({
+      content: feedback,
+      date: new Date(),
+      mentorId: mentorId,
+      mentorName: mentor?.name || 'Mentor'
+    });
+    
+    // Save the team
+    await team.save();
+    
+    // Add to team activity log
+    team.activityLog.push({
+      action: 'project_feedback',
+      description: `Mentor provided feedback for project "${team.projects[projectIndex].name}"`,
+      userId: mentorId,
+      userType: 'Mentor',
+      timestamp: new Date()
+    });
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Project feedback submitted successfully'
+    });
+  } catch (error) {
+    console.error("Error submitting project feedback:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// Update getActiveMentorships function to include project information
+const getActiveMentorships = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+    
+    if (!mentorId) {
+      return res.status(400).json({ error: 'Mentor ID is required' });
+    }
+    
+    // Find all teams that have this mentor
+    const teams = await Team.find({
+      'mentor.mentorId': mentorId,
+      'mentor.status': 'active',
+      status: { $in: ['active', 'inactive'] } // Exclude archived or disbanded teams
+    }).select('name description members logo techStack formationDate lastActivityDate projects mentor.joinedAt');
+    
+    // Format the response
+    const formattedMentorships = teams.map(team => {
+      // Find the most recent active project, if any
+      const currentProject = team.projects && team.projects.length > 0 
+        ? team.projects
+            .filter(p => p.status === 'in-progress')
+            .sort((a, b) => new Date(b.startDate) - new Date(a.startDate))[0]?.name
+        : null;
+      
+      return {
+        _id: team._id,
+        name: team.name,
+        description: team.description,
+        logo: team.logo,
+        members: team.members.map(m => ({
+          _id: m.student,
+          role: m.role,
+          joinedAt: m.joinedAt,
+          status: m.status
+        })),
+        techStack: team.techStack || [],
+        formationDate: team.formationDate,
+        lastActivityDate: team.lastActivityDate,
+        currentProject,
+        projectsCount: team.projects?.length || 0,
+        mentorJoinedDate: team.mentor?.joinedAt
+      };
+    });
+    
+    return res.status(200).json(formattedMentorships);
+  } catch (error) {
+    console.error('Error fetching active mentorships:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Update getTeamDetails function
+const getTeamDetails = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { mentorId } = req.query;
+    
+    if (!teamId || !mentorId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Team ID and mentor ID are required' 
+      });
+    }
+    
+    // Find the team with populated member data
+    const team = await Team.findById(teamId)
+      .populate('members.student', 'name email profile_picture skills education bio experience')
+      .populate('leader', 'name email');
+    
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Team not found' });
+    }
+    
+    // Verify this mentor is associated with this team
+    if (team.mentor?.mentorId.toString() !== mentorId) {
+      return res.status(403).json({ 
+        success: false, 
+        message: 'You are not authorized to access this team' 
+      });
+    }
+    
+    // Calculate team performance metrics
+    const performanceMetrics = {
+      activityLevel: calculateActivityLevel(team),
+      activeProjects: team.projects.filter(p => p.status === 'in-progress').length,
+      completedProjects: team.projects.filter(p => p.status === 'completed').length,
+      projectCompletionRate: calculateProjectCompletionRate(team),
+      avgMemberContribution: calculateAverageMemberContribution(team),
+      teamCohesion: calculateTeamCohesion(team),
+      hackathonParticipations: team.hackathons?.length || 0,
+      recentAchievements: getRecentAchievements(team),
+      overallRating: calculateOverallRating(team)
+    };
+    
+    return res.status(200).json({
+      success: true,
+      team,
+      performanceMetrics
+    });
+  } catch (error) {
+    console.error("Error fetching team details:", error);
+    return res.status(500).json({ success: false, message: "Server error", error: error.message });
+  }
+};
+
+// Add these placeholder calculation functions (implement properly based on your data model)
+function calculateActivityLevel(team) {
+  // Placeholder implementation - replace with actual calculation
+  const daysSinceLastActivity = Math.floor((new Date() - new Date(team.lastActivityDate)) / (1000 * 60 * 60 * 24));
+  return Math.max(0, Math.min(100, 100 - (daysSinceLastActivity * 5)));
+}
+
+function calculateProjectCompletionRate(team) {
+  if (!team.projects || team.projects.length === 0) return 0;
+  
+  const completedProjects = team.projects.filter(p => p.status === 'completed').length;
+  return Math.round((completedProjects / team.projects.length) * 100);
+}
+
+function calculateAverageMemberContribution(team) {
+  // Placeholder implementation - replace with actual calculation
+  return Math.floor(Math.random() * 5) + 5; // Random number between 5-10
+}
+
+function calculateTeamCohesion(team) {
+  // Placeholder implementation - replace with actual calculation
+  return Math.floor(Math.random() * 5) + 5; // Random number between 5-10
+}
+
+function getRecentAchievements(team) {
+  const achievements = [];
+  
+  // Add project completions
+  const recentCompletedProjects = team.projects
+    .filter(p => p.status === 'completed' && new Date(p.endDate) > new Date(Date.now() - 30 * 24 * 60 * 60 * 1000))
+    .map(p => `Completed project "${p.name}"`);
+  
+  achievements.push(...recentCompletedProjects);
+  
+  // Add hackathon achievements
+  const recentHackathons = team.hackathons
+    .filter(h => h.status === 'completed' && h.achievement)
+    .map(h => `${h.achievement} in "${h.name}" hackathon`);
+  
+  achievements.push(...recentHackathons);
+  
+  // Add other team achievements
+  if (team.achievements) {
+    const recentOtherAchievements = team.achievements
+      .filter(a => new Date(a.date) > new Date(Date.now() - 90 * 24 * 60 * 60 * 1000))
+      .map(a => a.title);
+    
+    achievements.push(...recentOtherAchievements);
+  }
+  
+  return achievements.slice(0, 5); // Return at most 5 achievements
+}
+
+function calculateOverallRating(team) {
+  // Placeholder implementation - replace with actual calculation
+  const activityScore = calculateActivityLevel(team) / 20; // 0-5 score
+  const projectScore = calculateProjectCompletionRate(team) / 20; // 0-5 score
+  
+  // Calculate overall score (0-10)
+  return Math.min(10, Math.max(1, Math.round((activityScore + projectScore + 5) / 3 * 10) / 10));
+}
+
+
 // Update module exports to include the new functions
 module.exports = { 
   registerOrLoginMentor,
@@ -404,6 +961,16 @@ module.exports = {
   getUpcomingHackathons,
   getDashboardData,
   getRecentConversations,
-  markMessagesAsRead
+  markMessagesAsRead,
+  getTeamApplications,
+  handleTeamApplication,
+  getActiveMentorships,
+  getStudentProfile,
+  submitMemberFeedback,
+  submitProjectFeedback,
+  getActiveMentorships,
+  getTeamDetails
 };
+
+
 

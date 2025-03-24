@@ -12,6 +12,7 @@ const StudentProfile = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const { userData } = useUser();
+  console.log(studentId)
 
   useEffect(() => {
     const fetchStudentProfile = async () => {

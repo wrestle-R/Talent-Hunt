@@ -46,6 +46,7 @@ router.post('/:teamId/regenerate-code', regenerateJoinCode);
 router.get('/:teamId/invitations', getPendingInvitations);
 
 // Project management routes
+// Project routes
 router.post('/:teamId/projects', addProject);
 router.put('/:teamId/projects/:projectId', updateProject);
 router.delete('/:teamId/projects/:projectId', deleteProject);

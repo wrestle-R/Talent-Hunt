@@ -15,7 +15,6 @@ const MentorHeroProfile = ({
   
   // Default profile picture to use when none is available
   const defaultProfilePic = "https://via.placeholder.com/150";
-  console.log(userData)
 
   // Check if user is rejected when component mounts or userData changes
   useEffect(() => {

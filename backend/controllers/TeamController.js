@@ -165,6 +165,7 @@ const getMyTeams = async (req, res) => {
 };
 
 // Get team details by ID
+// Get team details by ID
 const getTeamById = async (req, res) => {
   try {
     const { teamId } = req.params;
@@ -183,7 +184,8 @@ const getTeamById = async (req, res) => {
       .populate('members.student', 'name email profile_picture education skills')
       .populate('leader', 'name email profile_picture')
       .populate('invitations.recipientId', 'name email profile_picture')
-      .populate('joinRequests.studentId', 'name email profile_picture skills education');
+      .populate('joinRequests.studentId', 'name email profile_picture skills education')
+      .populate('mentor.mentorId', 'name email profile_picture expertise mentorship_focus_areas'); // Add this line
     
     if (!team) {
       return res.status(404).json({
@@ -241,6 +243,16 @@ const getTeamById = async (req, res) => {
         email: team.leader.email,
         profile_picture: team.leader.profile_picture
       },
+      // Add mentor information to response
+      mentor: team.mentor && team.mentor.mentorId ? {
+        mentorId: team.mentor.mentorId._id,
+        name: team.mentor.mentorId.name,
+        email: team.mentor.mentorId.email,
+        profile_picture: team.mentor.mentorId.profile_picture,
+        expertise: team.mentor.mentorId.expertise || [],
+        mentorship_focus_areas: team.mentor.mentorId.mentorship_focus_areas || [],
+        joinedAt: team.mentor.joinedAt
+      } : null,
       isPublic: team.isPublic,
       techStack: team.techStack,
       isRecruiting: team.isRecruiting,
@@ -1234,11 +1246,11 @@ const addProject = async (req, res) => {
       description, 
       status, 
       techStack, 
-      githubRepo, 
+      githubUrl, 
       deployedUrl, 
       startDate, 
       endDate, 
-      creatorId 
+      studentId 
     } = req.body;
     
     if (!mongoose.Types.ObjectId.isValid(teamId)) {
@@ -1258,14 +1270,6 @@ const addProject = async (req, res) => {
       });
     }
     
-    // Check if user is team leader
-    if (team.leader.toString() !== creatorId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "Only the team leader can add projects"
-      });
-    }
-    
     // Validation
     if (!name || name.trim().length === 0) {
       return res.status(400).json({
@@ -1282,40 +1286,28 @@ const addProject = async (req, res) => {
       });
     }
     
-    // Ensure dates are valid
-    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
-      return res.status(400).json({
-        success: false,
-        message: "End date cannot be before start date"
-      });
+    // Ensure status is valid according to the schema
+    // Use "planning" instead of "planned" to match the enum in the Team model
+    let validStatus = status || 'planning';
+    if (validStatus === 'planned') {
+      validStatus = 'planning'; // Convert to the valid enum value
     }
     
     // Create a new project
     const newProject = {
       name,
       description: description || '',
-      status: status || 'planning',
+      status: validStatus,  // Use the corrected status
       techStack: techStack || [],
-      githubRepo: githubRepo || '',
+      githubUrl: githubUrl || '',
       deployedUrl: deployedUrl || '',
       startDate: startDate ? new Date(startDate) : null,
       endDate: endDate ? new Date(endDate) : null,
-      // Generate a new ObjectId for the project
       _id: new mongoose.Types.ObjectId()
     };
     
     // Add project to team
     team.projects.push(newProject);
-    
-    // Add to activity log
-    team.activityLog.push({
-      action: 'project_added',
-      description: `New project "${name}" was added to the team`,
-      userId: creatorId,
-      userType: 'Student',
-      timestamp: new Date()
-    });
-    
     team.lastActivityDate = new Date();
     await team.save();
     
@@ -1344,17 +1336,17 @@ const updateProject = async (req, res) => {
       description, 
       status, 
       techStack, 
-      githubRepo, 
+      githubUrl, 
       deployedUrl, 
       startDate, 
-      endDate, 
-      updaterId 
+      endDate,
+      studentId
     } = req.body;
     
-    if (!mongoose.Types.ObjectId.isValid(teamId) || !mongoose.Types.ObjectId.isValid(projectId)) {
+    if (!mongoose.Types.ObjectId.isValid(teamId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid ID format"
+        message: "Invalid team ID format"
       });
     }
     
@@ -1368,21 +1360,13 @@ const updateProject = async (req, res) => {
       });
     }
     
-    // Check if user is team leader
-    if (team.leader.toString() !== updaterId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "Only the team leader can update projects"
-      });
-    }
-    
-    // Find the project in the team
+    // Find the project
     const projectIndex = team.projects.findIndex(p => p._id.toString() === projectId);
     
     if (projectIndex === -1) {
       return res.status(404).json({
         success: false,
-        message: "Project not found in team"
+        message: "Project not found"
       });
     }
     
@@ -1402,42 +1386,25 @@ const updateProject = async (req, res) => {
       });
     }
     
-    // Ensure dates are valid
-    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
-      return res.status(400).json({
-        success: false,
-        message: "End date cannot be before start date"
-      });
+    // Ensure status is valid according to the schema
+    // Use "planning" instead of "planned" to match the enum in the Team model
+    let validStatus = status || team.projects[projectIndex].status;
+    if (validStatus === 'planned') {
+      validStatus = 'planning'; // Convert to the valid enum value
     }
-    
-    // Check if the project is being marked as completed
-    const isNewlyCompleted = 
-      status === 'completed' && 
-      team.projects[projectIndex].status !== 'completed';
     
     // Update the project
     team.projects[projectIndex] = {
       ...team.projects[projectIndex],
       name,
       description: description || '',
-      status: status || 'planning',
+      status: validStatus,  // Use the corrected status
       techStack: techStack || [],
-      githubRepo: githubRepo || '',
+      githubUrl: githubUrl || '',
       deployedUrl: deployedUrl || '',
       startDate: startDate ? new Date(startDate) : team.projects[projectIndex].startDate,
       endDate: endDate ? new Date(endDate) : team.projects[projectIndex].endDate
     };
-    
-    // Add to activity log
-    team.activityLog.push({
-      action: isNewlyCompleted ? 'project_completed' : 'team_updated',
-      description: isNewlyCompleted ? 
-        `Project "${name}" was marked as completed` : 
-        `Project "${name}" was updated`,
-      userId: updaterId,
-      userType: 'Student',
-      timestamp: new Date()
-    });
     
     team.lastActivityDate = new Date();
     await team.save();
@@ -1462,12 +1429,12 @@ const updateProject = async (req, res) => {
 const deleteProject = async (req, res) => {
   try {
     const { teamId, projectId } = req.params;
-    const { deleterId } = req.body;
+    const { studentId } = req.body;
     
-    if (!mongoose.Types.ObjectId.isValid(teamId) || !mongoose.Types.ObjectId.isValid(projectId)) {
+    if (!mongoose.Types.ObjectId.isValid(teamId)) {
       return res.status(400).json({
         success: false,
-        message: "Invalid ID format"
+        message: "Invalid team ID format"
       });
     }
     
@@ -1481,39 +1448,18 @@ const deleteProject = async (req, res) => {
       });
     }
     
-    // Check if user is team leader
-    if (team.leader.toString() !== deleterId.toString()) {
-      return res.status(403).json({
-        success: false,
-        message: "Only the team leader can delete projects"
-      });
-    }
-    
-    // Find the project in the team
+    // Find the project index
     const projectIndex = team.projects.findIndex(p => p._id.toString() === projectId);
     
     if (projectIndex === -1) {
       return res.status(404).json({
         success: false,
-        message: "Project not found in team"
+        message: "Project not found"
       });
     }
     
-    // Store project name for activity log
-    const projectName = team.projects[projectIndex].name;
-    
     // Remove the project
     team.projects.splice(projectIndex, 1);
-    
-    // Add to activity log
-    team.activityLog.push({
-      action: 'team_updated',
-      description: `Project "${projectName}" was removed from the team`,
-      userId: deleterId,
-      userType: 'Student',
-      timestamp: new Date()
-    });
-    
     team.lastActivityDate = new Date();
     await team.save();
     

@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, ExternalLink, Shield } from 'lucide-react';
+import { User, ExternalLink, Shield, MessageCircle } from 'lucide-react';
+import { useUser } from '../../../../../../context/UserContext';
+import MentorChatModal from './MentorChatModal';
 
 const CurrentTeamMentor = ({ team, onRemoveMentor, isLeader }) => {
   const navigate = useNavigate();
+  const { userData } = useUser();
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   return (
     <div>
       <h3 className="font-medium text-lg mb-4">Current Team Mentor</h3>
       
-      {team?.mentor ? (
+      {team?.mentor?.mentorId ? (
         <div className="bg-white border border-gray-200 rounded-lg p-4">
           <div className="flex items-start">
             <div className="h-16 w-16 rounded-full overflow-hidden bg-gray-200 mr-4 flex-shrink-0">
@@ -56,13 +60,23 @@ const CurrentTeamMentor = ({ team, onRemoveMentor, isLeader }) => {
               )}
               
               <div className="mt-4 flex justify-between items-center">
-                <button
-                  onClick={() => navigate(`/student/mentor/${team.mentor.mentorId}`)}
-                  className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
-                >
-                  <ExternalLink size={14} />
-                  View Profile
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => navigate(`/student/mentor/${team.mentor.mentorId}`)}
+                    className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+                  >
+                    <ExternalLink size={14} />
+                    View Profile
+                  </button>
+                  
+                  <button
+                    onClick={() => setIsChatOpen(true)}
+                    className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                  >
+                    <MessageCircle size={14} />
+                    Message
+                  </button>
+                </div>
                 
                 {isLeader && (
                   <button 
@@ -91,6 +105,17 @@ const CurrentTeamMentor = ({ team, onRemoveMentor, isLeader }) => {
             Find a Mentor
           </button> */}
         </div>
+      )}
+
+      {/* Mentor Chat Modal */}
+      {team?.mentor?.mentorId && (
+        <MentorChatModal
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
+          mentor={team.mentor}
+          currentUser={userData}
+          team={team}
+        />
       )}
     </div>
   );
