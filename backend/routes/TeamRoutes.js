@@ -18,7 +18,12 @@ const {
   updateProject,
   deleteProject,
   getStudentById,
-  getStudentProfileById
+  getStudentProfileById,
+  searchMentors,
+  applyToMentor,
+  getTeamMentorApplications,
+  cancelMentorApplication,
+  getTeamMentors
 } = require('../controllers/TeamController');
 
 // Team management routes (no auth middleware)
@@ -48,6 +53,15 @@ router.delete('/:teamId/projects/:projectId', deleteProject);
 // Make sure this route exists in your StudentRoutes.js file
 
 router.get('/student/:studentId', getStudentProfileById);
+
+// Add these routes to your existing routes
+
+// Mentor search and application routes
+router.get('/mentors/search', searchMentors);
+router.post('/:teamId/mentors/apply', applyToMentor);
+router.get('/:teamId/mentors/applications', getTeamMentorApplications);
+router.delete('/:teamId/mentors/applications/:applicationId', cancelMentorApplication);
+router.get('/:teamId/mentors', getTeamMentors);
 
 
 module.exports = router;

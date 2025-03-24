@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const Team = require('../models/Team');
 const Student = require('../models/Student');
 const crypto = require('crypto');
+const Mentor = require('../models/Mentor')
 
 // Create a new team
 // Update the createTeam function to fix validation errors
@@ -1580,7 +1581,6 @@ const getStudentById = async (req, res) => {
   }
 };
 
-
 // Add this function to your existing StudentController.js
 const getStudentProfileById = async (req, res) => {
   try {
@@ -1632,6 +1632,399 @@ const getStudentProfileById = async (req, res) => {
     });
   }
 };
+// Search for available mentors based on filters
+const searchMentors = async (req, res) => {
+  try {
+    const { query, skills, industries, availability, page = 1, limit = 10 } = req.query;
+    
+    // Build the search query
+    const searchCriteria = { isRejected: false };
+    
+    // Add text search if provided
+    if (query) {
+      searchCriteria.$or = [
+        { name: { $regex: query, $options: 'i' } },
+        { bio: { $regex: query, $options: 'i' } },
+        { 'current_role.title': { $regex: query, $options: 'i' } },
+        { 'current_role.company': { $regex: query, $options: 'i' } }
+      ];
+    }
+    
+    // Add skills filter if provided
+    if (skills) {
+      const skillsArray = skills.split(',');
+      searchCriteria['expertise.technical_skills'] = { $in: skillsArray };
+    }
+    
+    // Add industries filter if provided
+    if (industries) {
+      const industriesArray = industries.split(',');
+      searchCriteria.industries_worked_in = { $in: industriesArray };
+    }
+    
+    // Add availability filter if provided
+    if (availability) {
+      searchCriteria['mentorship_availability.hours_per_week'] = { $gte: parseInt(availability) };
+    }
+    
+    // Calculate pagination
+    const skip = (parseInt(page) - 1) * parseInt(limit);
+    
+    // Find mentors matching the criteria
+    const mentors = await Mentor.find(searchCriteria)
+      .select('name email profile_picture current_role expertise mentorship_focus_areas mentorship_availability industries_worked_in rating years_of_experience')
+      .skip(skip)
+      .limit(parseInt(limit))
+      .sort({ rating: -1 });
+    
+    // Count total results for pagination
+    const totalMentors = await Mentor.countDocuments(searchCriteria);
+    
+    res.status(200).json({
+      success: true,
+      count: mentors.length,
+      total: totalMentors,
+      totalPages: Math.ceil(totalMentors / parseInt(limit)),
+      currentPage: parseInt(page),
+      mentors
+    });
+    
+  } catch (error) {
+    console.error("Error searching mentors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to search mentors",
+      error: error.message
+    });
+  }
+};
+
+// Apply to a mentor for mentorship
+const applyToMentor = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { mentorId, message, applicantId } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(teamId) || !mongoose.Types.ObjectId.isValid(mentorId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid team or mentor ID format"
+      });
+    }
+    
+    // Find the team and validate
+    const team = await Team.findById(teamId);
+    
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found"
+      });
+    }
+    
+    // Check if user is team leader
+    if (team.leader.toString() !== applicantId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Only team leaders can apply for mentorship"
+      });
+    }
+    
+    // Check if team already has 2 mentors
+    const mentorCount = team.mentor ? 1 : 0;
+    if (mentorCount >= 2) {
+      return res.status(400).json({
+        success: false,
+        message: "Your team already has the maximum number of mentors (2)"
+      });
+    }
+    
+    // Find the mentor
+    const mentor = await Mentor.findById(mentorId);
+    
+    if (!mentor) {
+      return res.status(404).json({
+        success: false,
+        message: "Mentor not found"
+      });
+    }
+    
+    // Check if an application already exists
+    const existingApplication = mentor.applications.find(
+      app => app.student.toString() === teamId.toString() && 
+      (app.status === 'pending' || app.status === 'accepted')
+    );
+    
+    if (existingApplication) {
+      return res.status(400).json({
+        success: false,
+        message: existingApplication.status === 'pending' ? 
+          "You have already applied to this mentor" : 
+          "This mentor is already mentoring your team"
+      });
+    }
+    
+    // Add the application to mentor's applications array
+    mentor.applications.push({
+      student: teamId,
+      status: 'pending',
+      application_date: new Date(),
+      message: message || `Team ${team.name} is requesting your mentorship`
+    });
+    
+    await mentor.save();
+    
+    // Add to team's activity log
+    team.activityLog.push({
+      action: 'team_updated',
+      description: `Applied for mentorship to ${mentor.name}`,
+      userId: applicantId,
+      userType: 'Student',
+      timestamp: new Date()
+    });
+    
+    team.lastActivityDate = new Date();
+    await team.save();
+    
+    res.status(200).json({
+      success: true,
+      message: `Application sent to mentor ${mentor.name}`,
+      applicationId: mentor.applications[mentor.applications.length - 1]._id
+    });
+    
+  } catch (error) {
+    console.error("Error applying to mentor:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to send mentorship application",
+      error: error.message
+    });
+  }
+};
+
+// Get all mentor applications for a team
+const getTeamMentorApplications = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { requesterId } = req.query;
+    
+    if (!mongoose.Types.ObjectId.isValid(teamId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid team ID format"
+      });
+    }
+    
+    // Find the team
+    const team = await Team.findById(teamId);
+    
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found"
+      });
+    }
+    
+    // Check if user is team leader or member
+    const isMember = team.members.some(m => m.student.toString() === requesterId.toString());
+    const isLeader = team.leader.toString() === requesterId.toString();
+    
+    if (!isMember && !isLeader) {
+      return res.status(403).json({
+        success: false,
+        message: "You don't have permission to view this team's applications"
+      });
+    }
+    
+    // Find all mentors with applications from this team
+    const mentorsWithApplications = await Mentor.find({
+      'applications.student': teamId
+    }).select('_id name email profile_picture current_role expertise applications');
+    
+    // Format the response
+    const applications = mentorsWithApplications.map(mentor => {
+      const teamApplication = mentor.applications.find(
+        app => app.student.toString() === teamId.toString()
+      );
+      
+      return {
+        applicationId: teamApplication._id,
+        mentorId: mentor._id,
+        mentorName: mentor.name,
+        mentorEmail: mentor.email,
+        mentorProfilePicture: mentor.profile_picture,
+        mentorRole: mentor.current_role,
+        mentorExpertise: mentor.expertise,
+        status: teamApplication.status,
+        applicationDate: teamApplication.application_date,
+        message: teamApplication.message
+      };
+    });
+    
+    res.status(200).json({
+      success: true,
+      teamId,
+      applications
+    });
+    
+  } catch (error) {
+    console.error("Error fetching team mentor applications:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch mentor applications",
+      error: error.message
+    });
+  }
+};
+
+// Cancel a pending mentor application
+const cancelMentorApplication = async (req, res) => {
+  try {
+    const { teamId, applicationId } = req.params;
+    const { cancelerId } = req.body;  // Get from request body instead of query params
+    
+    if (!cancelerId) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required parameter: cancelerId"
+      });
+    }
+    
+    if (!mongoose.Types.ObjectId.isValid(teamId) || !mongoose.Types.ObjectId.isValid(applicationId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid team or application ID format"
+      });
+    }
+    
+    // Find the team
+    const team = await Team.findById(teamId);
+    
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found"
+      });
+    }
+    
+    // Check if user is team leader
+    if (team.leader.toString() !== cancelerId) {
+      return res.status(403).json({
+        success: false,
+        message: "Only team leaders can cancel mentorship applications"
+      });
+    }
+    
+    // Find the mentor with this application
+    const mentor = await Mentor.findOne({
+      'applications._id': applicationId
+    });
+    
+    if (!mentor) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found"
+      });
+    }
+    
+    // Find the application
+    const applicationIndex = mentor.applications.findIndex(
+      app => app._id.toString() === applicationId
+    );
+    
+    if (applicationIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found"
+      });
+    }
+    
+    // Check if it's pending
+    if (mentor.applications[applicationIndex].status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: `Cannot cancel application with status: ${mentor.applications[applicationIndex].status}`
+      });
+    }
+    
+    // Remove the application
+    mentor.applications.splice(applicationIndex, 1);
+    await mentor.save();
+    
+    res.status(200).json({
+      success: true,
+      message: "Application cancelled successfully"
+    });
+    
+  } catch (error) {
+    console.error("Error cancelling mentor application:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to cancel application",
+      error: error.message
+    });
+  }
+};
+
+// Get mentors for a team
+const getTeamMentors = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(teamId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid team ID format"
+      });
+    }
+    
+    // Find the team
+    const team = await Team.findById(teamId);
+    
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found"
+      });
+    }
+    
+    // Format mentor data if exists
+    let mentors = [];
+    if (team.mentor && team.mentor.mentorId) {
+      const mentorData = await Mentor.findById(team.mentor.mentorId)
+        .select('name email profile_picture current_role expertise mentorship_focus_areas rating');
+      
+      if (mentorData) {
+        mentors.push({
+          _id: mentorData._id,
+          name: mentorData.name,
+          email: mentorData.email,
+          profile_picture: mentorData.profile_picture,
+          current_role: mentorData.current_role,
+          expertise: mentorData.expertise,
+          mentorship_focus_areas: mentorData.mentorship_focus_areas,
+          rating: mentorData.rating,
+          joinedAt: team.mentor.joinedAt,
+          status: team.mentor.status
+        });
+      }
+    }
+    
+    res.status(200).json({
+      success: true,
+      teamId,
+      mentors
+    });
+    
+  } catch (error) {
+    console.error("Error fetching team mentors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch team mentors",
+      error: error.message
+    });
+  }
+};
 
 // Add these to your module.exports
 module.exports = {
@@ -1653,5 +2046,10 @@ module.exports = {
   deleteProject,
   getStudentById,
   getStudentProfileById,
+  searchMentors,
+  applyToMentor,
+  getTeamMentorApplications,
+  cancelMentorApplication,
+  getTeamMentors
 
 };

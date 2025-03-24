@@ -44,7 +44,7 @@ const mentorSchema = new mongoose.Schema(
     // Track students who have applied for mentorship
     applications: [
       {
-        student: { type: mongoose.Schema.Types.ObjectId, ref: "Student" },
+        student: { type: mongoose.Schema.Types.ObjectId, ref: "Team" },
         status: { 
           type: String, 
           enum: ["pending", "accepted", "rejected", "waitlisted"], 
