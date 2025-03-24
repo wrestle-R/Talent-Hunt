@@ -13,7 +13,12 @@ const {
   updateTeamDetails,
   removeTeamMember,
   regenerateJoinCode,
-  getPendingInvitations // Add this
+  getPendingInvitations,
+  addProject,
+  updateProject,
+  deleteProject,
+  getStudentById,
+  getStudentProfileById
 } = require('../controllers/TeamController');
 
 // Team management routes (no auth middleware)
@@ -34,5 +39,15 @@ router.post('/:teamId/regenerate-code', regenerateJoinCode);
 
 // Add the route for fetching pending invitations
 router.get('/:teamId/invitations', getPendingInvitations);
+
+// Project management routes
+router.post('/:teamId/projects', addProject);
+router.put('/:teamId/projects/:projectId', updateProject);
+router.delete('/:teamId/projects/:projectId', deleteProject);
+
+// Make sure this route exists in your StudentRoutes.js file
+
+router.get('/student/:studentId', getStudentProfileById);
+
 
 module.exports = router;

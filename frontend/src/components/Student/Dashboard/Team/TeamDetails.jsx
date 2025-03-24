@@ -3,7 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Users, ChevronLeft, Crown, UserPlus, Clipboard, 
   Check, X, ExternalLink, Mail, Shield, Clock, 
-  User, Code, Plus, Trash, Settings, UserX, MessageCircle
+  User, Code, Plus, Trash, Settings, UserX, MessageCircle,
+  Calendar
 } from 'lucide-react';
 import axios from 'axios';
 import { useUser } from '../../../../../context/UserContext';
@@ -364,13 +365,24 @@ const TeamDetails = () => {
         <div className="flex gap-2">
           {/* Add Team Chat button for team members and leaders */}
           {(team.userStatus.isMember || team.userStatus.isLeader) && (
-            <button 
-              onClick={() => setIsTeamChatOpen(true)}
-              className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-200 flex items-center gap-2"
-            >
-              <MessageCircle size={16} />
-              Team Chat
-            </button>
+            <>
+              <button 
+                onClick={() => setIsTeamChatOpen(true)}
+                className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-200 flex items-center gap-2"
+              >
+                <MessageCircle size={16} />
+                Team Chat
+              </button>
+              
+              {/* Projects button for team members and leaders */}
+              <button 
+                onClick={() => navigate(`/student/team/${teamId}/projects`)}
+                className="bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg hover:bg-indigo-200 flex items-center gap-2"
+              >
+                <Code size={16} />
+                Projects
+              </button>
+            </>
           )}
           
           {team.userStatus.isLeader ? (
@@ -555,21 +567,19 @@ const TeamDetails = () => {
             </>
           )}
           
-          {team.projects && team.projects.length > 0 && (
-            <button
-              onClick={() => setActiveTab('projects')}
-              className={`pb-4 px-1 ${
-                activeTab === 'projects'
-                  ? 'border-b-2 border-indigo-600 text-indigo-600 font-medium'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              <span className="flex items-center gap-2">
-                <Code size={18} />
-                Projects ({team.projects.length})
-              </span>
-            </button>
-          )}
+          <button
+            onClick={() => setActiveTab('projects')}
+            className={`pb-4 px-1 ${
+              activeTab === 'projects'
+                ? 'border-b-2 border-indigo-600 text-indigo-600 font-medium'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
+          >
+            <span className="flex items-center gap-2">
+              <Code size={18} />
+              Projects ({team.projects?.length || 0})
+            </span>
+          </button>
         </div>
       </div>
 
@@ -1061,19 +1071,22 @@ const TeamDetails = () => {
           </div>
         )}
         
-        {activeTab === 'projects' && team.projects && (
+        {activeTab === 'projects' && (
           <div>
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-medium text-lg">Team Projects</h3>
               {team.userStatus.isLeader && (
-                <button className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 text-sm">
-                  <Plus size={16} />
-                  Add Project
+                <button 
+                  onClick={() => navigate(`/student/team/${teamId}/projects`)}
+                  className="text-indigo-600 hover:text-indigo-800 flex items-center gap-1 text-sm"
+                >
+                  <Settings size={16} />
+                  Manage Projects
                 </button>
               )}
             </div>
             
-            {team.projects.length > 0 ? (
+            {team.projects && team.projects.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {team.projects.map(project => (
                   <div key={project._id} className="border border-gray-200 rounded-lg p-4">
@@ -1089,7 +1102,7 @@ const TeamDetails = () => {
                               ? 'bg-red-50 text-red-700'
                               : 'bg-yellow-50 text-yellow-700'
                       }`}>
-                        {project.status.charAt(0).toUpperCase() + project.status.slice(1)}
+                        {project.status.charAt(0).toUpperCase() + project.status.slice(1).replace('-', ' ')}
                       </span>
                     </div>
                     
@@ -1106,6 +1119,27 @@ const TeamDetails = () => {
                         </div>
                       </div>
                     )}
+                    
+                    <div className="flex flex-col sm:flex-row sm:items-center text-sm text-gray-500 gap-2 mb-3">
+                      {project.startDate && (
+                        <div className="flex items-center">
+                          <Calendar size={14} className="mr-1" />
+                          <span>
+                            Started: {new Date(project.startDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                      
+                      {project.endDate && (
+                        <div className="flex items-center">
+                          <Calendar size={14} className="mr-1" />
+                          <span>
+                            {project.status === 'completed' ? 'Completed' : 'Ends'}: 
+                            {' '}{new Date(project.endDate).toLocaleDateString()}
+                          </span>
+                        </div>
+                      )}
+                    </div>
                     
                     <div className="flex gap-2">
                       {project.githubRepo && (
@@ -1139,6 +1173,15 @@ const TeamDetails = () => {
               <div className="text-center py-10">
                 <Code size={40} className="mx-auto text-gray-300 mb-2" />
                 <p className="text-gray-500">No projects added yet</p>
+                {team.userStatus.isLeader && (
+                  <button 
+                    onClick={() => navigate(`/student/team/${teamId}/projects`)}
+                    className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2 mx-auto"
+                  >
+                    <Plus size={16} />
+                    Add Your First Project
+                  </button>
+                )}
               </div>
             )}
           </div>

@@ -1224,6 +1224,416 @@ const getPendingInvitations = async (req, res) => {
   }
 };
 
+// Add a new project to a team
+const addProject = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { 
+      name, 
+      description, 
+      status, 
+      techStack, 
+      githubRepo, 
+      deployedUrl, 
+      startDate, 
+      endDate, 
+      creatorId 
+    } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(teamId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid team ID format"
+      });
+    }
+    
+    // Find the team
+    const team = await Team.findById(teamId);
+    
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found"
+      });
+    }
+    
+    // Check if user is team leader
+    if (team.leader.toString() !== creatorId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the team leader can add projects"
+      });
+    }
+    
+    // Validation
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Project name is required"
+      });
+    }
+    
+    // For completed projects, end date is required
+    if (status === 'completed' && !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "End date is required for completed projects"
+      });
+    }
+    
+    // Ensure dates are valid
+    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+      return res.status(400).json({
+        success: false,
+        message: "End date cannot be before start date"
+      });
+    }
+    
+    // Create a new project
+    const newProject = {
+      name,
+      description: description || '',
+      status: status || 'planning',
+      techStack: techStack || [],
+      githubRepo: githubRepo || '',
+      deployedUrl: deployedUrl || '',
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
+      // Generate a new ObjectId for the project
+      _id: new mongoose.Types.ObjectId()
+    };
+    
+    // Add project to team
+    team.projects.push(newProject);
+    
+    // Add to activity log
+    team.activityLog.push({
+      action: 'project_added',
+      description: `New project "${name}" was added to the team`,
+      userId: creatorId,
+      userType: 'Student',
+      timestamp: new Date()
+    });
+    
+    team.lastActivityDate = new Date();
+    await team.save();
+    
+    res.status(201).json({
+      success: true,
+      message: "Project added successfully",
+      project: newProject
+    });
+    
+  } catch (error) {
+    console.error("Error adding project:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to add project",
+      error: error.message
+    });
+  }
+};
+
+// Update an existing project
+const updateProject = async (req, res) => {
+  try {
+    const { teamId, projectId } = req.params;
+    const { 
+      name, 
+      description, 
+      status, 
+      techStack, 
+      githubRepo, 
+      deployedUrl, 
+      startDate, 
+      endDate, 
+      updaterId 
+    } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(teamId) || !mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format"
+      });
+    }
+    
+    // Find the team
+    const team = await Team.findById(teamId);
+    
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found"
+      });
+    }
+    
+    // Check if user is team leader
+    if (team.leader.toString() !== updaterId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the team leader can update projects"
+      });
+    }
+    
+    // Find the project in the team
+    const projectIndex = team.projects.findIndex(p => p._id.toString() === projectId);
+    
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found in team"
+      });
+    }
+    
+    // Validation
+    if (!name || name.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Project name is required"
+      });
+    }
+    
+    // For completed projects, end date is required
+    if (status === 'completed' && !endDate) {
+      return res.status(400).json({
+        success: false,
+        message: "End date is required for completed projects"
+      });
+    }
+    
+    // Ensure dates are valid
+    if (startDate && endDate && new Date(endDate) < new Date(startDate)) {
+      return res.status(400).json({
+        success: false,
+        message: "End date cannot be before start date"
+      });
+    }
+    
+    // Check if the project is being marked as completed
+    const isNewlyCompleted = 
+      status === 'completed' && 
+      team.projects[projectIndex].status !== 'completed';
+    
+    // Update the project
+    team.projects[projectIndex] = {
+      ...team.projects[projectIndex],
+      name,
+      description: description || '',
+      status: status || 'planning',
+      techStack: techStack || [],
+      githubRepo: githubRepo || '',
+      deployedUrl: deployedUrl || '',
+      startDate: startDate ? new Date(startDate) : team.projects[projectIndex].startDate,
+      endDate: endDate ? new Date(endDate) : team.projects[projectIndex].endDate
+    };
+    
+    // Add to activity log
+    team.activityLog.push({
+      action: isNewlyCompleted ? 'project_completed' : 'team_updated',
+      description: isNewlyCompleted ? 
+        `Project "${name}" was marked as completed` : 
+        `Project "${name}" was updated`,
+      userId: updaterId,
+      userType: 'Student',
+      timestamp: new Date()
+    });
+    
+    team.lastActivityDate = new Date();
+    await team.save();
+    
+    res.status(200).json({
+      success: true,
+      message: "Project updated successfully",
+      project: team.projects[projectIndex]
+    });
+    
+  } catch (error) {
+    console.error("Error updating project:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update project",
+      error: error.message
+    });
+  }
+};
+
+// Delete a project
+const deleteProject = async (req, res) => {
+  try {
+    const { teamId, projectId } = req.params;
+    const { deleterId } = req.body;
+    
+    if (!mongoose.Types.ObjectId.isValid(teamId) || !mongoose.Types.ObjectId.isValid(projectId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid ID format"
+      });
+    }
+    
+    // Find the team
+    const team = await Team.findById(teamId);
+    
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found"
+      });
+    }
+    
+    // Check if user is team leader
+    if (team.leader.toString() !== deleterId.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Only the team leader can delete projects"
+      });
+    }
+    
+    // Find the project in the team
+    const projectIndex = team.projects.findIndex(p => p._id.toString() === projectId);
+    
+    if (projectIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Project not found in team"
+      });
+    }
+    
+    // Store project name for activity log
+    const projectName = team.projects[projectIndex].name;
+    
+    // Remove the project
+    team.projects.splice(projectIndex, 1);
+    
+    // Add to activity log
+    team.activityLog.push({
+      action: 'team_updated',
+      description: `Project "${projectName}" was removed from the team`,
+      userId: deleterId,
+      userType: 'Student',
+      timestamp: new Date()
+    });
+    
+    team.lastActivityDate = new Date();
+    await team.save();
+    
+    res.status(200).json({
+      success: true,
+      message: "Project deleted successfully"
+    });
+    
+  } catch (error) {
+    console.error("Error deleting project:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete project",
+      error: error.message
+    });
+  }
+};
+
+const getStudentById = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID format"
+      });
+    }
+    
+    const student = await Student.findById(studentId);
+    
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+    
+    // Return the appropriate student data
+    res.status(200).json({
+      success: true,
+      student: {
+        _id: student._id,
+        name: student.name,
+        email: student.email,
+        profile_picture: student.profile_picture,
+        bio: student.bio,
+        institution: student.institution || (student.education ? student.education.institution : null),
+        skills: student.skills || [],
+        experience: student.experience,
+        education: student.education,
+        projects: student.projects,
+        github: student.github,
+        linkedin: student.linkedin,
+        portfolio: student.portfolio
+      }
+    });
+    
+  } catch (error) {
+    console.error("Error fetching student:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching student profile"
+    });
+  }
+};
+
+
+// Add this function to your existing StudentController.js
+const getStudentProfileById = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(studentId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid student ID format"
+      });
+    }
+    
+    const student = await Student.findById(studentId)
+      .select('name email profile_picture bio skills experience education projects github linkedin portfolio institution');
+    
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+    
+    // Return the formatted student data
+    res.status(200).json({
+      success: true,
+      student: {
+        _id: student._id,
+        name: student.name,
+        email: student.email,
+        profile_picture: student.profile_picture,
+        bio: student.bio,
+        institution: student.institution || (student.education ? student.education.institution : null),
+        skills: student.skills || [],
+        experience: student.experience,
+        education: student.education,
+        projects: student.projects || [],
+        github: student.github,
+        linkedin: student.linkedin,
+        portfolio: student.portfolio
+      }
+    });
+    
+  } catch (error) {
+    console.error("Error fetching student profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error while fetching student profile",
+      error: error.message
+    });
+  }
+};
+
+// Add these to your module.exports
 module.exports = {
   createTeam,
   getMyTeams,
@@ -1237,5 +1647,11 @@ module.exports = {
   updateTeamDetails,
   removeTeamMember,
   regenerateJoinCode,
-  getPendingInvitations // Add this
+  getPendingInvitations, // Add this
+  addProject,
+  updateProject,
+  deleteProject,
+  getStudentById,
+  getStudentProfileById,
+
 };

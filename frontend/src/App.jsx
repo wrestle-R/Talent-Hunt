@@ -33,7 +33,8 @@ import CreateTeam from "./components/Student/Dashboard/Team/CreateTeam"
 import TeamDetails from "./components/Student/Dashboard/Team/TeamDetails"
 import JoinTeam from "./components/Student/Dashboard/Team/JoinTeam"
 import TeamManage from './components/Student/Dashboard/Team/TeamManage';
-
+import TeamStudentProfile from './components/Student/Dashboard/Team/StudentProfile'
+import TeamProjects from './components/Student/Dashboard/Team/TeamProjects'
 
 const role = localStorage.userRole
 console.log(role)
@@ -59,7 +60,8 @@ const App = () => {
               <Route path="/student/team/join" element={<JoinTeam />} />
               <Route path="/student/team/:teamId" element={<TeamDetails />} />
               <Route path="/student/team/manage/:teamId" element={<TeamManage />} />
-
+              <Route path="/student/profile/:studentId" element={<TeamStudentProfile/>} /> 
+              <Route path="/student/team/:teamId/projects" element={<TeamProjects />} />
 
               {/* Hackathon Routes */}
               <Route path="/student/hackathons" element={<HackathonPage />} />
