@@ -2,6 +2,8 @@ const Admin = require("../models/Admin");
 const Hackathon = require("../models/Hackathon");
 const Student = require("../models/Student");
 const Mentor = require("../models/Mentor");
+const mongoose =require('mongoose')
+  
 // Admin authentication and profile functions
 const registerOrLoginAdmin = async (req, res) => {
   try {

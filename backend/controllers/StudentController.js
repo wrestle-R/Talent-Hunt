@@ -2,6 +2,9 @@ const Student = require("../models/Student");
 const Mentor = require("../models/Mentor");
 const Admin = require("../models/Admin"); // Add this import
 const Hackathon = require("../models/Hackathon"); // Add this line
+const Message = require('../models/Message');
+const mongoose = require('mongoose')
+
 
 const registerOrLoginStudent = async (req, res) => {
   try {
@@ -291,7 +294,7 @@ const getAllMentors = async (req, res) => {
       const completionPercentage = Math.round((completedFields / fields.length) * 100);
       
       // Only include if profile completion is at least 75%
-      if (completionPercentage >= 75) {
+      if (completionPercentage >= 50) {
         // Create a cleaned mentor object with only the necessary fields for display
         const cleanedMentor = {
           _id: mentor._id,
@@ -332,8 +335,6 @@ const getAllMentors = async (req, res) => {
     });
   }
 };
-
-
 
 // Update the getAllStudents function to exclude the current user
 const getAllStudents = async (req, res) => {
@@ -559,7 +560,7 @@ const getRecommendedTeammates = async (req, res) => {
       const completionPercentage = Math.round((completedFields / fields.length) * 100);
 
       // Only include if profile completion is at least 75%
-      if (completionPercentage >= 75) {
+      if (completionPercentage >= 50) {
         // Remove fields used only for calculation before sending to client
         const cleanedTeammate = {
           _id: teammate._id,
@@ -714,7 +715,7 @@ const getRecommendedMentors = async (req, res) => {
       const completionPercentage = Math.round((completedFields / fields.length) * 100);
       
       // Only include if profile completion is at least 75%
-      if (completionPercentage >= 75) {
+      if (completionPercentage >= 50) {
         // Create a cleaned version of the mentor object to return
         const cleanedMentor = {
           _id: mentor._id,
@@ -1093,8 +1094,829 @@ const getAllTeammates = async (req, res) => {
   }
 };
 
-// Update the exports to include all functions
-module.exports = { 
+// Add this function to get student conversations
+const getStudentConversations = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+    
+    // Find most recent messages between student and mentors/other students
+    const recentMessages = await Message.aggregate([
+      // Match messages involving this student
+      { 
+        $match: { 
+          $or: [
+            { senderId: studentId },
+            { receiverId: studentId }
+          ] 
+        } 
+      },
+      // Sort by time descending
+      { $sort: { createdAt: -1 } },
+      // Group by the conversation partner (the other person)
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$senderId", studentId] },
+              "$receiverId",
+              "$senderId"
+            ]
+          },
+          lastMessage: { $first: "$message" },
+          lastMessageTime: { $first: "$createdAt" },
+          unreadCount: { 
+            $sum: { 
+              $cond: [
+                { $and: [
+                  { $eq: ["$receiverId", studentId] },
+                  { $eq: ["$isRead", false] }
+                ]},
+                1,
+                0
+              ] 
+            }
+          },
+          messages: { $push: "$$ROOT" }
+        }
+      },
+      // Sort conversations by most recent message
+      { $sort: { lastMessageTime: -1 } },
+      // Limit to last 10 conversations
+      { $limit: 10 }
+    ]);
+
+    // Fetch user details for each conversation
+    const conversationsWithDetails = await Promise.all(
+      recentMessages.map(async (conv) => {
+        // First try to find user in Mentor collection
+        let user = await Mentor.findById(conv._id, 'name email profile_picture organization');
+        let userType = 'mentor';
+        
+        // If not found in mentors, check Students (for student-to-student chats)
+        if (!user) {
+          user = await Student.findById(conv._id, 'name email profile_picture education');
+          userType = 'student';
+        }
+        
+        if (!user) {
+          // Fallback for users that might be deleted
+          return {
+            userId: conv._id,
+            name: "Unknown User",
+            profilePicture: null,
+            userType: 'unknown',
+            lastMessage: conv.lastMessage,
+            lastMessageTime: conv.lastMessageTime,
+            unreadCount: conv.unreadCount
+          };
+        }
+        
+        return {
+          userId: conv._id,
+          name: user.name,
+          email: user.email,
+          profilePicture: user.profile_picture,
+          affiliation: userType === 'mentor' ? user.organization : (user.education?.institution || ''),
+          userType,
+          lastMessage: conv.lastMessage,
+          lastMessageTime: conv.lastMessageTime,
+          unreadCount: conv.unreadCount
+        };
+      })
+    );
+    
+    return res.status(200).json(conversationsWithDetails);
+    
+  } catch (error) {
+    console.error('Error fetching student conversations:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Add this function to mark messages as read
+const markStudentMessagesAsRead = async (req, res) => {
+  try {
+    const { studentId, senderId } = req.params;
+    
+    if (!studentId || !senderId) {
+      return res.status(400).json({ error: 'Both student ID and sender ID are required' });
+    }
+    
+    // Update all unread messages from this sender to this student
+    const result = await Message.updateMany(
+      { 
+        senderId: senderId,
+        receiverId: studentId,
+        isRead: false
+      },
+      { $set: { isRead: true } }
+    );
+    
+    return res.status(200).json({ 
+      success: true,
+      messagesMarkedRead: result.modifiedCount 
+    });
+    
+  } catch (error) {
+    console.error('Error marking messages as read:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+
+// Add this function to get student-mentor conversations only
+const getMentorConversations = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+    
+    // Find most recent messages between student and mentors only
+    const recentMessages = await Message.aggregate([
+      // Match messages involving this student
+      { 
+        $match: { 
+          $or: [
+            { senderId: studentId },
+            { receiverId: studentId }
+          ] 
+        } 
+      },
+      // Sort by time descending
+      { $sort: { createdAt: -1 } },
+      // Group by the conversation partner (the other person)
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$senderId", studentId] },
+              "$receiverId",
+              "$senderId"
+            ]
+          },
+          lastMessage: { $first: "$message" },
+          lastMessageTime: { $first: "$createdAt" },
+          unreadCount: { 
+            $sum: { 
+              $cond: [
+                { $and: [
+                  { $eq: ["$receiverId", studentId] },
+                  { $eq: ["$isRead", false] }
+                ]},
+                1,
+                0
+              ] 
+            }
+          },
+          messages: { $push: "$$ROOT" }
+        }
+      },
+      // Sort conversations by most recent message
+      { $sort: { lastMessageTime: -1 } }
+    ]);
+
+    // Filter and fetch only mentor user details
+    const mentorConversations = await Promise.all(
+      recentMessages.map(async (conv) => {
+        // Try to find the user in Mentor collection
+        const mentor = await Mentor.findById(conv._id, 'name email profile_picture current_role expertise organization');
+        
+        // Skip if not a mentor
+        if (!mentor) {
+          return null;
+        }
+        
+        return {
+          userId: conv._id,
+          name: mentor.name,
+          email: mentor.email,
+          profilePicture: mentor.profile_picture,
+          affiliation: mentor.organization || (mentor.current_role?.company || ''),
+          expertise: mentor.expertise?.technical_skills || [],
+          lastMessage: conv.lastMessage,
+          lastMessageTime: conv.lastMessageTime,
+          unreadCount: conv.unreadCount
+        };
+      })
+    );
+    
+    // Filter out null values (non-mentors) and limit if needed
+    const filteredMentorConversations = mentorConversations
+      .filter(conv => conv !== null);
+    
+    return res.status(200).json(filteredMentorConversations);
+    
+  } catch (error) {
+    console.error('Error fetching mentor conversations:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Add these functions to your StudentController.js file
+// Get student projects
+const getStudentProjects = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { search, techFilter } = req.query;
+    
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+    
+    // Find the student
+    const student = await Student.findById(studentId);
+    
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Get all projects, regardless of status
+    let projects = student.projects || [];
+    
+    // Apply search filter if provided
+    if (search) {
+      const searchLower = search.toLowerCase();
+      projects = projects.filter(project => 
+        (project.name && project.name.toLowerCase().includes(searchLower)) ||
+        (project.description && project.description.toLowerCase().includes(searchLower)) ||
+        (project.tech_stack && project.tech_stack.some(tech => 
+          tech.toLowerCase().includes(searchLower)
+        ))
+      );
+    }
+    
+    // Apply tech stack filter if provided
+    if (techFilter) {
+      const techFilterLower = techFilter.toLowerCase();
+      projects = projects.filter(project => 
+        project.tech_stack && project.tech_stack.some(tech => 
+          tech.toLowerCase().includes(techFilterLower)
+        )
+      );
+    }
+    
+    // Don't show deleted projects by default
+    projects = projects.filter(project => !project.isDeleted);
+    
+    // Format projects for consistency and ensure status is included
+    const formattedProjects = projects.map(project => ({
+      _id: project._id,
+      name: project.name,
+      description: project.description,
+      tech_stack: project.tech_stack || [],
+      techStack: project.tech_stack || [], // Include both naming conventions for flexibility
+      github_link: project.github_link,
+      githubLink: project.github_link, // Include both naming conventions
+      live_demo: project.live_demo,
+      liveDemo: project.live_demo, // Include both naming conventions
+      status: project.status || 'Pending', // Default to 'Pending' if no status
+      createdAt: project.createdAt || null,
+      updatedAt: project.updatedAt || null,
+      moderatorNotes: project.moderatorNotes || '',
+      isFlagged: project.isFlagged || false
+    }));
+    
+    // Sort projects by creation date (newest first) if available
+    formattedProjects.sort((a, b) => {
+      if (a.createdAt && b.createdAt) {
+        return new Date(b.createdAt) - new Date(a.createdAt);
+      }
+      return 0;
+    });
+    
+    // Calculate counts by status for the frontend
+    const statusCounts = {
+      Total: formattedProjects.length,
+      Pending: formattedProjects.filter(p => p.status === 'Pending').length,
+      Approved: formattedProjects.filter(p => p.status === 'Approved').length,
+      Rejected: formattedProjects.filter(p => p.status === 'Rejected').length
+    };
+    
+    return res.status(200).json({
+      success: true,
+      count: formattedProjects.length,
+      statusCounts: statusCounts,
+      projects: formattedProjects
+    });
+    
+  } catch (error) {
+    console.error('Error fetching student projects:', error);
+    
+    // More detailed error handling
+    if (error.name === 'CastError') {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Invalid student ID format' 
+      });
+    }
+    
+    return res.status(500).json({ 
+      success: false,
+      error: 'Server error', 
+      message: error.message 
+    });
+  }
+};
+
+// Add a project
+const addStudentProject = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const projectData = req.body;
+    
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+    
+    // Validate required fields
+    if (!projectData.name || !projectData.description || !projectData.tech_stack) {
+      return res.status(400).json({ error: 'Project name, description, and tech stack are required' });
+    }
+    
+    // Find the student
+    const student = await Student.findById(studentId);
+    
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Initialize projects array if it doesn't exist
+    if (!student.projects) {
+      student.projects = [];
+    }
+    
+    // Add new project with an _id
+    const newProject = {
+      _id: new mongoose.Types.ObjectId(),
+      ...projectData
+    };
+    
+    student.projects.push(newProject);
+    await student.save();
+    
+    return res.status(201).json({
+      success: true,
+      message: 'Project added successfully',
+      project: newProject
+    });
+    
+  } catch (error) {
+    console.error('Error adding student project:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Update a project
+const updateStudentProject = async (req, res) => {
+  try {
+    const { studentId, projectId } = req.params;
+    const projectData = req.body;
+    
+    if (!studentId || !projectId) {
+      return res.status(400).json({ error: 'Student ID and Project ID are required' });
+    }
+    
+    // Find the student
+    const student = await Student.findById(studentId);
+    
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Find the project index
+    const projectIndex = student.projects.findIndex(
+      project => project._id.toString() === projectId
+    );
+    
+    if (projectIndex === -1) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+    
+    // Update the project
+    student.projects[projectIndex] = {
+      _id: student.projects[projectIndex]._id, // Keep the original ID
+      ...projectData
+    };
+    
+    await student.save();
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Project updated successfully',
+      project: student.projects[projectIndex]
+    });
+    
+  } catch (error) {
+    console.error('Error updating student project:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+// Delete a project
+const deleteStudentProject = async (req, res) => {
+  try {
+    const { studentId, projectId } = req.params;
+    
+    if (!studentId || !projectId) {
+      return res.status(400).json({ error: 'Student ID and Project ID are required' });
+    }
+    
+    // Find the student
+    const student = await Student.findById(studentId);
+    
+    if (!student) {
+      return res.status(404).json({ error: 'Student not found' });
+    }
+    
+    // Remove the project
+    student.projects = student.projects.filter(
+      project => project._id.toString() !== projectId
+    );
+    
+    await student.save();
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Project deleted successfully'
+    });
+    
+  } catch (error) {
+    console.error('Error deleting student project:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+const getPotentialTeammates = async (req, res) => {
+  try {
+    const { uid } = req.params;
+    const { purpose, skills } = req.query;
+    
+    // Find the current student to get their email
+    const currentStudent = await Student.findOne({ firebaseUID: uid });
+    
+    if (!currentStudent) {
+      return res.status(404).json({ 
+        success: false, 
+        message: "Student not found" 
+      });
+    }
+
+    // Base query to exclude current user and rejected students
+    let query = {
+      $and: [
+        { firebaseUID: { $ne: uid } },
+        { email: { $ne: currentStudent.email } },
+        { isRejected: false },
+        { 'teammate_search.looking_for_teammates': true }
+      ]
+    };
+    
+    // Add filter for purpose (Project, Hackathon, Both)
+    if (purpose && purpose !== 'all') {
+      if (purpose === 'Both') {
+        // If looking for both, include students who are:
+        // 1. Looking for both
+        // 2. Looking for either Project or Hackathon
+        query.$and.push({
+          $or: [
+            { 'teammate_search.purpose': 'Both' },
+            { 'teammate_search.purpose': 'Project' },
+            { 'teammate_search.purpose': 'Hackathon' }
+          ]
+        });
+      } else {
+        // If looking for specific purpose, include:
+        // 1. Students looking for that specific purpose
+        // 2. Students looking for both
+        query.$and.push({
+          $or: [
+            { 'teammate_search.purpose': purpose },
+            { 'teammate_search.purpose': 'Both' }
+          ]
+        });
+      }
+    }
+
+    // Rest of your existing query logic...
+    const potentialTeammates = await Student.find(query)
+      .select({
+        firebaseUID: 1,
+        name: 1,
+        email: 1,
+        profile_picture: 1,
+        education: 1,
+        skills: 1,
+        interests: 1,
+        location: 1,
+        bio: 1,
+        teammate_search: 1,
+        current_search_preferences: 1
+      });
+
+    const formattedTeammates = potentialTeammates.map(teammate => {
+      const profileCompletion = calculateProfileCompletionPercentage(teammate);
+      
+      // Enhanced lookingFor object with better handling of Both
+      const lookingFor = {
+        purpose: teammate.teammate_search?.purpose || 'Not specified',
+        desiredSkills: teammate.teammate_search?.desired_skills || [],
+        urgencyLevel: teammate.teammate_search?.urgency_level || 'Medium',
+        
+        // Include both project and hackathon info when purpose is 'Both'
+        projectInfo: (teammate.teammate_search?.purpose === 'Project' || teammate.teammate_search?.purpose === 'Both') 
+          ? {
+              description: teammate.teammate_search?.project_preferences?.description || '',
+              teamSize: teammate.teammate_search?.project_preferences?.team_size || '',
+              techStack: teammate.teammate_search?.project_preferences?.tech_stack || []
+            }
+          : null,
+        
+        hackathonInfo: (teammate.teammate_search?.purpose === 'Hackathon' || teammate.teammate_search?.purpose === 'Both')
+          ? {
+              preferredType: teammate.teammate_search?.hackathon_preferences?.preferred_type || '',
+              teamSize: teammate.teammate_search?.hackathon_preferences?.team_size || '',
+              techStack: teammate.teammate_search?.hackathon_preferences?.tech_stack || []
+            }
+          : null
+      };
+
+      return {
+        _id: teammate._id,
+        firebaseUID: teammate.firebaseUID,
+        name: teammate.name,
+        email: teammate.email,
+        profile_picture: teammate.profile_picture,
+        education: teammate.education,
+        skills: teammate.skills || [],
+        interests: teammate.interests || [],
+        location: teammate.location,
+        bio: teammate.bio || '',
+        profileCompletion,
+        lookingFor
+      };
+    });
+
+    // Filter by minimum profile completion
+    const eligibleTeammates = formattedTeammates.filter(
+      teammate => teammate.profileCompletion >= 50
+    );
+
+    res.status(200).json({
+      success: true,
+      count: eligibleTeammates.length,
+      teammates: eligibleTeammates
+    });
+  } catch (error) {
+    console.error("Error fetching potential teammates:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to retrieve potential teammates", 
+      error: error.message 
+    });
+  }
+};
+
+// Get teammate details by ID
+const getTeammateById = async (req, res) => {
+  try {
+    const { teammateId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(teammateId)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid teammate ID format" 
+      });
+    }
+    
+    const teammate = await Student.findById(teammateId)
+      .select({
+        firebaseUID: 1,
+        name: 1,
+        email: 1,
+        profile_picture: 1,
+        education: 1,
+        skills: 1,
+        interests: 1,
+        location: 1,
+        projects: 1,
+        bio: 1,
+        social_links: 1,
+        preferred_working_hours: 1,
+        goals: 1,
+        achievements: 1,
+        teammate_search: 1,
+        current_search_preferences: 1
+      });
+    
+    if (!teammate) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Teammate not found" 
+      });
+    }
+    
+    // Format what they're looking for
+    const lookingFor = {
+      isLookingForTeammates: teammate.teammate_search?.looking_for_teammates || false,
+      purpose: teammate.teammate_search?.purpose || 'Not specified',
+      desiredSkills: teammate.teammate_search?.desired_skills || [],
+      projectDescription: teammate.teammate_search?.project_description || '',
+      teamSizePreference: teammate.teammate_search?.team_size_preference || '',
+      urgencyLevel: teammate.teammate_search?.urgency_level || 'Medium',
+      hackathonDetails: teammate.current_search_preferences?.hackathon_teammate_preferences || null,
+      projectDetails: teammate.current_search_preferences?.project_teammate_preferences || null
+    };
+    
+    // Format filtered projects (only approved ones)
+    const approvedProjects = teammate.projects
+      ?.filter(project => 
+        project.status?.toLowerCase() === 'approved' && 
+        !project.isDeleted
+      )
+      .map(project => ({
+        _id: project._id,
+        name: project.name,
+        description: project.description,
+        tech_stack: project.tech_stack || [],
+        github_link: project.github_link,
+        live_demo: project.live_demo
+      })) || [];
+    
+    // Calculate profile completion
+    const profileCompletion = calculateProfileCompletionPercentage(teammate);
+    
+    // Format response
+    const formattedTeammate = {
+      _id: teammate._id,
+      firebaseUID: teammate.firebaseUID,
+      name: teammate.name,
+      email: teammate.email,
+      profile_picture: teammate.profile_picture,
+      education: teammate.education,
+      skills: teammate.skills || [],
+      interests: teammate.interests || [],
+      location: teammate.location,
+      bio: teammate.bio || '',
+      social_links: teammate.social_links,
+      preferred_working_hours: teammate.preferred_working_hours,
+      goals: teammate.goals || [],
+      achievements: teammate.achievements || [],
+      projects: approvedProjects,
+      profileCompletion,
+      lookingFor
+    };
+    
+    res.status(200).json({
+      success: true,
+      teammate: formattedTeammate
+    });
+    
+  } catch (error) {
+    console.error("Error fetching teammate details:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to retrieve teammate details", 
+      error: error.message 
+    });
+  }
+};
+
+// Helper function to calculate profile completion percentage
+const calculateProfileCompletionPercentage = (student) => {
+  if (!student) return 0;
+  
+  // Define fields to check for profile completion
+  const fields = [
+    { name: 'name', check: () => !!student.name },
+    { name: 'email', check: () => !!student.email },
+    { name: 'profile_picture', check: () => !!student.profile_picture },
+    { name: 'location', check: () => !!student.location?.city || !!student.location?.country },
+    { name: 'education', check: () => !!student.education?.institution || !!student.education?.degree },
+    { name: 'skills', check: () => Array.isArray(student.skills) && student.skills.length > 0 },
+    { name: 'interests', check: () => Array.isArray(student.interests) && student.interests.length > 0 },
+    { name: 'bio', check: () => !!student.bio },
+    { name: 'social_links', check: () => 
+      !!student.social_links?.github || 
+      !!student.social_links?.linkedin || 
+      !!student.social_links?.portfolio 
+    },
+    { name: 'preferred_working_hours', check: () => 
+      !!student.preferred_working_hours?.start_time && 
+      !!student.preferred_working_hours?.end_time 
+    }
+  ];
+  
+  // Count completed fields
+  const completedFields = fields.filter(field => field.check()).length;
+  const totalFields = fields.length;
+  
+  // Calculate percentage
+  return Math.round((completedFields / totalFields) * 100);
+};
+
+// Get mentor details by ID
+const getMentorById = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+    
+    if (!mongoose.Types.ObjectId.isValid(mentorId)) {
+      return res.status(400).json({ 
+        success: false,
+        message: "Invalid mentor ID format" 
+      });
+    }
+    
+    const mentor = await Mentor.findById(mentorId)
+      .select({
+        name: 1,
+        title: 1,
+        bio: 1,
+        profile_picture: 1,
+        skills: 1,
+        years_of_experience: 1,
+        education: 1,
+        current_company: 1,
+        location: 1,
+        languages: 1,
+        availability_status: 1,
+        mentor_topics: 1,
+        average_rating: 1,
+        total_reviews: 1,
+        social_links: 1,
+        current_role: 1,
+        expertise: 1,
+        mentorship_focus_areas: 1,
+        mentorship_availability: 1,
+        industries_worked_in: 1,
+        achievements: 1,
+        projects: 1,
+        work_experience: 1,
+        email: 1,
+        phone: 1,
+        preferred_contact_method: 1
+      });
+    
+    if (!mentor) {
+      return res.status(404).json({ 
+        success: false,
+        message: "Mentor not found" 
+      });
+    }
+    
+    // Format for consistent response
+    const formattedMentor = {
+      _id: mentor._id,
+      name: mentor.name,
+      title: mentor.title || mentor.current_role,
+      bio: mentor.bio,
+      profilePicture: mentor.profile_picture,
+      skills: mentor.skills || [],
+      expertise: mentor.expertise || [],
+      yearsOfExperience: mentor.years_of_experience,
+      education: mentor.education,
+      currentCompany: mentor.current_company,
+      location: mentor.location,
+      languages: mentor.languages || [],
+      availabilityStatus: mentor.availability_status,
+      mentorTopics: mentor.mentor_topics || [],
+      mentorshipFocusAreas: mentor.mentorship_focus_areas || [],
+      averageRating: mentor.average_rating || 0,
+      totalReviews: mentor.total_reviews || 0,
+      socialLinks: mentor.social_links || {},
+      mentorshipAvailability: mentor.mentorship_availability || {},
+      industriesWorkedIn: mentor.industries_worked_in || [],
+      achievements: mentor.achievements || [],
+      projects: mentor.projects || [],
+      workExperience: mentor.work_experience || [],
+      email: mentor.email,
+      phone: mentor.phone,
+      preferredContactMethod: mentor.preferred_contact_method || 'email'
+    };
+    
+    res.status(200).json({
+      success: true,
+      mentor: formattedMentor
+    });
+    
+  } catch (error) {
+    console.error("Error fetching mentor details:", error);
+    res.status(500).json({ 
+      success: false,
+      message: "Failed to retrieve mentor details", 
+      error: error.message 
+    });
+  }
+};
+
+// Add these to your exports
+module.exports = {
+  // ...existing exports
   registerOrLoginStudent,
   getStudentProfile, 
   updateStudentProfile,
@@ -1104,11 +1926,21 @@ module.exports = {
   getRecommendedTeammates,
   getRecommendedMentors,
   getAllTeammates,
-  // New hackathon-related functions
   getUpcomingHackathons,
   getPastHackathons,
   getRegisteredHackathons,
   getHackathonById,
-  registerForHackathon
+  registerForHackathon,
+  getStudentConversations,
+  markStudentMessagesAsRead,
+  getMentorConversations,
+  // New project endpoints
+  getStudentProjects,
+  addStudentProject,
+  updateStudentProject,
+  deleteStudentProject,
+  getTeammateById,
+  getPotentialTeammates,
+  getMentorById,
 };
 

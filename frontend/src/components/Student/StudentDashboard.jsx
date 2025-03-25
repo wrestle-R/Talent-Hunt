@@ -2,17 +2,26 @@ import React, { useState, useEffect } from 'react';
 import {
   GraduationCap, BookOpen, Trophy, Calendar, 
   Clock, Code, Users, Zap, ChevronRight, Bell,
-  MapPin, User, MessageCircle, Bookmark, ArrowLeft
+  MapPin, User, MessageCircle, Bookmark, ArrowLeft,
+  FolderGit2
 } from 'lucide-react';
-import DisplayMentors from './DisplayMentors';
-import DisplayTeammates from './DisplayTeammates';
+import DisplayMentors from './Dashboard/DisplayMentors';
+import DisplayTeammates from './Dashboard/DisplayTeammates';
 import { Link } from 'react-router-dom';
-import UpcomingHackathons from './UpcomingHackathons';
+import UpcomingHackathons from './Dashboard/UpcomingHackathons';
+import HackathonStatus from './Hackathon/HacakthonStatus';
+import StudentConversation from './Dashboard/StudentConversation';
+import StudentProjects from './Dashboard/StudentProjects';
+import TeamOverview from './Dashboard/Team/TeamOverview';
 
 const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
   // Add state to track what we're showing in full-page mode
   const [showAllMentors, setShowAllMentors] = useState(false);
   const [showAllTeammates, setShowAllTeammates] = useState(false);
+  const [showAllApplications, setShowAllApplications] = useState(false);
+  const [showAllMessages, setShowAllMessages] = useState(false);
+  const [showAllMentorMessages, setShowAllMentorMessages] = useState(false);
+  const [showAllProjects, setShowAllProjects] = useState(false);
   
   // Return different view based on what should be shown in full-page
   if (showAllMentors) {
@@ -51,6 +60,56 @@ const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
       </div>
     );
   }
+
+  // Show all hackathon applications full-page
+  if (showAllApplications) {
+    return (
+      <div className="w-[95%]">
+        <HackathonStatus 
+          isFullPage={true} 
+          onBack={() => setShowAllApplications(false)} 
+        />
+      </div>
+    );
+  }
+  
+  // Show all messages full-page
+  if (showAllMessages) {
+    return (
+      <div className="w-[95%] p-6">
+        <div className="flex items-center mb-6">
+          <button 
+            onClick={() => setShowAllMessages(false)}
+            className="bg-purple-100 text-purple-700 p-2 rounded-full mr-4 hover:bg-purple-200 transition-colors"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h2 className="text-2xl font-bold text-gray-800">My Conversations</h2>
+        </div>
+        
+        <StudentConversation userData={userData} isInDashboard={false} />
+      </div>
+    );
+  }
+  
+  // Show all projects full-page
+  if (showAllProjects) {
+    return (
+      <div className="w-[95%] p-6">
+        <div className="flex items-center mb-6">
+          <button 
+            onClick={() => setShowAllProjects(false)}
+            className="bg-indigo-100 text-indigo-700 p-2 rounded-full mr-4 hover:bg-indigo-200 transition-colors"
+          >
+            <ArrowLeft size={20} />
+          </button>
+          <h2 className="text-2xl font-bold text-gray-800">My Projects</h2>
+        </div>
+        
+        <StudentProjects userData={userData} isInDashboard={false} />
+      </div>
+    );
+  }
   
   // Regular dashboard view
   return (
@@ -80,93 +139,24 @@ const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
         </div>
       </div>
 
-      {/* Main activities overview and stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        {/* LEFT: Current activities */}
-        <div className="lg:col-span-2 bg-white rounded-xl shadow-md p-6">
-          <h3 className="font-bold text-lg mb-4">Current Activities</h3>
-          
-          <div className="space-y-4">
-            {/* Show mentor guidance */}
-            <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <GraduationCap className="text-blue-600" size={22} />
-                <div>
-                  <h4 className="font-medium text-gray-800">Looking for guidance?</h4>
-                  <p className="text-sm text-gray-600">Connect with a mentor to help with your projects</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setShowAllMentors(true)}
-                className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm"
-              >
-                Find Mentor
-              </button>
-            </div>
-            
-            {/* Show team invitation */}
-            <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-lg flex justify-between items-center">
-              <div className="flex items-center gap-3">
-                <Users className="text-emerald-600" size={22} />
-                <div>
-                  <h4 className="font-medium text-gray-800">Looking for teammates?</h4>
-                  <p className="text-sm text-gray-600">Build a team for your next project or hackathon</p>
-                </div>
-              </div>
-              <button 
-                onClick={() => setShowAllTeammates(true)}
-                className="bg-emerald-600 text-white px-3 py-1 rounded-lg text-sm"
-              >
-                Find Team
-              </button>
-            </div>
-            
-            {/* User's ongoing activities could go here */}
-          </div>
-        </div>
-        
-        {/* RIGHT: Stats summary */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="font-bold text-lg mb-4">Your Stats</h3>
-          
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-indigo-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <div className="bg-indigo-100 p-2 rounded-lg">
-                  <Trophy className="text-indigo-600" size={18} />
-                </div>
-                <span className="text-gray-700">Profile Completion</span>
-              </div>
-              <div className="text-right">
-                <span className="text-lg font-bold text-indigo-700">75%</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <div className="bg-blue-100 p-2 rounded-lg">
-                  <GraduationCap className="text-blue-600" size={18} />
-                </div>
-                <span className="text-gray-700">Active Mentorships</span>
-              </div>
-              <div className="text-right">
-                <span className="text-lg font-bold text-blue-700">2</span>
-              </div>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 bg-emerald-50 rounded-lg">
-              <div className="flex items-center gap-2">
-                <div className="bg-emerald-100 p-2 rounded-lg">
-                  <Users className="text-emerald-600" size={18} />
-                </div>
-                <span className="text-gray-700">Team Projects</span>
-              </div>
-              <div className="text-right">
-                <span className="text-lg font-bold text-emerald-700">1</span>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* Team Overview Component */}
+      <div className="mb-6">
+        <TeamOverview />
+      </div>
+      
+      {/* Conversations component */}
+      <div className="mb-6">
+        <StudentConversation userData={userData} limit={2} />
+      </div>
+      
+      {/* Projects Component */}
+      <div className="mb-6">
+        <StudentProjects userData={userData} limit={2} />
+      </div>
+      
+      {/* Hackathon Applications Component */}
+      <div className="mb-6">
+        <HackathonStatus limit={3} />
       </div>
       
       {/* Add Upcoming Hackathons section */}

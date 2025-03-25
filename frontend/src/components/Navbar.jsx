@@ -1,57 +1,68 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { auth } from '../firebaseConfig';
+import { useEffect, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { auth } from "../firebaseConfig"
 
 const Navbar = () => {
-  const navigate = useNavigate();
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [userRole, setUserRole] = useState('');
+  const navigate = useNavigate()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [userRole, setUserRole] = useState("")
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      setIsLoggedIn(!!user);
+      setIsLoggedIn(!!user)
       // Determine user role from localStorage or other source
       if (user) {
-        const storedUser = localStorage.getItem('user');
+        const storedUser = localStorage.getItem("user")
         if (storedUser) {
           try {
             // You might want to store role in localStorage when user logs in
-            const role = localStorage.getItem('userRole') || 'student';
-            setUserRole(role);
+            const role = localStorage.getItem("userRole") || "student"
+            setUserRole(role)
           } catch (error) {
-            console.error("Error parsing stored user:", error);
+            console.error("Error parsing stored user:", error)
           }
         }
       }
-    });
+    })
 
-    return () => unsubscribe();
-  }, []);
+    return () => unsubscribe()
+  }, [])
 
   const handleLogout = () => {
-    auth.signOut().then(() => {
-      localStorage.removeItem("user");
-      localStorage.removeItem("userRole");
-      navigate('/register');
-    }).catch((error) => {
-      console.error("Logout Error:", error);
-    });
-  };
+    auth
+      .signOut()
+      .then(() => {
+        localStorage.removeItem("user")
+        localStorage.removeItem("userRole")
+        navigate("/register")
+      })
+      .catch((error) => {
+        console.error("Logout Error:", error)
+      })
+  }
 
   return (
     <>
-      <nav className="bg-[#2F4156] text-white p-4 shadow-md fixed top-0 left-0 right-0 z-50">
+      <nav className="bg-gray-900 text-white p-4 shadow-md fixed top-0 left-0 right-0 z-50">
         <div className="container mx-auto flex justify-between items-center">
-          <Link to="/" className="text-2xl font-bold">TalentHunt</Link>
+          <Link to="/" className="text-2xl font-bold">
+            TalentHunt
+          </Link>
           <div className="flex space-x-4">
             {isLoggedIn ? (
               <>
-                <Link to={`/${userRole}/hero`} className="hover:text-[#C8D9E6]">Profile</Link>
-                <button onClick={handleLogout} className="hover:text-[#C8D9E6]">Logout</button>
+                <Link to={`/${userRole}/hero`} className="hover:text-gray-300">
+                  Profile
+                </Link>
+                <button onClick={handleLogout} className="hover:text-gray-300">
+                  Logout
+                </button>
               </>
             ) : (
               <>
-                <Link to="/register" className="hover:text-[#C8D9E6]">Sign Up</Link>
+                <Link to="/register" className="hover:text-gray-300">
+                  Sign Up
+                </Link>
               </>
             )}
           </div>
@@ -60,7 +71,8 @@ const Navbar = () => {
       {/* This div adds spacing below the navbar */}
       <div className="h-16"></div> {/* Adjust height to match your navbar height */}
     </>
-  );
-};
+  )
+}
 
-export default Navbar;
+export default Navbar
+

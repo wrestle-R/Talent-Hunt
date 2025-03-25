@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { Calendar, MapPin, Users, Clock, Award, ArrowLeft, Check } from 'lucide-react';
+import { Calendar, MapPin, Users, Clock, Award, ArrowLeft, Check, Eye } from 'lucide-react';
 
 const HackathonDetail = () => {
   const { id } = useParams();
@@ -11,6 +11,10 @@ const HackathonDetail = () => {
   const [error, setError] = useState(null);
   const [registering, setRegistering] = useState(false);
   const [registered, setRegistered] = useState(false);
+  
+  // Get user role from localStorage
+  const userRole = localStorage.getItem('userRole');
+  const isMentor = userRole === 'mentor';
 
   // Fetch hackathon details on component mount
   useEffect(() => {
@@ -20,13 +24,16 @@ const HackathonDetail = () => {
         const response = await axios.get(`http://localhost:4000/api/student/hackathons/${id}`);
         setHackathon(response.data.hackathon);
         
-        // Check if user is registered
-        const user = JSON.parse(localStorage.getItem('user'));
-        if (user && response.data.hackathon.applicants) {
-          const isRegistered = response.data.hackathon.applicants.some(
-            app => app.user === user._id || app.user._id === user._id
-          );
-          setRegistered(isRegistered);
+        // Only check registration status for students
+        if (!isMentor) {
+          // Check if user is registered
+          const user = JSON.parse(localStorage.getItem('user'));
+          if (user && response.data.hackathon.applicants) {
+            const isRegistered = response.data.hackathon.applicants.some(
+              app => app.user === user._id || app.user._id === user._id
+            );
+            setRegistered(isRegistered);
+          }
         }
 
         setError(null);
@@ -39,7 +46,7 @@ const HackathonDetail = () => {
     };
 
     fetchHackathon();
-  }, [id]);
+  }, [id, isMentor]);
 
   // Format date
   const formatDate = (dateString) => {
@@ -62,6 +69,9 @@ const HackathonDetail = () => {
 
   // Register for hackathon
   const registerForHackathon = async () => {
+    // Don't allow mentors to register
+    if (isMentor) return;
+    
     try {
       setRegistering(true);
       const user = JSON.parse(localStorage.getItem('user'));
@@ -105,10 +115,10 @@ const HackathonDetail = () => {
           <h2 className="text-xl font-bold mb-2">Error Loading Hackathon</h2>
           <p>{error || "Hackathon not found"}</p>
           <button 
-            onClick={() => navigate('/student/hackathons')}
+            onClick={() => navigate(-1)}
             className="mt-4 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg"
           >
-            Back to Hackathons
+            Back
           </button>
         </div>
       </div>
@@ -127,7 +137,7 @@ const HackathonDetail = () => {
     <div className="w-full p-6 bg-gray-50 min-h-screen">
       {/* Back button */}
       <button 
-        onClick={() => navigate('/student/hackathons')}
+        onClick={() => navigate(-1)}
         className="bg-purple-100 text-purple-700 p-2 rounded-full mb-6 hover:bg-purple-200 transition-colors flex items-center"
       >
         <ArrowLeft size={20} />
@@ -140,7 +150,13 @@ const HackathonDetail = () => {
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{hackathon.hackathonName}</h1>
             
             <div className="flex items-center gap-4">
-              {registered ? (
+              {/* For mentors, show view-only badge instead of register button */}
+              {isMentor ? (
+                <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg flex items-center">
+                  <Eye size={18} className="mr-2" />
+                  View Only (Mentor)
+                </div>
+              ) : registered ? (
                 <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg flex items-center">
                   <Check size={18} className="mr-2" />
                   Registered

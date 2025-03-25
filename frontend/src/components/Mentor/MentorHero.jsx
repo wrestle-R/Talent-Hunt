@@ -4,12 +4,16 @@ import { auth } from '../../firebaseConfig';
 import axios from 'axios';
 import MentorHeroProfile from './MentorHeroProfile';
 import MentorDashboard from './MentorDashboard';
+import { toast } from 'react-hot-toast';
 
 const MentorHero = () => {
+  // Initialize userData state with all expected properties
   const [userData, setUserData] = useState({
+    _id: '',
     name: '',
     email: '',
     profile_picture: '',
+    phone: '',
     current_role: {
       title: '',
       company: ''
@@ -19,13 +23,27 @@ const MentorHero = () => {
       technical_skills: [],
       non_technical_skills: []
     },
+    industries_worked_in: [],
+    mentorship_focus_areas: [],
+    mentorship_availability: {
+      hours_per_week: 2,
+      mentorship_type: []
+    },
+    hackathon_mentorship_experiences: [],
+    social_links: {
+      linkedin: '',
+      github: '',
+      personal_website: ''
+    },
     rating: 0,
+    applications: [],
+    mentees: [],
     bio: '',
-    isRejected : false,
-    rejectedReason: '',
+    isRejected: false,
+    rejectionReason: '',
   });
   
-  // Dashboard data with minimal default values
+  // Dashboard data with all expected properties
   const [dashboardData, setDashboardData] = useState({
     stats: {
       studentsReached: 0,
@@ -34,7 +52,9 @@ const MentorHero = () => {
       completedMentorships: 0
     },
     applications: [],
+    mentorships: [],
     reachouts: [],
+    conversations: [],
     upcomingHackathons: [],
     upcomingSessions: []
   });
@@ -73,27 +93,122 @@ const MentorHero = () => {
       const response = await axios.get(`http://localhost:4000/api/mentor/profile/${uid}`);
       
       if (response.data) {
-        // Update user data from API response
-        setUserData(prev => ({
-          ...prev,
-          ...response.data,
-        }));
+        console.log("Raw mentor data:", response.data);
         
-        // Update dashboard data from API response
-        if (response.data.dashboardData) {
-          setDashboardData(prev => ({
-            ...prev,
-            ...response.data.dashboardData
-          }));
-        }
+        // Extract all relevant fields from the response
+        const {
+          _id,
+          name,
+          email,
+          profile_picture,
+          phone,
+          current_role,
+          years_of_experience,
+          expertise,
+          industries_worked_in,
+          mentorship_focus_areas,
+          mentorship_availability,
+          hackathon_mentorship_experiences,
+          social_links,
+          rating,
+          applications,
+          mentees,
+          bio,
+          isRejected,
+          rejectionReason
+        } = response.data;
+        
+        // Update user data with all available fields
+        setUserData({
+          _id,
+          name: name || '',
+          email: email || '',
+          profile_picture: profile_picture || '',
+          phone: phone || '',
+          current_role: current_role || { title: '', company: '' },
+          years_of_experience: years_of_experience || 0,
+          expertise: expertise || { technical_skills: [], non_technical_skills: [] },
+          industries_worked_in: industries_worked_in || [],
+          mentorship_focus_areas: mentorship_focus_areas || [],
+          mentorship_availability: mentorship_availability || { 
+            hours_per_week: 2, 
+            mentorship_type: [] 
+          },
+          hackathon_mentorship_experiences: hackathon_mentorship_experiences || [],
+          social_links: social_links || { linkedin: '', github: '', personal_website: '' },
+          rating: rating || 0,
+          applications: applications || [],
+          mentees: mentees || [],
+          bio: bio || '',
+          isRejected: isRejected || false,
+          rejectionReason: rejectionReason || '',
+        });
+        
+        // Fetch dashboard data after getting the mentor profile
+        await fetchDashboardData(_id);
         
         // Fetch profile completion
-        fetchProfileCompletion(uid);
+        await fetchProfileCompletion(uid);
+        
+        // Save user to localStorage for easy access
+        localStorage.setItem("user", JSON.stringify({
+          _id,
+          uid,
+          email,
+          name,
+          userType: 'Mentor'
+        }));
+      } else {
+        toast.error("Failed to load mentor profile");
       }
     } catch (error) {
       console.error("Error fetching mentor profile:", error);
+      toast.error("Error loading your profile. Please try again.");
     } finally {
       setLoading(false);
+    }
+  };
+  
+  // Separate function to fetch dashboard data using mentor ID
+  const fetchDashboardData = async (mentorId) => {
+    if (!mentorId) return;
+    
+    try {
+      // Fetch team applications
+      const applicationsResponse = await axios.get(`http://localhost:4000/api/mentor/${mentorId}/applications`);
+      
+      // Fetch active mentorships
+      const mentorshipsResponse = await axios.get(`http://localhost:4000/api/mentor/${mentorId}/mentorships`);
+      
+      // Fetch recent conversations
+      const conversationsResponse = await axios.get(`http://localhost:4000/api/mentor/${mentorId}/conversations`);
+      
+      // Fetch upcoming hackathons
+      const hackathonsResponse = await axios.get(`http://localhost:4000/api/hackathons/upcoming`);
+      
+      // Calculate basic stats
+      const stats = {
+        studentsReached: mentorshipsResponse.data ? 
+          mentorshipsResponse.data.reduce((total, team) => total + team.members.length, 0) : 0,
+        activeProjects: mentorshipsResponse.data ? 
+          mentorshipsResponse.data.reduce((total, team) => total + (team.projectsCount || 0), 0) : 0,
+        mentorshipHours: mentorshipsResponse.data ? mentorshipsResponse.data.length * 5 : 0, // Estimate 5 hours per team
+        completedMentorships: 0 // This would need a separate endpoint to track completed mentorships
+      };
+      
+      // Update dashboard data state
+      setDashboardData({
+        stats,
+        applications: applicationsResponse.data || [],
+        mentorships: mentorshipsResponse.data || [],
+        conversations: conversationsResponse.data || [],
+        reachouts: [], // This would need a separate API endpoint
+        upcomingHackathons: hackathonsResponse.data || [],
+        upcomingSessions: [] // This would need a separate API endpoint
+      });
+      
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
     }
   };
   
@@ -107,8 +222,8 @@ const MentorHero = () => {
         setCompletionDetails({
           completedFields: response.data.completedFields,
           totalFields: response.data.totalFields,
-          fieldStatus: response.data.fieldStatus,
-          incompleteFields: response.data.incompleteFields
+          fieldStatus: response.data.fieldStatus || [],
+          incompleteFields: response.data.incompleteFields || []
         });
       }
     } catch (error) {
@@ -160,11 +275,6 @@ const MentorHero = () => {
       
       {/* Right Section - Dashboard with left margin */}
       <div className="flex-1" style={{ marginLeft: profileWidth }}>
-        <MentorDashboard 
-          dashboardData={dashboardData}
-          userData={userData}
-          refreshUserData={refreshUserData}
-        />
         <MentorDashboard 
           dashboardData={dashboardData}
           userData={userData}

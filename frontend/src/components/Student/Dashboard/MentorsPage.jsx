@@ -1,7 +1,7 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
-import { useUser } from '../../../context/UserContext';
-import DisplayMentors from '../../components/Student/DisplayMentors';
+import { useUser } from '../../../../context/UserContext';
+import DisplayMentors from './DisplayMentors';
 
 const MentorsPage = () => {
   const { userData, isLoading } = useUser();

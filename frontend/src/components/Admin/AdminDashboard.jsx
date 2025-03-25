@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CalendarDays, Users, Search, Bell, Shield, Code, Award, Database, Settings } from 'lucide-react';
+import { CalendarDays, Users, Search, Bell, Shield, Database, FileText, FileBarChart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const AdminDashboard = ({ userData }) => {
@@ -29,7 +29,7 @@ const AdminDashboard = ({ userData }) => {
     }
   };
 
-  // Dashboard sections/cards
+  // Dashboard sections/cards - streamlined for admin
   const dashboardSections = [
     {
       title: 'Manage Hackathons',
@@ -41,31 +41,13 @@ const AdminDashboard = ({ userData }) => {
       stats: { count: 3, label: 'Active' }
     },
     {
-      title: 'Review Applications',
+      title: 'Review Hackathon Applications',
       description: 'Review and manage hackathon applicants',
       icon: <Users size={24} className="text-indigo-600" />,
-      path: '/admin/applications',
+      path: '/admin/hackathon_applications',
       bgColor: 'bg-indigo-50',
       textColor: 'text-indigo-700',
       stats: { count: 42, label: 'Pending' }
-    },
-    {
-      title: 'User Management',
-      description: 'Manage students, mentors, and admins',
-      icon: <Shield size={24} className="text-purple-600" />,
-      path: '/admin/users',
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-700',
-      stats: { count: 218, label: 'Total' }
-    },
-    {
-      title: 'Projects Review',
-      description: 'Review and moderate student projects',
-      icon: <Code size={24} className="text-teal-600" />,
-      path: '/admin/projects',
-      bgColor: 'bg-teal-50',
-      textColor: 'text-teal-700',
-      stats: { count: 16, label: 'Unreviewed' }
     },
     {
       title: 'Manage Events',
@@ -85,21 +67,14 @@ const AdminDashboard = ({ userData }) => {
       textColor: 'text-amber-700'
     },
     {
-      title: 'Content Management',
-      description: 'Manage announcements and resources',
-      icon: <Award size={24} className="text-emerald-600" />,
-      path: '/admin/content',
+      title: 'Generate Hacakthon Reports',
+      description: 'Create comprehensive student reports',
+      icon: <FileBarChart size={24} className="text-emerald-600" />,
+      path: '/admin/reports/generate',
       bgColor: 'bg-emerald-50',
       textColor: 'text-emerald-700'
     },
-    {
-      title: 'Admin Settings',
-      description: 'Configure platform settings and roles',
-      icon: <Settings size={24} className="text-gray-600" />,
-      path: '/admin/settings',
-      bgColor: 'bg-gray-50',
-      textColor: 'text-gray-700'
-    }
+   
   ];
 
   return (
@@ -148,7 +123,6 @@ const AdminDashboard = ({ userData }) => {
                       key={student.id}
                       className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-0"
                       onClick={() => {
-                        // In a real app, navigate to student profile
                         alert(`Viewing profile for ${student.name}`);
                         setShowSearchResults(false);
                       }}
@@ -176,7 +150,7 @@ const AdminDashboard = ({ userData }) => {
       </div>
       
       {/* Dashboard Sections Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {dashboardSections.map((section, index) => (
           <div 
             key={index}
@@ -220,30 +194,30 @@ const AdminDashboard = ({ userData }) => {
             
             <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
               <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                <Users size={20} className="text-green-600" />
+                <FileText size={20} className="text-green-600" />
               </div>
               <div>
-                <p className="text-gray-800"><span className="font-medium">12 new students</span> registered on the platform</p>
+                <p className="text-gray-800"><span className="font-medium">25 student reports</span> generated and published</p>
                 <p className="text-xs text-gray-500">Yesterday at 5:45 PM</p>
               </div>
             </div>
             
             <div className="flex items-center gap-4 pb-3 border-b border-gray-100">
-              <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
-                <Shield size={20} className="text-amber-600" />
+              <div className="w-10 h-10 rounded-full bg-pink-100 flex items-center justify-center flex-shrink-0">
+                <Bell size={20} className="text-pink-600" />
               </div>
               <div>
-                <p className="text-gray-800">Mentor application from <span className="font-medium">Sarah Johnson</span> approved</p>
+                <p className="text-gray-800">New workshop <span className="font-medium">Web3 Fundamentals</span> scheduled</p>
                 <p className="text-xs text-gray-500">Yesterday at 2:15 PM</p>
               </div>
             </div>
             
             <div className="flex items-center gap-4">
               <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-                <Bell size={20} className="text-red-600" />
+                <Shield size={20} className="text-red-600" />
               </div>
               <div>
-                <p className="text-gray-800"><span className="font-medium">System maintenance</span> scheduled for 03/25/2025</p>
+                <p className="text-gray-800"><span className="font-medium">3 messages</span> flagged for inappropriate content</p>
                 <p className="text-xs text-gray-500">2 days ago</p>
               </div>
             </div>

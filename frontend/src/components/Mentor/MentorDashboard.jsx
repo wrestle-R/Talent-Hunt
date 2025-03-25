@@ -1,201 +1,421 @@
-import React from 'react';
-import { 
-  Bell, Clock, Calendar, MessageCircle, CheckCircle, Award, Users
-} from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Award, MessageCircle, Users, BarChart, ArrowLeft, RefreshCw } from 'lucide-react';
+import axios from 'axios';
+import UpcomingHackathons from '../Student/Dashboard/UpcomingHackathons';
+import ConversationsCard from './dashboard/ConversationCard';
+import MentorChatModal from './dashboard/MentorChatModal';
+import TeamApplicationsCard from './Team/TeamApplicationsCard';
+import CurrentMentorshipsCard from './Team/CurrentMentorshipsCard';
+import TeamMembersList from './Team/TeamMembersList';
+import TeamProjectsCard from './Team/TeamProjectsCard';
+import TeamMemberProfile from './Team/TeamMemberProfile';
+import { toast } from 'react-hot-toast';
 
-const MentorDashboard = ({ dashboardData }) => {
+const MentorDashboard = ({ userData, refreshUserData }) => {
+  // States
+  const [conversations, setConversations] = useState([]);
+  const [activeMentorships, setActiveMentorships] = useState([]);
+  const [teamApplications, setTeamApplications] = useState([]);
+  const [mentorshipLoading, setMentorshipLoading] = useState(true);
+  const [conversationsLoading, setConversationsLoading] = useState(true);
+  const [applicationsLoading, setApplicationsLoading] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+  const [activeStudent, setActiveStudent] = useState(null);
+  const [dashboardRefreshTrigger, setDashboardRefreshTrigger] = useState(0);
+  const [selectedTeam, setSelectedTeam] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [hackathonData, setHackathonData] = useState([]);
+  const [hackathonLoading, setHackathonLoading] = useState(true);
+  
+  // Format time for messages
+  const formatTimeAgo = (dateString) => {
+    const now = new Date();
+    const date = new Date(dateString);
+    const seconds = Math.floor((now - date) / 1000);
+    
+    if (seconds < 60) return 'Just now';
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    if (seconds < 604800) return `${Math.floor(seconds / 86400)}d ago`;
+    
+    return date.toLocaleDateString();
+  };
+
+  // Chat handlers
+  const handleOpenChat = (student) => {
+    setActiveStudent(student);
+    setIsChatOpen(true);
+  };
+
+  const handleCloseChat = () => {
+    setIsChatOpen(false);
+    setActiveStudent(null);
+    fetchConversations();
+  };
+
+  // Dashboard refresh
+  const refreshDashboard = () => {
+    setDashboardRefreshTrigger(prev => prev + 1);
+    fetchAllData();
+    toast.success("Dashboard refreshed");
+  };
+
+  // Fetch all dashboard data
+  const fetchAllData = () => {
+    fetchActiveMentorships();
+    fetchTeamApplications();
+    fetchConversations();
+    fetchHackathons();
+  };
+
+  // Fetch active mentorships
+  const fetchActiveMentorships = async () => {
+    if (!userData?._id) {
+      setMentorshipLoading(false);
+      return;
+    }
+    
+    try {
+      setMentorshipLoading(true);
+      const response = await axios.get(`http://localhost:4000/api/mentor/active-mentorships/${userData._id}`);
+      console.log("Mentorships data:", response.data);
+      setActiveMentorships(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error fetching active mentorships:", error);
+      setActiveMentorships([]);
+    } finally {
+      setMentorshipLoading(false);
+    }
+  };
+
+  // Fetch team applications
+  const fetchTeamApplications = async () => {
+    if (!userData?._id) {
+      setApplicationsLoading(false);
+      return;
+    }
+    
+    try {
+      setApplicationsLoading(true);
+      const response = await axios.get(`http://localhost:4000/api/mentor/team-applications/${userData._id}`);
+      console.log("Applications data:", response.data);
+      setTeamApplications(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error fetching team applications:", error);
+      setTeamApplications([]);
+    } finally {
+      setApplicationsLoading(false);
+    }
+  };
+
+  // Fetch conversations
+  const fetchConversations = async () => {
+    if (!userData?._id) {
+      setConversationsLoading(false);
+      return;
+    }
+    
+    try {
+      setConversationsLoading(true);
+      const response = await axios.get(`http://localhost:4000/api/mentor/conversations/${userData._id}`);
+      console.log("Conversations data:", response.data);
+      setConversations(Array.isArray(response.data) ? response.data : []);
+    } catch (error) {
+      console.error("Error fetching conversations:", error);
+      setConversations([]);
+    } finally {
+      setConversationsLoading(false);
+    }
+  };
+
+  // Fetch upcoming hackathons
+  const fetchHackathons = async () => {
+    try {
+      setHackathonLoading(true);
+      const response = await axios.get('http://localhost:4000/api/hackathons/upcoming');
+      console.log("Hackathons data:", response.data);
+      setHackathonData(response.data);
+    } catch (error) {
+      console.error("Error fetching hackathons:", error);
+      setHackathonData([]);
+    } finally {
+      setHackathonLoading(false);
+    }
+  };
+
+  // Team and member actions
+  const handleViewTeam = async (team) => {
+    try {
+      const response = await axios.get(
+        `http://localhost:4000/api/mentor/team/${team._id}?mentorId=${userData._id}`
+      );
+      
+      if (response.data && response.data.success) {
+        console.log("Full team data:", response.data.team);
+        setSelectedTeam({
+          ...team,
+          ...response.data.team,
+          performanceMetrics: response.data.performanceMetrics
+        });
+      } else {
+        throw new Error("Failed to fetch complete team data");
+      }
+    } catch (error) {
+      console.error("Error fetching team details:", error);
+      toast.error("Could not load team details");
+      // Still set the basic team info we already have
+      setSelectedTeam(team);
+    }
+  };
+
+  const handleBackToDashboard = () => {
+    setSelectedTeam(null);
+  };
+
+  const handleViewMemberProfile = async (memberId) => {
+    try {
+      // First find the member in the current team to get basic info
+      const memberBasicInfo = selectedTeam.members.find(
+        m => m.student._id.toString() === memberId.toString()
+      );
+      
+      if (!memberBasicInfo) {
+        throw new Error("Member not found in team");
+      }
+      
+      // Now fetch detailed profile
+      const response = await axios.get(
+        `http://localhost:4000/api/mentor/student-profile/${memberId}?mentorId=${userData._id}`
+      );
+      
+      if (response.data && response.data.success) {
+        console.log("Member profile data:", response.data);
+        
+        setSelectedMember({
+          ...memberBasicInfo,
+          ...response.data.student,
+          feedback: response.data.feedback || []
+        });
+        
+        setIsProfileOpen(true);
+      } else {
+        throw new Error("Failed to fetch member profile");
+      }
+    } catch (error) {
+      console.error("Error fetching member profile:", error);
+      toast.error("Could not load member profile");
+      // Fall back to basic info if available
+      if (memberBasicInfo) {
+        setSelectedMember(memberBasicInfo);
+        setIsProfileOpen(true);
+      }
+    }
+  };
+
+  const handleCloseProfile = () => {
+    setIsProfileOpen(false);
+    setTimeout(() => setSelectedMember(null), 300);
+  };
+
+  // Initial data fetch
+  useEffect(() => {
+    if (userData?._id) {
+      fetchAllData();
+      
+      // Set up polling every 5 minutes
+      const interval = setInterval(fetchAllData, 300000);
+      return () => clearInterval(interval);
+    }
+  }, [userData?._id]);
+
+  // Loading state
+  if (!userData?._id) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mb-4"></div>
+          <p className="text-gray-600">Loading mentor dashboard...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Mentor Dashboard</h2>
-        <div className="flex items-center gap-4">
-          <button className="relative p-2">
-            <Bell size={20} className="text-gray-600" />
-            <span className="absolute top-0 right-0 bg-red-500 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
-              {dashboardData.applications.length + dashboardData.reachouts.length}
-            </span>
-          </button>
-          <button className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-blue-700 transition-colors">
-            <Clock size={16} />
-            Set Availability
-          </button>
-        </div>
-      </div>
-      
-      {/* Upcoming Sessions Preview - Top section */}
-      <div className="mb-6 p-6 bg-white rounded-xl shadow-sm">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg">Upcoming Mentorship Sessions</h3>
-          <button className="text-blue-600 text-sm font-medium">View Calendar</button>
-        </div>
-        
-        {dashboardData.upcomingSessions && dashboardData.upcomingSessions.length > 0 ? (
-          <div className="space-y-4">
-            {dashboardData.upcomingSessions.map(session => (
-              <div key={session.id} className="flex items-center justify-between border-b pb-3">
-                <div>
-                  <p className="font-medium">{session.name}</p>
-                  <div className="flex items-center gap-4">
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                      <Calendar size={14} /> {session.date}
-                    </p>
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                      <Clock size={14} /> {session.duration}
-                    </p>
+    <div className="w-full p-4 md:p-6 max-w-7xl mx-auto">
+      {!selectedTeam ? (
+        // Main Dashboard View
+        <>
+          {/* Dashboard Header */}
+          <div className="flex justify-between items-center mb-6">
+            <h2 className="text-xl md:text-2xl font-bold">Mentor Dashboard</h2>
+            <button 
+              onClick={refreshDashboard}
+              className="flex items-center gap-1 text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100"
+            >
+              <RefreshCw size={16} />
+              <span className="hidden sm:inline">Refresh</span>
+            </button>
+          </div>
+          
+          {/* Mentorships Section */}
+          <section className="mb-8">
+            <div className="flex items-center gap-2 mb-4">
+              <Users className="text-indigo-600" size={20} />
+              <h3 className="text-lg font-semibold text-gray-800">Team Management</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+              <TeamApplicationsCard 
+                applications={teamApplications}
+                mentorData={userData}
+                onRefresh={refreshDashboard}
+                isLoading={applicationsLoading}
+                key={`applications-${dashboardRefreshTrigger}`}
+              />
+              
+              <CurrentMentorshipsCard 
+                mentorships={activeMentorships}
+                mentorData={userData}
+                onViewTeam={handleViewTeam}
+                isLoading={mentorshipLoading}
+                key={`mentorships-${dashboardRefreshTrigger}`}
+              />
+            </div>
+          </section>
+          
+          {/* Communications Section */}
+          <section>
+            <div className="flex items-center gap-2 mb-4">
+              <MessageCircle className="text-blue-600" size={20} />
+              <h3 className="text-lg font-semibold text-gray-800">Communication & Events</h3>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+              <ConversationsCard 
+                conversations={conversations} 
+                onOpenChat={handleOpenChat} 
+                formatTimeAgo={formatTimeAgo}
+                isLoading={conversationsLoading} 
+              />
+              
+              <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm">
+                <h3 className="font-bold text-lg flex items-center gap-2 mb-4">
+                  <Award size={20} className="text-purple-600" />
+                  Upcoming Hackathons
+                </h3>
+                <UpcomingHackathons 
+                  limit={4} 
+                  layout="grid" 
+                  customData={hackathonData}
+                  isLoading={hackathonLoading}
+                />
+              </div>
+            </div>
+          </section>
+        </>
+      ) : (
+        // Team Details View
+        <>
+          {/* Team Details Header */}
+          <div className="mb-6">
+            <button 
+              onClick={handleBackToDashboard}
+              className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 mb-4"
+            >
+              <ArrowLeft size={16} />
+              Back to Dashboard
+            </button>
+            
+            <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
+              <div className="flex items-start gap-4">
+                <div className="h-14 w-14 rounded-lg overflow-hidden bg-emerald-100 flex items-center justify-center flex-shrink-0">
+                  {selectedTeam.logo ? (
+                    <img 
+                      src={selectedTeam.logo} 
+                      alt={selectedTeam.name} 
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Users size={24} className="text-emerald-600" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h2 className="text-xl font-bold">{selectedTeam.name}</h2>
+                      <p className="text-gray-500 text-sm">
+                        {selectedTeam.members?.length || 0} members • Mentoring since {new Date(selectedTeam.mentorJoinedDate || selectedTeam.mentor?.joinedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                    
+                    {/* Performance Score */}
+                    {selectedTeam.performanceMetrics && (
+                      <div className="bg-emerald-50 text-emerald-800 px-4 py-2 rounded-lg text-center">
+                        <div className="text-sm uppercase font-semibold tracking-wide">Team Score</div>
+                        <div className="text-2xl font-bold">{selectedTeam.performanceMetrics.overallRating || '7.5'}/10</div>
+                      </div>
+                    )}
                   </div>
+                  
+                  {selectedTeam.description && (
+                    <p className="text-gray-700 mt-2 max-w-2xl">
+                      {selectedTeam.description}
+                    </p>
+                  )}
+                  
+                  {selectedTeam.techStack && selectedTeam.techStack.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-3">
+                      {selectedTeam.techStack.map((tech, idx) => (
+                        <span 
+                          key={idx} 
+                          className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-xs"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
-                <button className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-sm">
-                  Join
-                </button>
               </div>
-            ))}
+            </div>
           </div>
-        ) : (
-          <div className="flex items-center justify-center h-20 bg-gray-50 rounded-lg text-gray-500">
-            No upcoming sessions scheduled
+          
+          {/* Team Details Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+            <TeamMembersList 
+              team={selectedTeam} 
+              mentorId={userData._id}
+              onDataChange={refreshDashboard}
+              onViewProfile={handleViewMemberProfile}
+            />
+            
+            <TeamProjectsCard 
+              team={selectedTeam} 
+              mentorId={userData._id}
+              onDataChange={refreshDashboard}
+            />
           </div>
-        )}
-      </div>
+        </>
+      )}
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Mentorship Applications */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg flex items-center gap-2">
-              <CheckCircle size={20} className="text-green-600" />
-              Mentorship Applications
-            </h3>
-            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-              {dashboardData.applications.length} New
-            </span>
-          </div>
-          <div className="space-y-4">
-            {dashboardData.applications.map(app => (
-              <div key={app.id} className="flex items-center justify-between border-b pb-3">
-                <div>
-                  <p className="font-medium">{app.name}</p>
-                  <p className="text-sm text-gray-500">{app.project}</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-gray-500">{app.date}</span>
-                  <button className="bg-blue-100 text-blue-700 px-3 py-1 rounded-lg text-sm">
-                    Review
-                  </button>
-                </div>
-              </div>
-            ))}
-            {dashboardData.applications.length === 0 && (
-              <div className="text-center text-gray-500 py-4">
-                No mentorship applications yet
-              </div>
-            )}
-          </div>
-          <button className="text-blue-600 text-sm font-medium mt-4 hover:text-blue-800">
-            View All Applications
-          </button>
-        </div>
-        
-        {/* Students Reaching Out */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg flex items-center gap-2">
-              <MessageCircle size={20} className="text-blue-600" />
-              Students Reaching Out
-            </h3>
-            <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-              {dashboardData.reachouts.length} New
-            </span>
-          </div>
-          <div className="space-y-4">
-            {dashboardData.reachouts.map(student => (
-              <div key={student.id} className="flex items-center justify-between border-b pb-3">
-                <div>
-                  <p className="font-medium">{student.name}</p>
-                  <p className="text-sm text-gray-500">{student.interest} • {student.institution}</p>
-                </div>
-                <div className="flex gap-2">
-                  <button className="bg-gray-100 text-gray-600 px-3 py-1 rounded-lg text-sm">
-                    Decline
-                  </button>
-                  <button className="bg-blue-600 text-white px-3 py-1 rounded-lg text-sm">
-                    Connect
-                  </button>
-                </div>
-              </div>
-            ))}
-            {dashboardData.reachouts.length === 0 && (
-              <div className="text-center text-gray-500 py-4">
-                No student reach-outs yet
-              </div>
-            )}
-          </div>
-          <button className="text-blue-600 text-sm font-medium mt-4 hover:text-blue-800">
-            Find More Students
-          </button>
-        </div>
-        
-        {/* Upcoming Hackathons */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg flex items-center gap-2">
-              <Award size={20} className="text-purple-600" />
-              Upcoming Hackathons
-            </h3>
-            <button className="text-sm text-purple-600 font-medium">Add to Calendar</button>
-          </div>
-          <div className="space-y-4">
-            {dashboardData.upcomingHackathons.map(hackathon => (
-              <div key={hackathon.id} className="flex items-center justify-between border-b pb-3">
-                <div>
-                  <p className="font-medium">{hackathon.name}</p>
-                  <div className="flex items-center gap-4">
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                      <Calendar size={14} /> {hackathon.date}
-                    </p>
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                      <Users size={14} /> {hackathon.participants} Participants
-                    </p>
-                  </div>
-                </div>
-                <button className="bg-purple-100 text-purple-700 px-3 py-1 rounded-lg text-sm">
-                  Details
-                </button>
-              </div>
-            ))}
-            {dashboardData.upcomingHackathons.length === 0 && (
-              <div className="text-center text-gray-500 py-4">
-                No upcoming hackathons
-              </div>
-            )}
-          </div>
-          <button className="text-purple-600 text-sm font-medium mt-4 hover:text-purple-800">
-            Browse All Events
-          </button>
-        </div>
-        
-        {/* Quick Access */}
-        <div className="bg-white p-6 rounded-xl shadow-sm">
-          <h3 className="font-bold text-lg mb-4">Quick Access</h3>
-          <div className="grid grid-cols-2 gap-4">
-            <button className="flex flex-col items-center justify-center bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors">
-              <Users size={24} className="text-blue-600 mb-2" />
-              <span className="text-sm font-medium">My Students</span>
-            </button>
-            <button className="flex flex-col items-center justify-center bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors">
-              <Calendar size={24} className="text-green-600 mb-2" />
-              <span className="text-sm font-medium">Schedule</span>
-            </button>
-            <button className="flex flex-col items-center justify-center bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors">
-              <MessageCircle size={24} className="text-amber-600 mb-2" />
-              <span className="text-sm font-medium">Messages</span>
-            </button>
-            <button className="flex flex-col items-center justify-center bg-gray-50 p-4 rounded-lg hover:bg-gray-100 transition-colors">
-              <Award size={24} className="text-purple-600 mb-2" />
-              <span className="text-sm font-medium">Resources</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      {/* Modals */}
+      <MentorChatModal
+        isOpen={isChatOpen}
+        onClose={handleCloseChat}
+        student={activeStudent}
+        mentorData={userData}
+      />
+
+      {selectedMember && (
+        <TeamMemberProfile
+          isOpen={isProfileOpen}
+          onClose={handleCloseProfile}
+          member={selectedMember}
+          mentorId={userData._id}
+          onDataChange={refreshDashboard}
+        />
+      )}
     </div>
   );
 };
