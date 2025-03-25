@@ -463,72 +463,83 @@ const getTeamApplications = async (req, res) => {
 
 const handleTeamApplication = async (req, res) => {
   try {
-    const { mentorId, teamId, action } = req.params;
+    const { mentorId, applicationId, action } = req.params;
     
-    if (!mentorId || !teamId || !action) {
-      return res.status(400).json({ error: 'Mentor ID, team ID, and action are required' });
+    console.log(`Processing ${action} for application ${applicationId} from mentor ${mentorId}`);
+    
+    if (!mentorId || !mongoose.Types.ObjectId.isValid(mentorId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid Mentor ID is required"
+      });
     }
     
-    if (action !== 'accept' && action !== 'reject') {
-      return res.status(400).json({ error: 'Invalid action. Must be "accept" or "reject"' });
+    if (!applicationId || !mongoose.Types.ObjectId.isValid(applicationId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid Application ID is required"
+      });
     }
     
-    // Find the mentor
+    // Get the mentor
     const mentor = await Mentor.findById(mentorId);
+    
     if (!mentor) {
-      return res.status(404).json({ error: 'Mentor not found' });
+      return res.status(404).json({
+        success: false,
+        message: "Mentor not found"
+      });
+    }
+    
+    // Find the application in the mentor's applications array
+    const applicationIndex = mentor.applications.findIndex(app => 
+      app._id.toString() === applicationId
+    );
+    
+    if (applicationIndex === -1) {
+      return res.status(404).json({
+        success: false,
+        message: "Application not found"
+      });
+    }
+    
+    const application = mentor.applications[applicationIndex];
+    
+    // Make sure there's a valid team ID
+    if (!application.student || !mongoose.Types.ObjectId.isValid(application.student)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid team ID in application"
+      });
     }
     
     // Find the team
+    const teamId = application.student;
     const team = await Team.findById(teamId);
+    
     if (!team) {
-      return res.status(404).json({ error: 'Team not found' });
+      return res.status(404).json({
+        success: false,
+        message: "Team not found"
+      });
     }
     
-    // 1. Update the application status in mentor schema
-    const mentorApplicationIndex = mentor.applications.findIndex(
-      app => app.student && app.student.toString() === teamId && app.status === 'pending'
-    );
-    
-    if (mentorApplicationIndex === -1) {
-      return res.status(404).json({ error: 'Application not found or already processed in mentor records' });
-    }
-    
-    mentor.applications[mentorApplicationIndex].status = action === 'accept' ? 'accepted' : 'rejected';
-    
-    // 2. Update the corresponding application in the team schema
-    const teamApplicationIndex = team.applications.findIndex(
-      app => 
-        app.recipientId && 
-        app.recipientId.toString() === mentorId && 
-        app.recipientType === 'Mentor' && 
-        app.status === 'pending'
-    );
-    
-    if (teamApplicationIndex !== -1) {
-      // If found, update the application status in team schema
-      team.applications[teamApplicationIndex].status = action === 'accept' ? 'accepted' : 'declined';
-    } else {
-      console.log(`Warning: No corresponding application found in team ${team.name} for mentor ${mentor.name}`);
-    }
-    
-    // 3. If accepting, update both schemas with additional mentorship details
+    // If accepting:
     if (action === 'accept') {
-      // Update the team with mentor information
+      // Update application status
+      mentor.applications[applicationIndex].status = 'accepted';
+      
+      // Add mentor to team
       team.mentor = {
         mentorId: mentor._id,
         name: mentor.name,
-        expertise: [
-          ...(mentor.expertise?.technical_skills || []), 
-          ...(mentor.expertise?.non_technical_skills || [])
-        ],
+        expertise: mentor.expertise?.technical_skills || [],
         joinedAt: new Date(),
         status: 'active',
-        invitationStatus: 'accepted',
-        feedbackLog: []
+        invitationStatus: 'accepted'
       };
       
-      // Add to team activity log
+      // Add to team's activity log
       team.activityLog.push({
         action: 'mentor_joined',
         description: `${mentor.name} joined as team mentor`,
@@ -537,49 +548,30 @@ const handleTeamApplication = async (req, res) => {
         timestamp: new Date()
       });
       
-      // Update the team's last activity date
       team.lastActivityDate = new Date();
-      
-      // Optionally add the team to mentor's mentees list (if you track active mentorships there)
-      const teamLeaderInfo = team.members.find(m => m.student.toString() === team.leader.toString());
-      const leaderName = teamLeaderInfo ? teamLeaderInfo.role : 'Team Leader';
-      
-      // Check if team is already in mentor's mentees list
-      const existingMenteeIndex = mentor.mentees.findIndex(
-        mentee => mentee.id && mentee.id.toString() === teamId
-      );
-      
-      if (existingMenteeIndex === -1) {
-        // Add team to mentor's mentees list
-        mentor.mentees.push({
-          id: team._id,
-          name: team.name,
-          email: leaderName, // Using the role field to store leader role as we're using Team ID instead of Student ID
-          goals: team.techStack || [],
-          progress: 'Mentorship started'
-        });
-      }
+      await team.save();
+    } 
+    // If rejecting:
+    else if (action === 'reject') {
+      mentor.applications[applicationIndex].status = 'rejected';
     }
     
-    // 4. Save both documents
-    await Promise.all([
-      mentor.save(),
-      team.save()
-    ]);
+    await mentor.save();
     
-    return res.status(200).json({ 
-      success: true, 
-      message: `Application ${action === 'accept' ? 'accepted' : 'rejected'} successfully`,
-      team: {
-        id: team._id,
-        name: team.name,
-        memberCount: team.members.length,
-        techStack: team.techStack
-      }
+    return res.status(200).json({
+      success: true,
+      message: action === 'accept' ? 
+        'Mentorship application accepted' : 
+        'Mentorship application rejected'
     });
+    
   } catch (error) {
-    console.error(`Error handling team application:`, error);
-    return res.status(500).json({ error: 'Server error', message: error.message });
+    console.error("Error handling team application:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to process application",
+      error: error.message
+    });
   }
 };
 

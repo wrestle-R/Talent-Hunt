@@ -21,6 +21,7 @@
     "react-head": "^3.4.2",
     "react-helmet": "^6.1.0",
     "react-hot-toast": "^2.5.2",
+    "react-icons": "^5.5.0",
     "react-router-dom": "^7.2.0",
     "shadcn-ui": "^0.9.4",
     "socket.io": "^4.8.1",

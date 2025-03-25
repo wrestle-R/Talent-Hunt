@@ -34,15 +34,16 @@ router.get("/dashboard/:mentorId", getDashboardData);
 router.get("/conversations/:mentorId", getRecentConversations);
 router.put("/messages/read/:mentorId/:senderId", markMessagesAsRead);
 
-
-// Add these routes to your mentor routes
+// Team applications routes
 router.get('/team-applications/:mentorId', getTeamApplications);
-router.post('/team-applications/:mentorId/:teamId/:action', handleTeamApplication);
+// Changed from teamId to applicationId to match frontend expectations
+router.post('/team-applications/:mentorId/:applicationId/:action', handleTeamApplication);
 router.get('/active-mentorships/:mentorId', getActiveMentorships);
 
-// Add these new routes for team and member management
+// Team and member management routes
 router.get('/student-profile/:studentId', getStudentProfile);
 router.post('/member-feedback/:teamId/:memberId', submitMemberFeedback);
 router.post('/project-feedback/:teamId', submitProjectFeedback);
 router.get('/team/:teamId', getTeamDetails);
+
 module.exports = router;

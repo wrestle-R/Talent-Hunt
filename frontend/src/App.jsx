@@ -37,6 +37,7 @@ import TeamStudentProfile from './components/Student/Dashboard/Team/StudentProfi
 import TeamProjects from './components/Student/Dashboard/Team/TeamProjects'
 import TeamMentorManager from './components/Student/Dashboard/Team/Mentor/TeamMentorManager';
 import TeamMentorProfile from './components/Student/Dashboard/Team/Mentor/MentorProfile';
+import Landing from './components/Landing'
 
 const role = localStorage.userRole
 console.log(role)
@@ -104,6 +105,8 @@ const App = () => {
               {/* Moderator Notes Routes */}
               <Route path="/moderator/notes" element={<NotesManagement />} />
               <Route path="/moderator/note/:noteId" element={<NoteDetail />} />
+              <Route path="/landing" element={<Landing />} />
+
               
               {/* Default Route */}
               {role == 'admin' &&(
