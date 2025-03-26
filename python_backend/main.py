@@ -1,5 +1,3 @@
-# uvicorn main:app --reload  =>  To run the file
-
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
@@ -19,6 +17,16 @@ load_dotenv()
 
 app = FastAPI(title="Python Backend")
 
+# Global variable to store the embeddings model
+global_embeddings = None
+
+@app.on_event("startup")
+def startup_event():
+    global global_embeddings
+    # Load the embedding model when the server starts
+    global_embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
+    print("Embedding model loaded successfully!")
+
 # Request Model for File Path
 class FilePathRequest(BaseModel):
     file_path: str
@@ -35,13 +43,12 @@ def add_student(request: FilePathRequest):
 
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
         docs = text_splitter.split_documents(data)
-        embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
 
         if not os.path.exists(persistance_path):
             os.makedirs(persistance_path)  # Ensure directory exists
-            db = Chroma.from_documents(docs, embeddings, persist_directory=persistance_path)
+            db = Chroma.from_documents(docs, global_embeddings, persist_directory=persistance_path)
         else:
-            db = Chroma(persist_directory=persistance_path, embedding_function=embeddings)
+            db = Chroma(persist_directory=persistance_path, embedding_function=global_embeddings)
             db.add_documents(docs)
 
         return {"message": "Student added successfully", "total_documents": len(db.get())}
@@ -60,19 +67,17 @@ def add_mentor(request: FilePathRequest):
 
         text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=100)
         docs = text_splitter.split_documents(data)
-        embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
 
         if not os.path.exists(persistance_path):
             os.makedirs(persistance_path)  # Ensure directory exists
-            db = Chroma.from_documents(docs, embeddings, persist_directory=persistance_path)
+            db = Chroma.from_documents(docs, global_embeddings, persist_directory=persistance_path)
         else:
-            db = Chroma(persist_directory=persistance_path, embedding_function=embeddings)
+            db = Chroma(persist_directory=persistance_path, embedding_function=global_embeddings)
             db.add_documents(docs)
 
         return {"message": "Mentor added successfully", "total_documents": len(db.get())}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
 
 @app.post("/api/recommend_students")
 def recommend_student(user_input: dict = Body(...)):
@@ -104,12 +109,10 @@ def recommend_student(user_input: dict = Body(...)):
 
         current_dir = os.path.dirname(__file__)
         persistance_dir = os.path.join(current_dir, 'db', 'students_data')
-        embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
 
-        db = Chroma(persist_directory=persistance_dir, embedding_function=embeddings)
+        db = Chroma(persist_directory=persistance_dir, embedding_function=global_embeddings)
         retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": 5})
         relevant_docs = retriever.invoke(query)
-
 
         processed_docs = [doc.page_content.replace("{", "{{").replace("}", "}}") for doc in relevant_docs]
         relevant_docs_content = "\n\n".join(processed_docs)
@@ -122,7 +125,7 @@ def recommend_student(user_input: dict = Body(...)):
             ("system", "Below are the most relevant student profiles extracted from the database:"),
             ("system", relevant_docs_content),
             ("system", 
-            "Carefully evaluate the user’s query and compare it with the student profiles. "
+            "Carefully evaluate the user's query and compare it with the student profiles. "
             "Prioritize recommendations based on skill alignment, previous experience, and shared interests. "
             "If no exact match is found, suggest the closest possible candidates based on their adaptability and related expertise."
             ),
@@ -139,7 +142,6 @@ def recommend_student(user_input: dict = Body(...)):
 @app.post("/api/recommend_mentors")
 def recommend_mentor(user_input: dict = Body(...)):
     try:
-        
         model = ChatMistralAI(model='mistral-small-latest')
 
         user_input = str(user_input)
@@ -157,9 +159,8 @@ def recommend_mentor(user_input: dict = Body(...)):
 
         current_dir = os.path.dirname(__file__)
         persistance_dir = os.path.join(current_dir, 'db', 'mentors_data')
-        embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
 
-        db = Chroma(persist_directory=persistance_dir, embedding_function=embeddings)
+        db = Chroma(persist_directory=persistance_dir, embedding_function=global_embeddings)
         retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": 5})
         relevant_docs = retriever.invoke(query)
 
