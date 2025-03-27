@@ -4,6 +4,7 @@ from typing import List, Optional
 from datetime import date
 from fastapi import Body
 import os
+from fastapi.middleware.cors import CORSMiddleware
 from langchain_text_splitters import CharacterTextSplitter
 from langchain_chroma import Chroma
 from langchain_community.document_loaders import JSONLoader
@@ -12,20 +13,25 @@ from dotenv import load_dotenv
 from langchain.prompts import ChatPromptTemplate
 from langchain_mistralai import ChatMistralAI
 from langchain.schema.output_parser import StrOutputParser
+import json
 
 load_dotenv()
 
 app = FastAPI(title="Python Backend")
 
-# Global variable to store the embeddings model
-global_embeddings = None
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allows all origins (for development only)
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows all methods (GET, POST, PUT, DELETE, etc.)
+    allow_headers=["*"],  # Allows all headers
+)
 
 @app.on_event("startup")
 def startup_event():
-    global global_embeddings
-    # Load the embedding model when the server starts
-    global_embeddings = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
-    print("Embedding model loaded successfully!")
+    app.state.embedding_model = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
+    print("Model cached in FastAPI state!")
+
 
 # Request Model for File Path
 class FilePathRequest(BaseModel):
@@ -46,9 +52,9 @@ def add_student(request: FilePathRequest):
 
         if not os.path.exists(persistance_path):
             os.makedirs(persistance_path)  # Ensure directory exists
-            db = Chroma.from_documents(docs, global_embeddings, persist_directory=persistance_path)
+            db = Chroma.from_documents(docs,app.state.embedding_model, persist_directory=persistance_path)
         else:
-            db = Chroma(persist_directory=persistance_path, embedding_function=global_embeddings)
+            db = Chroma(persist_directory=persistance_path, embedding_function=app.state.embedding_model)
             db.add_documents(docs)
 
         return {"message": "Student added successfully", "total_documents": len(db.get())}
@@ -70,9 +76,9 @@ def add_mentor(request: FilePathRequest):
 
         if not os.path.exists(persistance_path):
             os.makedirs(persistance_path)  # Ensure directory exists
-            db = Chroma.from_documents(docs, global_embeddings, persist_directory=persistance_path)
+            db = Chroma.from_documents(docs, app.state.embedding_model, persist_directory=persistance_path)
         else:
-            db = Chroma(persist_directory=persistance_path, embedding_function=global_embeddings)
+            db = Chroma(persist_directory=persistance_path, embedding_function=app.state.embedding_model)
             db.add_documents(docs)
 
         return {"message": "Mentor added successfully", "total_documents": len(db.get())}
@@ -110,32 +116,19 @@ def recommend_student(user_input: dict = Body(...)):
         current_dir = os.path.dirname(__file__)
         persistance_dir = os.path.join(current_dir, 'db', 'students_data')
 
-        db = Chroma(persist_directory=persistance_dir, embedding_function=global_embeddings)
-        retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": 5})
+        if user_input["teammate_search"]["purpose"] in ["Project", "Both"]:
+            team_size = int(user_input["teammate_search"]["project_preferences"]["team_size"])
+
+        if user_input["teammate_search"]["purpose"] in ["Hackathon", "Both"]:
+            team_size = int(user_input["teammate_search"]["hackathon_preferences"]["team_size"])
+
+        db = Chroma(persist_directory=persistance_dir, embedding_function=app.state.embedding_model)
+        retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": team_size})
         relevant_docs = retriever.invoke(query)
 
-        processed_docs = [doc.page_content.replace("{", "{{").replace("}", "}}") for doc in relevant_docs]
-        relevant_docs_content = "\n\n".join(processed_docs)
+        relevant_docs_content = [doc.page_content for doc in relevant_docs]
 
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", 
-            "You are an intelligent assistant that helps match students with ideal teammates based on their skills, interests, past experiences, and project compatibility. "
-            "Use the provided student profiles to analyze their strengths and suggest the most suitable candidates for collaboration."
-            ),
-            ("system", "Below are the most relevant student profiles extracted from the database:"),
-            ("system", relevant_docs_content),
-            ("system", 
-            "Carefully evaluate the user's query and compare it with the student profiles. "
-            "Prioritize recommendations based on skill alignment, previous experience, and shared interests. "
-            "If no exact match is found, suggest the closest possible candidates based on their adaptability and related expertise."
-            ),
-            ("human", "{query}")
-        ])
-
-        chain = prompt | model | StrOutputParser()
-        response = chain.invoke({"query": query})
-
-        return {"recommendations": response}
+        return {"teammates": relevant_docs_content}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -160,23 +153,12 @@ def recommend_mentor(user_input: dict = Body(...)):
         current_dir = os.path.dirname(__file__)
         persistance_dir = os.path.join(current_dir, 'db', 'mentors_data')
 
-        db = Chroma(persist_directory=persistance_dir, embedding_function=global_embeddings)
+        db = Chroma(persist_directory=persistance_dir, embedding_function=app.state.embedding_model)
         retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": 5})
         relevant_docs = retriever.invoke(query)
 
-        processed_docs = [doc.page_content.replace("{", "{{").replace("}", "}}") for doc in relevant_docs]
-        relevant_docs_content = "\n\n".join(processed_docs)
+        relevant_docs_content = [doc.page_content for doc in relevant_docs]
 
-        prompt = ChatPromptTemplate.from_messages([
-            ("system", "You are a helpful assistant that suggests mentors based on their skills and interests."),
-            ("system", "Here are some relevant mentor profiles:"),
-            ("system", relevant_docs_content),
-            ("human", "{query}")
-        ])
-
-        chain = prompt | model | StrOutputParser()
-        response = chain.invoke({"query": query})
-
-        return {"recommendations": response}
+        return {"mentors": relevant_docs_content}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
