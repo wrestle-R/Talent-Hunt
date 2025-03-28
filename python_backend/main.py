@@ -11,9 +11,9 @@ from langchain_community.document_loaders import JSONLoader
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 from langchain.prompts import ChatPromptTemplate
-from langchain_mistralai import ChatMistralAI
+from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain.schema.output_parser import StrOutputParser
-import json
+import traceback
 
 load_dotenv()
 
@@ -86,41 +86,39 @@ def add_mentor(request: FilePathRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/recommend_students")
-def recommend_student(user_input: dict = Body(...)):
+def recommend_student(request_data: dict = Body(...)):
     try:
-        model = ChatMistralAI(model='mistral-small-latest')
+        # Extract userData from the request
+        userData = request_data.get('userData', {})
+        
+        model = ChatGoogleGenerativeAI(model='gemini-1.5-flash')
 
-        # Convert dict to JSON string
-        user_input_str = str(user_input)  # Or use json.dumps(user_input)
+        print("USER INPUT: ", userData)
 
         prompt = ChatPromptTemplate.from_messages([
-            ('system', """Analyze the user's profile data, including skills, experience, past hackathons, and project background.  
-                Generate a structured RAG query to retrieve the most relevant teammates for a hackathon.  
-
-                The query should prioritize candidates based on:  
-                1. **Skill Complementarity**: Find students with at least 70 percent skill overlap or complementary expertise.  
-                2. **Relevant Experience**: Prioritize those with prior experience in similar hackathons, projects, or internships.  
-                3. **Hackathon Alignment**: Match students who have participated in or are interested in similar hackathons.  
-                4. **Project Compatibility**: Consider shared technologies, domains, and problem-solving approaches.  
-                5. **Collaboration Potential**: Prefer candidates with a history of teamwork and successful collaborations.  
-
-                Ensure the query is structured for an optimized similarity-based search. **Return only the RAG query and nothing else.**  """),
+            ('system', """Your prompt text here"""),
             ("human", "{user_input}")
         ])
 
-        # Pass the string as a dictionary with the key matching the template variable
         chain = prompt | model | StrOutputParser()
-        query = chain.invoke({"user_input": user_input_str})
-        print("Generated Query for RAG: ",query)
+        query = chain.invoke({"user_input": userData})
+        print("Generated Query for RAG: ", query)
 
         current_dir = os.path.dirname(__file__)
         persistance_dir = os.path.join(current_dir, 'db', 'students_data')
 
-        if user_input["teammate_search"]["purpose"] in ["Project", "Both"]:
-            team_size = int(user_input["teammate_search"]["project_preferences"]["team_size"])
-
-        if user_input["teammate_search"]["purpose"] in ["Hackathon", "Both"]:
-            team_size = int(user_input["teammate_search"]["hackathon_preferences"]["team_size"])
+        # Safely get team size with defaults
+        team_size = 4  # Default value
+        
+        # Check if teammate_search exists and has purpose
+        if 'teammate_search' in userData:
+            teammate_search = userData['teammate_search']
+            purpose = teammate_search.get('purpose', 'Hackathon')
+            
+            if purpose in ["Project", "Both"] and 'project_preferences' in teammate_search:
+                team_size = int(teammate_search['project_preferences'].get('team_size', team_size))
+            elif purpose in ["Hackathon", "Both"] and 'hackathon_preferences' in teammate_search:
+                team_size = int(teammate_search['hackathon_preferences'].get('team_size', team_size))
 
         db = Chroma(persist_directory=persistance_dir, embedding_function=app.state.embedding_model)
         retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": team_size})
@@ -130,12 +128,14 @@ def recommend_student(user_input: dict = Body(...)):
 
         return {"teammates": relevant_docs_content}
     except Exception as e:
+        print(f"Error: {type(e)} - {str(e)}")
+        print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/recommend_mentors")
 def recommend_mentor(user_input: dict = Body(...)):
     try:
-        model = ChatMistralAI(model='mistral-small-latest')
+        model = ChatGoogleGenerativeAI(model='gemini-1.5-latest')
 
         user_input = str(user_input)
 

@@ -293,9 +293,6 @@ const DisplayTeammates = ({
         // Get user ID and email
         const uid = userData?.firebaseUID || currentUser?.uid || "";
 
-        const userInput = {
-          teammate_search: userData.teammate_search,
-        };
         // Build query parameters
         let queryParams = new URLSearchParams();
 
@@ -319,9 +316,10 @@ const DisplayTeammates = ({
         if (queryParams.toString()) {
           endpoint += `?${queryParams.toString()}`;
         }
+        console.log(userData);
 
         const response = await axios.post(endpoint, {
-          user_input: userInput,
+          userData,
         });
         console.log(response);
         // Process the response based on its structure
