@@ -141,19 +141,12 @@ const UpcomingHackathons = ({ limit = 3, layout = "list" }) => {
                 </div>
               </div>
               
-              {hackathon.domain.length > 0 && (
+              {/* Display primary domain instead of domain array */}
+              {hackathon.primaryDomain && (
                 <div className="flex flex-wrap gap-1 mt-3">
-                  <span 
-                    key={0} 
-                    className="px-2 py-0.5 bg-purple-50 text-purple-700 text-xs rounded-full line-clamp-1"
-                  >
-                    {hackathon.domain[0]}
+                  <span className="px-2 py-0.5 bg-purple-50 text-purple-700 text-xs rounded-full line-clamp-1">
+                    {hackathon.primaryDomain}
                   </span>
-                  {hackathon.domain.length > 1 && (
-                    <span className="px-2 py-0.5 bg-gray-50 text-gray-600 text-xs rounded-full">
-                      +{hackathon.domain.length - 1} more
-                    </span>
-                  )}
                 </div>
               )}
             </div>
@@ -221,20 +214,19 @@ const UpcomingHackathons = ({ limit = 3, layout = "list" }) => {
               </div>
             )}
             
+            {/* Show primary domain instead of domain array */}
             <div className="flex flex-wrap gap-2 mt-3">
-              {hackathon.domain.slice(0, 2).map((domain, idx) => (
-                <span 
-                  key={idx} 
-                  className="px-2 py-0.5 bg-purple-50 text-purple-700 text-xs rounded-full"
-                >
-                  {domain}
-                </span>
-              ))}
-              {hackathon.domain.length > 2 && (
-                <span className="px-2 py-0.5 bg-gray-50 text-gray-600 text-xs rounded-full">
-                  +{hackathon.domain.length - 2} more
+              {hackathon.primaryDomain && (
+                <span className="px-2 py-0.5 bg-purple-50 text-purple-700 text-xs rounded-full">
+                  {hackathon.primaryDomain}
                 </span>
               )}
+              
+              {/* Show required team size */}
+              <span className="px-2 py-0.5 bg-blue-50 text-blue-700 text-xs rounded-full flex items-center">
+                <Users size={10} className="mr-1" />
+                Team: {hackathon.registration?.requiredTeamSize || 4} members
+              </span>
             </div>
           </div>
         );

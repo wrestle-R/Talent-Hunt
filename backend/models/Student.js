@@ -152,7 +152,21 @@ teammate_search: {
 
     isRejected: { type: Boolean, required: true, default: false },
     rejectionReason: { type: String },
+    isTempTeam: {type: Boolean, required: false, default:false},
+    tempTeam: {
+      type: [
+        {
+          id: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true }, 
+          name: { type: String, required: true },
+          email: { type: String, required: true },
+          expertise: [{ type: String, required: true }],
+        },
+      ],
+      minlength: 3, // Minimum 3 members required
+      maxlength: 3, // Maximum 3 members allowed
+    },
   },
+
   { timestamps: true }
 );
 

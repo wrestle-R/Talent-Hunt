@@ -8,27 +8,25 @@ const HackathonPage = () => {
   const [hackathons, setHackathons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState('upcoming'); // upcoming, past, registered
+  const [activeTab, setActiveTab] = useState('upcoming');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDomains, setSelectedDomains] = useState([]);
   const [domains, setDomains] = useState([]);
   const [showFilters, setShowFilters] = useState(false);
 
-  // Fetch hackathons on component mount and when tab changes
   useEffect(() => {
     const fetchHackathons = async () => {
       try {
         setLoading(true);
         let response;
         
-        // Change endpoint based on active tab - UPDATED API ENDPOINTS
         if (activeTab === 'upcoming') {
           response = await axios.get('http://localhost:4000/api/student/hackathons/upcoming');
         } else if (activeTab === 'past') {
           response = await axios.get('http://localhost:4000/api/student/hackathons/past');
         } else if (activeTab === 'registered') {
           const user = JSON.parse(localStorage.getItem('user'));
-          if (!user || !user.uid) {
+          if (!user?.uid) {
             throw new Error("User not logged in");
           }
           response = await axios.get(`http://localhost:4000/api/student/hackathons/registered/${user.uid}`);
@@ -36,10 +34,9 @@ const HackathonPage = () => {
         
         setHackathons(response.data.hackathons || []);
         
-        // Extract unique domains from all hackathons
+        // Extract unique primary domains
         if (activeTab === 'upcoming' && response.data.hackathons) {
-          const allDomains = response.data.hackathons.flatMap(h => h.domain || []);
-          const uniqueDomains = [...new Set(allDomains)];
+          const uniqueDomains = [...new Set(response.data.hackathons.map(h => h.primaryDomain))];
           setDomains(uniqueDomains);
         }
         
@@ -76,35 +73,65 @@ const HackathonPage = () => {
     const today = new Date();
     const registerDate = new Date(hackathon.lastRegisterDate);
     const isRegistrationOpen = today <= registerDate;
+    const isCapacityAvailable = hackathon.registration.currentlyRegistered < hackathon.registration.totalCapacity;
+    
+    if (!isRegistrationOpen) {
+      return {
+        isOpen: false,
+        label: 'Registration Closed',
+        colorClass: 'bg-red-100 text-red-800'
+      };
+    }
+    
+    if (!isCapacityAvailable) {
+      return {
+        isOpen: false,
+        label: 'Registration Full',
+        colorClass: 'bg-yellow-100 text-yellow-800'
+      };
+    }
     
     return {
-      isOpen: isRegistrationOpen,
-      label: isRegistrationOpen ? 'Registration Open' : 'Registration Closed',
-      colorClass: isRegistrationOpen ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+      isOpen: true,
+      label: 'Registration Open',
+      colorClass: 'bg-green-100 text-green-800'
     };
   };
 
   const handleDomainToggle = (domain) => {
-    if (selectedDomains.includes(domain)) {
-      setSelectedDomains(selectedDomains.filter(d => d !== domain));
-    } else {
-      setSelectedDomains([...selectedDomains, domain]);
-    }
+    setSelectedDomains(prev => 
+      prev.includes(domain) 
+        ? prev.filter(d => d !== domain)
+        : [...prev, domain]
+    );
   };
 
   const handleRegister = async (hackathonId) => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
-      if (!user || !user.uid) {
+      if (!user?.uid) {
         alert("Please log in to register for hackathons");
         return;
       }
       
       const token = localStorage.getItem('token');
+      
+      // Show registration type selection
+      const registrationType = window.confirm(
+        "Would you like to register as part of a team?\n\n" +
+        "OK - Register with team\n" +
+        "Cancel - Register as individual (Admin will assign you to a team)"
+      ) ? 'team' : 'individual';
+      
       await axios.post(
         `http://localhost:4000/api/student/hackathons/${hackathonId}/register`,
-        { uid: user.uid },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { 
+          uid: user.uid,
+          registrationType 
+        },
+        { 
+          headers: { Authorization: `Bearer ${token}` } 
+        }
       );
       
       // Refresh the hackathon list
@@ -117,18 +144,112 @@ const HackathonPage = () => {
   };
 
   const filteredHackathons = hackathons.filter(hackathon => {
-    const matchesSearch = hackathon.hackathonName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           hackathon.description.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = 
+      hackathon.hackathonName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hackathon.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hackathon.primaryDomain.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      hackathon.primaryProblemStatement.toLowerCase().includes(searchTerm.toLowerCase());
                            
-    const matchesDomain = selectedDomains.length === 0 || 
-                           selectedDomains.some(domain => hackathon.domain.includes(domain));
+    const matchesDomain = 
+      selectedDomains.length === 0 || 
+      selectedDomains.includes(hackathon.primaryDomain);
                            
     return matchesSearch && matchesDomain;
   });
 
+  const renderHackathonCard = (hackathon) => {
+    const registrationStatus = getRegistrationStatus(hackathon);
+    
+    return (
+      <div key={hackathon._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+        <div className="p-5">
+          <div className="flex justify-between items-start mb-3">
+            <h4 className="text-lg font-semibold text-gray-800 line-clamp-1">
+              {hackathon.hackathonName}
+            </h4>
+            <span className={`text-xs px-2 py-1 rounded-full ${registrationStatus.colorClass}`}>
+              {registrationStatus.label}
+            </span>
+          </div>
+          
+          <div className="mb-4 text-sm text-gray-500 line-clamp-2">
+            {hackathon.description}
+          </div>
+          
+          {/* Domain and Problem Statement */}
+          <div className="mb-4">
+            <span className="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-full">
+              {hackathon.primaryDomain}
+            </span>
+            <p className="mt-2 text-sm text-gray-600 line-clamp-2">
+              <span className="font-medium">Problem:</span> {hackathon.primaryProblemStatement}
+            </p>
+          </div>
+          
+          <div className="space-y-2 mb-4">
+            <div className="flex items-center text-sm text-gray-600">
+              <Calendar size={16} className="mr-2 flex-shrink-0" />
+              <span>{formatDate(hackathon.startDate)} - {formatDate(hackathon.endDate)}</span>
+            </div>
+            
+            <div className="flex items-center text-sm text-gray-600">
+              <MapPin size={16} className="mr-2 flex-shrink-0" />
+              <span>{hackathon.mode} {hackathon.mode !== 'Online' && `• ${hackathon.location}`}</span>
+            </div>
+            
+            <div className="flex items-center text-sm text-gray-600">
+              <Users size={16} className="mr-2 flex-shrink-0" />
+              <span>
+                Teams of {hackathon.registration.requiredTeamSize} • {hackathon.registration.currentlyRegistered} / {hackathon.registration.totalCapacity} participants
+              </span>
+            </div>
+            
+            <div className="flex items-center text-sm text-gray-600">
+              <Clock size={16} className="mr-2 flex-shrink-0" />
+              <span className="font-medium text-purple-600">
+                {getDaysRemaining(hackathon.lastRegisterDate)}
+              </span>
+            </div>
+            
+            {hackathon.prizePool > 0 && (
+              <div className="flex items-center text-sm text-gray-600">
+                <Award size={16} className="mr-2 flex-shrink-0" />
+                <span className="font-medium">₹{hackathon.prizePool.toLocaleString()} prize pool</span>
+              </div>
+            )}
+          </div>
+          
+          <div className="flex justify-between items-center">
+            <button
+              onClick={() => navigate(`/student/hackathon/${hackathon._id}`)}
+              className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            >
+              View Details
+            </button>
+            
+            {activeTab !== 'registered' && registrationStatus.isOpen && (
+              <button 
+                onClick={() => handleRegister(hackathon._id)}
+                className="text-purple-600 hover:text-purple-700 font-medium text-sm"
+              >
+                Register Now
+              </button>
+            )}
+            
+            {activeTab === 'registered' && (
+              <span className="text-green-600 text-sm font-medium">
+                Registered ✓
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="w-full p-6 bg-gray-50 min-h-screen">
-      {/* Header with back button */}
+      {/* Header */}
       <div className="flex items-center mb-6">
         <button 
           onClick={() => navigate('/student/hero')}
@@ -247,103 +368,7 @@ const HackathonPage = () => {
       {/* Hackathons grid */}
       {!loading && !error && filteredHackathons.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredHackathons.map(hackathon => {
-            const registrationStatus = getRegistrationStatus(hackathon);
-            
-            return (
-              <div key={hackathon._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <div className="p-5">
-                  <div className="flex justify-between items-start mb-3">
-                    <h4 className="text-lg font-semibold text-gray-800 line-clamp-1">{hackathon.hackathonName}</h4>
-                    <span className={`text-xs px-2 py-1 rounded-full ${registrationStatus.colorClass}`}>
-                      {registrationStatus.label}
-                    </span>
-                  </div>
-                  
-                  <div className="mb-4 text-sm text-gray-500 line-clamp-2">
-                    {hackathon.description}
-                  </div>
-                  
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Calendar size={16} className="mr-2 flex-shrink-0" />
-                      <span>
-                        {formatDate(hackathon.startDate)} - {formatDate(hackathon.endDate)}
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center text-sm text-gray-600">
-                      <MapPin size={16} className="mr-2 flex-shrink-0" />
-                      <span>{hackathon.mode} {hackathon.mode !== 'Online' && `• ${hackathon.location}`}</span>
-                    </div>
-                    
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Users size={16} className="mr-2 flex-shrink-0" />
-                      <span>
-                        {hackathon.registration.currentlyRegistered} / {hackathon.registration.totalCapacity} participants
-                      </span>
-                    </div>
-                    
-                    <div className="flex items-center text-sm text-gray-600">
-                      <Clock size={16} className="mr-2 flex-shrink-0" />
-                      <span className="font-medium text-purple-600">
-                        {getDaysRemaining(hackathon.startDate)}
-                      </span>
-                    </div>
-                    
-                    {hackathon.prizePool > 0 && (
-                      <div className="flex items-center text-sm text-gray-600">
-                        <Award size={16} className="mr-2 flex-shrink-0" />
-                        <span className="font-medium">
-                          ₹{hackathon.prizePool.toLocaleString()} prize pool
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {hackathon.domain.slice(0, 3).map((domain, idx) => (
-                      <span 
-                        key={idx} 
-                        className="px-2 py-1 bg-purple-50 text-purple-700 text-xs rounded-full"
-                      >
-                        {domain}
-                      </span>
-                    ))}
-                    {hackathon.domain.length > 3 && (
-                      <span className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full">
-                        +{hackathon.domain.length - 3} more
-                      </span>
-                    )}
-                  </div>
-                  
-                  <div className="flex justify-between items-center">
-                    <button
-                      onClick={() => navigate(`/student/hackathon/${hackathon._id}`)}
-                      className="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
-                    >
-                      View Details
-                    </button>
-                    
-                    {activeTab !== 'registered' && registrationStatus.isOpen && (
-                      <button 
-                        onClick={() => handleRegister(hackathon._id)}
-                        className="text-purple-600 hover:text-purple-700 font-medium text-sm"
-                      >
-                        Register Now
-                      </button>
-                    )}
-                    
-                    {activeTab === 'registered' && (
-                      <span className="text-green-600 text-sm font-medium">
-                        Registered ✓
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+          {filteredHackathons.map(renderHackathonCard)}
         </div>
       )}
     </div>

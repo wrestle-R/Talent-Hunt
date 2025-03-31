@@ -13,6 +13,7 @@ import HackathonStatus from './Hackathon/HacakthonStatus';
 import StudentConversation from './Dashboard/StudentConversation';
 import StudentProjects from './Dashboard/StudentProjects';
 import TeamOverview from './Dashboard/Team/TeamOverview';
+import Invitations from './Dashboard/Team/Invitations';
 
 const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
   // Add state to track what we're showing in full-page mode
@@ -136,6 +137,19 @@ const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
           >
             Find Mentors
           </button>
+        </div>
+      </div>
+
+      {/* Team Invitations - Add this section right after the header */}
+      <div className="mb-6">
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-lg flex items-center gap-2">
+              <Users className="text-blue-600" />
+              Team Invitations
+            </h3>
+          </div>
+          <Invitations limit={3} />
         </div>
       </div>
 

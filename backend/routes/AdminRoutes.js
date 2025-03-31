@@ -22,7 +22,10 @@ const {
   deleteHackathon,
   updateApplicantStatus,
   getHackathonStats,
-  getHackathonsByAdmin
+  getHackathonsByAdmin,
+  getIndividualApplicants,
+  createTemporaryTeam,
+  getHackathonTeams
 } = require("../controllers/AdminController");
 
 // Admin authentication and profile routes
@@ -47,5 +50,10 @@ router.put("/hackathons/:id", updateHackathon);
 router.delete("/hackathons/:id", deleteHackathon);
 router.put("/hackathons/:hackathonId/applicants/:applicantId", updateApplicantStatus);
 router.get("/:uid/hackathons", getHackathonsByAdmin);
+
+// Add these new routes to your existing routes
+router.get('/hackathons/:hackathonId/individual-applicants', getIndividualApplicants);
+router.post('/hackathons/:hackathonId/temp-teams', createTemporaryTeam);
+router.get('/hackathons/:hackathonId/teams', getHackathonTeams);
 
 module.exports = router;

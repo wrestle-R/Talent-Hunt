@@ -8,7 +8,13 @@ const hackathonSchema = new mongoose.Schema({
   endDate: { type: Date, required: true },
 
   mode: { type: String, enum: ["Online", "Offline", "Hybrid"], default: "Online" },
-  location: { type: String, default: "Online" }, // Only applies if offline/hybrid
+  location: { type: String, default: "Online" },  
+  
+  // Single domain and problem statement
+  primaryDomain: { type: String, required: true },
+  primaryProblemStatement: { type: String, required: true },
+  
+
   
   prizePool: { type: Number, default: 0 },
   postedByAdmin: {
@@ -20,11 +26,99 @@ const hackathonSchema = new mongoose.Schema({
   registration: {
     totalCapacity: { type: Number, required: true }, // Maximum spots available
     currentlyRegistered: { type: Number, default: 0 }, // Current number of registered participants
+    requiredTeamSize: { type: Number, default: 4 }, // Teams must have exactly 4 members
   },
 
+  // Array of all registered students (for quick access)
+  registeredStudents: [
+    { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Student" 
+    }
+  ],
+
+  registeredTeams: [
+    { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Team" 
+    }
+  ],
+
+// Update the teamApplicants schema part
+teamApplicants: [
+  {
+    team: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Team", 
+      required: true 
+    },
+    registeredAt: { type: Date, default: Date.now },
+    members: [
+      { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "Student" 
+      }
+    ],
+    status: {
+      type: String,
+      enum: ["Pending", "Approved", "Rejected", "Active", "Disqualified", "Completed"],
+      default: "Pending",
+    }
+  }
+],
+
+// Update the individualApplicants schema part
+individualApplicants: [
+  {
+    student: { 
+      type: mongoose.Schema.Types.ObjectId, 
+      ref: "Student", 
+      required: true 
+    },
+    registeredAt: { type: Date, default: Date.now },
+    skills: [{ type: String }],
+    status: {
+      type: String,
+      enum: ["Pending", "Approved", "Rejected"],
+      default: "Pending"
+    },
+    assignedToTempTeam: { type: Boolean, default: false },
+    tempTeamId: { type: String },
+  }
+],
+  // Temporary teams formed by admin (groups of 4 individual applicants)
+  temporaryTeams: [
+    {
+      tempTeamId: { type: String, required: true },
+      teamName: { type: String, required: true },
+      members: [
+        { 
+          type: mongoose.Schema.Types.ObjectId, 
+          ref: "Student",
+          required: true 
+        }
+      ],
+      leader: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "Student" 
+      },
+      formedAt: { type: Date, default: Date.now },
+      formedBy: { 
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: "Admin" 
+      },
+      status: {
+        type: String,
+        enum: ["Active", "Disqualified", "Completed"],
+        default: "Active",
+      }
+    }
+  ],
+
+  // Legacy applicants field (for backward compatibility)
   applicants: [
     {
-      user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+      user: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
       status: {
         type: String,
         enum: ["Pending", "Accepted", "Rejected"],
@@ -34,8 +128,24 @@ const hackathonSchema = new mongoose.Schema({
     }
   ],
 
-  problemStatement: [{ type: String }],
-  domain: [{ type: String }], // Example: ["AI", "Web3", "Cybersecurity"]
+  // Hackathon results and analytics
+  results: {
+    winningTeams: [
+      {
+        rank: { type: Number },
+        isTemporaryTeam: { type: Boolean, default: false },
+        teamId: { 
+          type: mongoose.Schema.Types.ObjectId, 
+          ref: "Team" 
+        },
+        tempTeamId: { type: String },
+        prizeAmount: { type: Number },
+      }
+    ],
+    participationCount: { type: Number, default: 0 },
+    submissionCount: { type: Number, default: 0 },
+    completedTeams: { type: Number, default: 0 },
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Hackathon", hackathonSchema);

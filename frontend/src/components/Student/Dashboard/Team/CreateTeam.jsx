@@ -267,21 +267,15 @@ const CreateTeam = () => {
 
           {/* Max Team Size */}
           <div className="flex-1">
-            <label htmlFor="maxTeamSize" className="block text-sm font-medium text-gray-700 mb-1">
-              Maximum Team Size
-            </label>
-            <select
-              id="maxTeamSize"
-              name="maxTeamSize"
-              value={teamData.maxTeamSize}
-              onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            >
-              {[2, 3, 4, 5, 6, 7, 8, 9, 10].map(size => (
-                <option key={size} value={size}>{size} members</option>
-              ))}
-            </select>
-          </div>
+  <label htmlFor="maxTeamSize" className="block text-sm font-medium text-gray-700 mb-1">
+    Maximum Team Size
+  </label>
+  <p className="w-full p-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-700">
+    4 members
+  </p>
+  <input type="hidden" id="maxTeamSize" name="maxTeamSize" value={4} />
+</div>
+
         </div>
 
         {/* Tech Stack */}
