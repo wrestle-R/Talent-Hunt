@@ -11,7 +11,6 @@ import AdminHero from './components/Admin/AdminHero';
 import TeammatesPage from './components/Student/TeammatesPage';
 import MentorsPage from './components/Student/Dashboard/MentorsPage';
 import { UserProvider } from '../context/UserContext';
-import ManageHackathons from './components/Admin/ManageHackathons';
 import HackathonPage from './components/Student/Dashboard/HackathonPage';
 import HackathonDetail from './components/Student/Dashboard/HackathonDetail';
 import AdminModeration from './components/Moderator/ModeratorModeration';
@@ -38,6 +37,9 @@ import TeamProjects from './components/Student/Dashboard/Team/TeamProjects'
 import TeamMentorManager from './components/Student/Dashboard/Team/Mentor/TeamMentorManager';
 import TeamMentorProfile from './components/Student/Dashboard/Team/Mentor/MentorProfile';
 import Landing from './components/Landing'
+import HackathonParticipantManager from './components/Admin/HackathonParticipantManager'
+import ManageHackathons from './components/Admin/ManageHackathons'
+import ManageHackathonTeams from "./components/Admin/ManagehackathonTeams"
 
 const role = localStorage.userRole
 console.log(role)
@@ -80,7 +82,16 @@ const App = () => {
               {/* Admin Routes */}
               <Route path="/admin/hero" element={<AdminHero />} /> 
               <Route path="/admin/hackathons" element={<ManageHackathons />} />
-              
+              <Route path="/admin/hackathons/:hackathonId/participants" element={ <HackathonParticipantManager />}/>
+              <Route path="/admin/hackathon_applications" element={<ManageHackathons />} />
+              <Route path="/admin/hackathon-applications" element={<ManageHackathons />} /> {/* Add this route */}
+{/* Admin Routes */}
+<Route path="/admin/hero" element={<AdminHero />} /> 
+<Route path="/admin/hackathons" element={<ManageHackathons />} />
+<Route path="/admin/hackathons/:hackathonId/participants" element={<HackathonParticipantManager />}/>
+<Route path="/admin/hackathon-applications" element={<ManageHackathons />} />
+
+<Route path="/admin/hackathons/:hackathonId/teams" element={<ManageHackathonTeams />} />
               {/* Auth Routes */}
               <Route path="/register" element={<Register />} />
               

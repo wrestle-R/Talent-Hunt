@@ -3,7 +3,8 @@ const Hackathon = require("../models/Hackathon");
 const Student = require("../models/Student");
 const Mentor = require("../models/Mentor");
 const mongoose =require('mongoose')
-  
+const Team = require("../models/Team")
+
 // Admin authentication and profile functions
 const registerOrLoginAdmin = async (req, res) => {
   try {
@@ -329,58 +330,6 @@ const deleteHackathon = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to delete hackathon",
-      error: error.message
-    });
-  }
-};
-
-const updateApplicantStatus = async (req, res) => {
-  try {
-    const { hackathonId, applicantId } = req.params;
-    const { status } = req.body;
-    
-    if (!["Pending", "Accepted", "Rejected"].includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid status. Must be Pending, Accepted, or Rejected"
-      });
-    }
-    
-    const hackathon = await Hackathon.findById(hackathonId);
-    
-    if (!hackathon) {
-      return res.status(404).json({
-        success: false,
-        message: "Hackathon not found"
-      });
-    }
-    
-    // Find the application
-    const applicationIndex = hackathon.applicants.findIndex(
-      app => app._id.toString() === applicantId
-    );
-    
-    if (applicationIndex === -1) {
-      return res.status(404).json({
-        success: false,
-        message: "Application not found"
-      });
-    }
-    
-    // Update application status
-    hackathon.applicants[applicationIndex].status = status;
-    await hackathon.save();
-    
-    res.status(200).json({
-      success: true,
-      message: "Application status updated successfully",
-      application: hackathon.applicants[applicationIndex]
-    });
-  } catch (error) {
-    console.error("Error updating application status:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to update application status",
       error: error.message
     });
   }
@@ -824,11 +773,20 @@ const restoreStudent = async (req, res) => {
 };
 
 // Add these new functions after your existing ones
+// Update the getIndividualApplicants function
 
-// Get individual applicants for team formation
 const getIndividualApplicants = async (req, res) => {
   try {
     const { hackathonId } = req.params;
+    
+    console.log("Received hackathonId:", hackathonId);
+    
+    if (!hackathonId || hackathonId === 'undefined') {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid hackathon ID provided"
+      });
+    }
     
     const hackathon = await Hackathon.findById(hackathonId)
       .populate('individualApplicants.student', 'name email profile_picture skills');
@@ -985,20 +943,468 @@ const getHackathonTeams = async (req, res) => {
   }
 };
 
+// Add these functions to your existing AdminController.js
+
+// Update the function in AdminController.js to handle the new format
+const updateApplicantStatus = async (req, res) => {
+  try {
+    const { hackathonId, applicantId } = req.params;
+    const { type, status, feedback } = req.body;
+
+    if (!type || !status) {
+      return res.status(400).json({
+        success: false,
+        message: "Type and status are required fields"
+      });
+    }
+
+    const hackathon = await Hackathon.findById(hackathonId);
+    if (!hackathon) {
+      return res.status(404).json({
+        success: false,
+        message: "Hackathon not found"
+      });
+    }
+
+    // Handle individual applicant status update
+    if (type === 'individual') {
+      const applicantIndex = hackathon.individualApplicants.findIndex(
+        app => app._id.toString() === applicantId
+      );
+
+      if (applicantIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          message: "Individual applicant not found"
+        });
+      }
+
+      // Update status
+      hackathon.individualApplicants[applicantIndex].status = status;
+      
+      // Add feedback if provided
+      if (feedback) {
+        hackathon.individualApplicants[applicantIndex].feedback = feedback;
+      }
+
+      // If approved, add to registeredStudents
+      if (status === 'Approved') {
+        const studentId = hackathon.individualApplicants[applicantIndex].student;
+        
+        if (!hackathon.registeredStudents.includes(studentId)) {
+          hackathon.registeredStudents.push(studentId);
+          hackathon.registration.currentlyRegistered += 1;
+        }
+      }
+    } 
+    // Handle team applicant status update
+    else if (type === 'team') {
+      const teamAppIndex = hackathon.teamApplicants.findIndex(
+        app => app._id.toString() === applicantId
+      );
+
+      if (teamAppIndex === -1) {
+        return res.status(404).json({
+          success: false,
+          message: "Team application not found"
+        });
+      }
+
+      // Update status
+      hackathon.teamApplicants[teamAppIndex].status = status;
+      
+      // Add feedback if provided
+      if (feedback) {
+        hackathon.teamApplicants[teamAppIndex].feedback = feedback;
+      }
+
+      // If approved, add to registeredTeams and update count
+      if (status === 'Approved') {
+        const teamId = hackathon.teamApplicants[teamAppIndex].team;
+        
+        if (!hackathon.registeredTeams.includes(teamId)) {
+          hackathon.registeredTeams.push(teamId);
+          
+          // Get team member count and add to registration count
+          const team = await Team.findById(teamId);
+          if (team) {
+            hackathon.registration.currentlyRegistered += team.members.length;
+          }
+        }
+      }
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid applicant type. Must be 'individual' or 'team'"
+      });
+    }
+
+    await hackathon.save();
+
+    res.status(200).json({
+      success: true,
+      message: `${type.charAt(0).toUpperCase() + type.slice(1)} application ${status.toLowerCase()} successfully`
+    });
+  } catch (error) {
+    console.error("Error updating applicant status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update applicant status",
+      error: error.message
+    });
+  }
+};
+
+// Convert temporary team to official team
+const convertTemporaryTeam = async (req, res) => {
+  try {
+    const { hackathonId, tempTeamId } = req.params;
+    const { teamName, leaderId } = req.body;
+
+    const hackathon = await Hackathon.findById(hackathonId)
+      .populate('temporaryTeams.members', 'name email firebaseUID');
+
+    if (!hackathon) {
+      return res.status(404).json({
+        success: false,
+        message: "Hackathon not found"
+      });
+    }
+
+    // Find temporary team
+    const tempTeam = hackathon.temporaryTeams.find(
+      team => team.tempTeamId === tempTeamId
+    );
+
+    if (!tempTeam) {
+      return res.status(404).json({
+        success: false,
+        message: "Temporary team not found"
+      });
+    }
+
+    // Verify leader is in team
+    if (!tempTeam.members.some(member => member._id.toString() === leaderId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Selected leader is not a member of this team"
+      });
+    }
+
+    // Create a new official team
+    const newTeam = new Team({
+      name: teamName || `Temp Team ${tempTeamId.substring(0, 6)}`,
+      description: `Team formed for ${hackathon.hackathonName} hackathon`,
+      createdBy: leaderId,
+      leader: leaderId,
+      techStack: hackathon.primaryDomain ? [hackathon.primaryDomain] : [],
+      members: tempTeam.members.map(member => ({
+        student: member._id,
+        role: member._id.toString() === leaderId ? 'Leader' : 'Member',
+        joinedAt: new Date(),
+        status: 'active',
+        invitationStatus: 'accepted'
+      })),
+      isPublic: true,
+      maxTeamSize: hackathon.registration.requiredTeamSize || 4,
+      formationDate: new Date(),
+      activityLog: [{
+        action: 'team_created',
+        description: `Team formed from temporary team for ${hackathon.hackathonName}`,
+        userId: leaderId,
+        userType: 'Student',
+        timestamp: new Date()
+      }]
+    });
+
+    await newTeam.save();
+
+    // Register team to hackathon
+    hackathon.teamApplicants.push({
+      team: newTeam._id,
+      registeredAt: new Date(),
+      members: tempTeam.members.map(member => member._id),
+      status: 'Approved'  // Auto-approve since admin formed it
+    });
+
+    // Add to registeredTeams
+    hackathon.registeredTeams.push(newTeam._id);
+    
+    // Remove from temporaryTeams
+    hackathon.temporaryTeams = hackathon.temporaryTeams.filter(
+      team => team.tempTeamId !== tempTeamId
+    );
+
+    // Update individual applicants to show they're no longer available
+    tempTeam.members.forEach(member => {
+      const applicantIndex = hackathon.individualApplicants.findIndex(
+        app => app.student._id.toString() === member._id.toString()
+      );
+      
+      if (applicantIndex !== -1) {
+        hackathon.individualApplicants[applicantIndex].assignedToTempTeam = true;
+        hackathon.individualApplicants[applicantIndex].status = 'Approved';
+      }
+    });
+
+    await hackathon.save();
+
+    // Populate team details
+    const populatedTeam = await Team.findById(newTeam._id)
+      .populate('leader', 'name email profile_picture')
+      .populate('members.student', 'name email profile_picture');
+
+    res.status(200).json({
+      success: true,
+      message: "Temporary team converted to official team",
+      team: populatedTeam
+    });
+  } catch (error) {
+    console.error("Error converting temporary team:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to convert temporary team",
+      error: error.message
+    });
+  }
+};
+
+// Dissolve temporary team
+const dissolveTemporaryTeam = async (req, res) => {
+  try {
+    const { hackathonId, tempTeamId } = req.params;
+
+    const hackathon = await Hackathon.findById(hackathonId);
+    if (!hackathon) {
+      return res.status(404).json({
+        success: false,
+        message: "Hackathon not found"
+      });
+    }
+
+    // Find temporary team
+    const tempTeam = hackathon.temporaryTeams.find(
+      team => team.tempTeamId === tempTeamId
+    );
+
+    if (!tempTeam) {
+      return res.status(404).json({
+        success: false,
+        message: "Temporary team not found"
+      });
+    }
+
+    // Free up individual applicants
+    const memberIds = tempTeam.members.map(member => member.toString());
+    
+    hackathon.individualApplicants.forEach(app => {
+      if (memberIds.includes(app.student.toString())) {
+        app.assignedToTempTeam = false;
+        app.tempTeamId = null;
+      }
+    });
+
+    // Remove temporary team
+    hackathon.temporaryTeams = hackathon.temporaryTeams.filter(
+      team => team.tempTeamId !== tempTeamId
+    );
+
+    await hackathon.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Temporary team dissolved successfully",
+      freedApplicants: memberIds
+    });
+  } catch (error) {
+    console.error("Error dissolving temporary team:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to dissolve temporary team",
+      error: error.message
+    });
+  }
+};
+
+// Get detailed participant information for a hackathon
+const getHackathonParticipants = async (req, res) => {
+  try {
+    const { hackathonId } = req.params;
+    
+    const hackathon = await Hackathon.findById(hackathonId)
+      .populate({
+        path: 'individualApplicants.student',
+        select: 'name email profile_picture skills education'
+      })
+      .populate({
+        path: 'teamApplicants.team',
+        populate: {
+          path: 'members.student',
+          select: 'name email profile_picture skills'
+        }
+      })
+      .populate({
+        path: 'temporaryTeams.members',
+        select: 'name email profile_picture skills'
+      })
+      .populate({
+        path: 'temporaryTeams.leader',
+        select: 'name email profile_picture'
+      });
+    
+    if (!hackathon) {
+      return res.status(404).json({
+        success: false,
+        message: "Hackathon not found"
+      });
+    }
+    
+    // Format response data
+    const participants = {
+      individualApplicants: hackathon.individualApplicants.map(app => ({
+        id: app._id,
+        student: {
+          id: app.student._id,
+          name: app.student.name,
+          email: app.student.email,
+          profile_picture: app.student.profile_picture,
+          skills: app.student.skills || [],
+          institution: app.student.education?.institution || 'Not specified'
+        },
+        status: app.status,
+        registeredAt: app.registeredAt,
+        skills: app.skills || [],
+        assignedToTempTeam: app.assignedToTempTeam,
+        tempTeamId: app.tempTeamId,
+        feedback: app.feedback
+      })),
+      
+      teamApplicants: hackathon.teamApplicants.map(app => ({
+        id: app._id,
+        team: {
+          id: app.team._id,
+          name: app.team.name,
+          description: app.team.description,
+          leader: app.team.leader,
+          memberCount: app.team.members.length,
+          members: app.team.members.map(member => ({
+            id: member.student._id,
+            name: member.student.name,
+            role: member.role,
+            profile_picture: member.student.profile_picture,
+            skills: member.student.skills || []
+          }))
+        },
+        status: app.status,
+        registeredAt: app.registeredAt,
+        feedback: app.feedback
+      })),
+      
+      temporaryTeams: hackathon.temporaryTeams.map(team => ({
+        id: team._id,
+        tempTeamId: team.tempTeamId,
+        teamName: team.teamName,
+        members: team.members.map(member => ({
+          id: member._id,
+          name: member.name,
+          email: member.email,
+          profile_picture: member.profile_picture,
+          skills: member.skills || []
+        })),
+        leader: team.leader ? {
+          id: team.leader._id,
+          name: team.leader.name,
+          email: team.leader.email,
+          profile_picture: team.leader.profile_picture
+        } : null,
+        formedAt: team.formedAt,
+        status: team.status
+      }))
+    };
+    
+    res.status(200).json({
+      success: true,
+      participants
+    });
+    
+  } catch (error) {
+    console.error("Error fetching hackathon participants:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch hackathon participants",
+      error: error.message
+    });
+  }
+};
+
+// Add this controller function:
+
+const getTeamApplicants = async (req, res) => {
+  try {
+    const { hackathonId } = req.params;
+    
+    if (!hackathonId || hackathonId === 'undefined') {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid hackathon ID provided"
+      });
+    }
+    
+    const hackathon = await Hackathon.findById(hackathonId)
+      .populate({
+        path: 'teamApplicants.team',
+        populate: {
+          path: 'members.student',
+          select: 'name email profile_picture skills'
+        }
+      });
+    
+    if (!hackathon) {
+      return res.status(404).json({
+        success: false,
+        message: "Hackathon not found"
+      });
+    }
+    
+    res.status(200).json({
+      success: true,
+      count: hackathon.teamApplicants.length,
+      teams: hackathon.teamApplicants
+    });
+  } catch (error) {
+    console.error("Error fetching team applicants:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch team applicants",
+      error: error.message
+    });
+  }
+};
+
+// Add to exports
 module.exports = {
   // Admin authentication and profile
   registerOrLoginAdmin,
   getAdminProfile,
   updateAdminProfile,
+  
+  // User moderation
   getAllMentorsForAdmin,
   getAllStudentsForAdmin,
   rejectMentor,
   restoreMentor,
   rejectStudent,
   restoreStudent,  
+  
+  // Team management for hackathons
   getIndividualApplicants,
+  getTeamApplicants,  // Add this
   createTemporaryTeam,
   getHackathonTeams,
+  getHackathonParticipants,
+  convertTemporaryTeam,
+  dissolveTemporaryTeam,
+  
   // Hackathon management
   getAllHackathons,
   getHackathonById,
@@ -1009,3 +1415,4 @@ module.exports = {
   getHackathonStats,
   getHackathonsByAdmin
 };
+

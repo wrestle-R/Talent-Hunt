@@ -23,9 +23,15 @@ const {
   updateApplicantStatus,
   getHackathonStats,
   getHackathonsByAdmin,
+  
+  // Team management for hackathons
   getIndividualApplicants,
   createTemporaryTeam,
-  getHackathonTeams
+  getHackathonTeams,
+  getHackathonParticipants,
+  convertTemporaryTeam,
+  getTeamApplicants,
+  dissolveTemporaryTeam
 } = require("../controllers/AdminController");
 
 // Admin authentication and profile routes
@@ -48,12 +54,22 @@ router.get("/hackathons/:id", getHackathonById);
 router.post("/hackathons", createHackathon);
 router.put("/hackathons/:id", updateHackathon);
 router.delete("/hackathons/:id", deleteHackathon);
-router.put("/hackathons/:hackathonId/applicants/:applicantId", updateApplicantStatus);
 router.get("/:uid/hackathons", getHackathonsByAdmin);
+// Add this route to your routes file:
 
-// Add these new routes to your existing routes
+router.get('/hackathons/:hackathonId/team-applicants', getTeamApplicants);
+
+// Hackathon participant management
+router.get('/hackathons/:hackathonId/participants', getHackathonParticipants);
 router.get('/hackathons/:hackathonId/individual-applicants', getIndividualApplicants);
-router.post('/hackathons/:hackathonId/temp-teams', createTemporaryTeam);
 router.get('/hackathons/:hackathonId/teams', getHackathonTeams);
+
+// Hackathon application approval/rejection
+router.put('/hackathons/:hackathonId/applicants/:applicantId', updateApplicantStatus);
+
+// Temporary team management
+router.post('/hackathons/:hackathonId/temp-teams', createTemporaryTeam);
+router.post('/hackathons/:hackathonId/temp-teams/:tempTeamId/convert', convertTemporaryTeam);
+router.delete('/hackathons/:hackathonId/temp-teams/:tempTeamId', dissolveTemporaryTeam);
 
 module.exports = router;

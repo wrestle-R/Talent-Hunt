@@ -3,6 +3,7 @@ import { CalendarDays, ArrowLeft, Plus, AlertCircle, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import CreateHackathon from './CreateHackathon';
+import HackathonParticipantManager from './HackathonParticipantManager';
 
 const ManageHackathons = () => {
   const navigate = useNavigate();
@@ -11,6 +12,7 @@ const ManageHackathons = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [editingHackathon, setEditingHackathon] = useState(null);
+  const [selectedHackathon, setSelectedHackathon] = useState(null);
   
   const user = JSON.parse(localStorage.getItem("user"));
 
@@ -37,6 +39,11 @@ const ManageHackathons = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleManageParticipants = (hackathon) => {
+    setSelectedHackathon(hackathon);
+    setActiveView('participants');
   };
 
   const handleHackathonCreate = async (hackathonData) => {
@@ -222,18 +229,14 @@ const ManageHackathons = () => {
       </div>
       
       <div className="border-t mt-4 pt-4 flex gap-2">
-        <button
-          onClick={() => navigate(`/admin/hackathons/${hackathon._id}/teams`)}
-          className="text-sm bg-indigo-50 text-indigo-600 px-3 py-1 rounded-md hover:bg-indigo-100"
-        >
-          Manage Teams
-        </button>
-        <button
-          onClick={() => navigate(`/admin/hackathons/${hackathon._id}/form-teams`)}
-          className="text-sm bg-amber-50 text-amber-600 px-3 py-1 rounded-md hover:bg-amber-100"
-        >
-          Form Teams
-        </button>
+        
+<button
+  onClick={() => navigate(`/admin/hackathons/${hackathon._id}/participants`)}
+  className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-md hover:bg-indigo-200"
+>
+  <Users className="w-4 h-4 inline mr-1" />
+  Manage Participants
+</button>
       </div>
     </div>
   );
@@ -298,6 +301,13 @@ const ManageHackathons = () => {
             setActiveView('list');
             setEditingHackathon(null);
           }}
+        />
+      )}
+
+      {activeView === 'participants' && selectedHackathon && (
+        <HackathonParticipantManager 
+          hackathonId={selectedHackathon._id}
+          onBack={() => setActiveView('list')}
         />
       )}
 
