@@ -1860,156 +1860,158 @@ const getMentorById = async (req, res) => {
 
 const registerForHackathon = async (req, res) => {
   try {
-      const { id: hackathonId } = req.params;
-      const { uid, registrationType, teamId } = req.body;
+    const { id: hackathonId } = req.params;
+    const { uid, registrationType, teamId } = req.body;
 
-      // Find student
-      const student = await Student.findOne({ firebaseUID: uid });
-      if (!student) {
-          return res.status(404).json({
-              success: false,
-              message: "Student not found"
-          });
-      }
-
-      // Find hackathon and populate necessary fields
-      const hackathonQuery = Hackathon.findById(hackathonId)
-          .populate({
-              path: 'teamApplicants.team',
-              populate: {
-                  path: 'members',
-                  model: 'Student'
-              }
-          })
-          .populate('individualApplicants.student');
-
-      // Conditionally populate `registeredStudents` only if it exists
-      if (Hackathon.schema.paths.registeredStudents) {
-          hackathonQuery.populate('registeredStudents');
-      }
-
-      const hackathon = await hackathonQuery.exec();
-
-      if (!hackathon) {
-          return res.status(404).json({
-              success: false,
-              message: "Hackathon not found"
-          });
-      }
-
-      // Check registration deadline
-      const today = new Date();
-      if (today > new Date(hackathon.lastRegisterDate)) {
-          return res.status(400).json({
-              success: false,
-              message: "Registration is closed for this hackathon"
-          });
-      }
-
-      // Check hackathon capacity
-      if (hackathon.registration.currentlyRegistered >= hackathon.registration.totalCapacity) {
-          return res.status(400).json({
-              success: false,
-              message: "This hackathon has reached its maximum capacity"
-          });
-      }
-
-      // Helper function to check if a student is already registered
-      const isStudentRegistered = (studentId) => {
-          return (
-              hackathon.individualApplicants.some(app =>
-                  app.student._id.toString() === studentId.toString()
-              ) ||
-              hackathon.teamApplicants.some(app =>
-                  app.members.some(member => member.toString() === studentId.toString())
-              ) ||
-              (hackathon.registeredStudents && hackathon.registeredStudents.some(regStudent =>
-                  regStudent.toString() === studentId.toString()
-              ))
-          );
-      };
-
-      // Check current student's registration status
-      if (isStudentRegistered(student._id)) {
-          return res.status(400).json({
-              success: false,
-              message: "You are already registered for this hackathon"
-          });
-      }
-
-      // Handle team registration
-      if (registrationType === 'team') {
-          const team = await Team.findById(teamId).populate('members');
-          if (!team) {
-              return res.status(404).json({
-                  success: false,
-                  message: "Team not found"
-              });
-          }
-
-          // Verify team leader
-          if (team.leader.toString() !== student._id.toString()) {
-              return res.status(403).json({
-                  success: false,
-                  message: "Only team leader can register the team"
-              });
-          }
-
-          // Verify team size
-          if (team.members.length !== hackathon.registration.requiredTeamSize) {
-              return res.status(400).json({
-                  success: false,
-                  message: `Team must have exactly ${hackathon.registration.requiredTeamSize} members`
-              });
-          }
-
-          // Check if any team member is already registered
-          const registeredMember = team.members.find(member =>
-              isStudentRegistered(member._id)
-          );
-
-          if (registeredMember) {
-              return res.status(400).json({
-                  success: false,
-                  message: `Team member ${registeredMember.name} is already registered for this hackathon`
-              });
-          }
-
-          // Add team to applicants
-          hackathon.teamApplicants.push({
-              team: team._id,
-              members: team.members.map(m => m._id),
-              status: "Pending",
-              registeredAt: new Date()
-          });
-      }
-      // Handle individual registration
-      else {
-          hackathon.individualApplicants.push({
-              student: student._id,
-              skills: student.skills || [],
-              status: "Pending",
-              registeredAt: new Date()
-          });
-      }
-
-      await hackathon.save();
-
-      res.status(200).json({
-          success: true,
-          message: registrationType === 'team' ?
-              "Team application submitted successfully. Waiting for admin approval." :
-              "Individual application submitted successfully. Waiting for admin approval.",
-          hackathon
+    // Find student
+    const student = await Student.findOne({ firebaseUID: uid });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
       });
+    }
 
-  } catch (err) {
-      console.error("Error in hackathon registration:", err);
-      res.status(500).json({
+    // Find hackathon and populate necessary fields
+    const hackathonQuery = Hackathon.findById(hackathonId)
+      .populate({
+        path: 'teamApplicants.team',
+        populate: {
+          path: 'members',
+          model: 'Student',
+        },
+      })
+      .populate('individualApplicants.student')
+      .populate('registeredTeams');
+
+    // Conditionally populate `registeredStudents` only if it exists
+    if (Hackathon.schema.paths.registeredStudents) {
+      hackathonQuery.populate('registeredStudents');
+    }
+
+    const hackathon = await hackathonQuery.exec();
+
+    if (!hackathon) {
+      return res.status(404).json({
+        success: false,
+        message: "Hackathon not found",
+      });
+    }
+
+    // Check registration deadline
+    const today = new Date();
+    if (today > new Date(hackathon.lastRegisterDate)) {
+      return res.status(400).json({
+        success: false,
+        message: "Registration is closed for this hackathon",
+      });
+    }
+
+    // Check hackathon capacity
+    if (hackathon.registration.currentlyRegistered >= hackathon.registration.totalCapacity) {
+      return res.status(400).json({
+        success: false,
+        message: "This hackathon has reached its maximum capacity",
+      });
+    }
+
+    // Helper function to check if a student is already registered
+    const isStudentRegistered = (studentId) => {
+      return (
+        hackathon.individualApplicants.some(
+          (app) => app.student._id.toString() === studentId.toString()
+        ) ||
+        hackathon.teamApplicants.some((app) =>
+          app.members.some((member) => member.toString() === studentId.toString())
+        ) ||
+        (hackathon.registeredStudents &&
+          hackathon.registeredStudents.some(
+            (regStudent) => regStudent.toString() === studentId.toString()
+          ))
+      );
+    };
+
+    // Check current student's registration status
+    if (isStudentRegistered(student._id)) {
+      return res.status(400).json({
+        success: false,
+        message: "You are already registered for this hackathon",
+      });
+    }
+
+    // Handle team registration
+    if (registrationType === "team") {
+      const team = await Team.findById(teamId).populate("members");
+      if (!team) {
+        return res.status(404).json({
           success: false,
-          message: "Failed to register for hackathon",
-          error: err.message
+          message: "Team not found",
+        });
+      }
+
+      // Verify team leader
+      if (team.leader.toString() !== student._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: "Only the team leader can register the team",
+        });
+      }
+
+      // Verify team size
+      if (team.members.length !== hackathon.registration.requiredTeamSize) {
+        return res.status(400).json({
+          success: false,
+          message: `Team must have exactly ${hackathon.registration.requiredTeamSize} members`,
+        });
+      }
+
+      // Check if any team member is already registered
+      const registeredMember = team.members.find((member) =>
+        isStudentRegistered(member._id)
+      );
+
+      if (registeredMember) {
+        return res.status(400).json({
+          success: false,
+          message: `Team member ${registeredMember.name} is already registered for this hackathon`,
+        });
+      }
+
+      // Add team to applicants
+      hackathon.teamApplicants.push({
+        team: team._id,
+        members: team.members.map((m) => m._id),
+        status: "Pending",
+        registeredAt: new Date(),
       });
+    }
+    // Handle individual registration
+    else {
+      hackathon.individualApplicants.push({
+        student: student._id,
+        skills: student.skills || [],
+        status: "Pending",
+        registeredAt: new Date(),
+      });
+    }
+
+    await hackathon.save();
+
+    res.status(200).json({
+      success: true,
+      message:
+        registrationType === "team"
+          ? "Team application submitted successfully. Waiting for admin approval."
+          : "Individual application submitted successfully. Waiting for admin approval.",
+      hackathon,
+    });
+  } catch (err) {
+    console.error("Error in hackathon registration:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to register for hackathon",
+      error: err.message,
+    });
   }
 };
 

@@ -22,7 +22,6 @@ const HackathonParticipantManager = () => {
     approved: [],
     rejected: []
   });
-  const [tempTeams, setTempTeams] = useState([]);
   const [teamApplicants, setTeamApplicants] = useState({
     pending: [],
     approved: [],
@@ -63,12 +62,6 @@ const HackathonParticipantManager = () => {
       );
       setIndividuals(individualsData.data);
       
-      // Fetch temporary teams
-      const { data: tempTeamsData } = await axios.get(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/temp-teams`
-      );
-      setTempTeams(tempTeamsData.teams);
-      
       // Fetch team applicants
       const { data: teamApplicantsData } = await axios.get(
         `http://localhost:4000/api/admin/hackathons/${hackathonId}/team-applicants`
@@ -108,39 +101,40 @@ const HackathonParticipantManager = () => {
   };
   
   // Team selection for team creation
-const toggleIndividualSelection = (individual) => {
-  setSelectedIndividuals(prev => {
-    const isSelected = prev.some(i => i._id === individual.student._id);
-    
-    if (isSelected) {
-      // If removing the team leader, reset it
-      if (teamLeader && teamLeader._id === individual.student._id) {
-        setTeamLeader(null);
+  const toggleIndividualSelection = (individual) => {
+    setSelectedIndividuals(prev => {
+      const isSelected = prev.some(i => i._id === individual.student._id);
+      
+      if (isSelected) {
+        // If removing the team leader, reset it
+        if (teamLeader && teamLeader._id === individual.student._id) {
+          setTeamLeader(null);
+        }
+        return prev.filter(i => i._id !== individual.student._id);
+      } else {
+        // Add to selection if less than 4
+        if (prev.length < 4) {
+          const newMember = {
+            _id: individual.student._id,
+            name: individual.student.name,
+            email: individual.student.email,
+            profile_picture: individual.student.profile_picture,
+            skills: individual.skills || []
+          };
+          return [...prev, newMember];
+        }
+        return prev;
       }
-      return prev.filter(i => i._id !== individual.student._id);
-    } else {
-      // Add to selection if less than 4
-      if (prev.length < 4) {
-        const newMember = {
-          _id: individual.student._id,
-          name: individual.student.name,
-          email: individual.student.email,
-          profile_picture: individual.student.profile_picture,
-          skills: individual.skills || []
-        };
-        return [...prev, newMember];
-      }
-      return prev;
-    }
-  });
-};
-const setAsLeader = (individual) => {
-  setTeamLeader({
-    _id: individual._id,
-    name: individual.name,
-    email: individual.email
-  });
-};
+    });
+  };
+
+  const setAsLeader = (individual) => {
+    setTeamLeader({
+      _id: individual._id,
+      name: individual.name,
+      email: individual.email
+    });
+  };
   
   // Create temporary team
   const handleCreateTempTeam = async () => {
@@ -167,43 +161,6 @@ const setAsLeader = (individual) => {
     }
   };
 
-
-  // Convert temp team to registered team
-  const handleConvertTempTeam = async (teamId) => {
-    try {
-      await axios.post(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/temp-teams/${teamId}/convert`
-      );
-      
-      setSuccess('Team converted successfully');
-      fetchData();
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      setError('Failed to convert team');
-      console.error('Error converting team:', err);
-      setTimeout(() => setError(null), 3000);
-    }
-  };
-  
-  // Dissolve temp team
-  const handleDissolveTempTeam = async (teamId) => {
-    if (!confirm('Are you sure you want to dissolve this team?')) return;
-    
-    try {
-      await axios.delete(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/temp-teams/${teamId}`
-      );
-      
-      setSuccess('Team dissolved successfully');
-      fetchData();
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err) {
-      setError('Failed to dissolve team');
-      console.error('Error dissolving team:', err);
-      setTimeout(() => setError(null), 3000);
-    }
-  };
-  
   // Update team applicant status
   const handleUpdateTeamStatus = async (teamId, newStatus) => {
     try {
@@ -288,19 +245,7 @@ const setAsLeader = (individual) => {
           </Tab>
           <Tab 
             className={`py-3 px-4 font-medium text-sm cursor-pointer ${
-              activeTab === 1 
-                ? 'text-blue-600 border-b-2 border-blue-600' 
-                : 'text-gray-600 hover:text-gray-900'
-            }`}
-          >
-            <div className="flex items-center">
-              <Users size={16} className="mr-2" />
-              Temporary Teams
-            </div>
-          </Tab>
-          <Tab 
-            className={`py-3 px-4 font-medium text-sm cursor-pointer ${
-              activeTab === 2
+              activeTab === 1
                 ? 'text-blue-600 border-b-2 border-blue-600' 
                 : 'text-gray-600 hover:text-gray-900'
             }`}
@@ -312,7 +257,7 @@ const setAsLeader = (individual) => {
           </Tab>
           <Tab 
             className={`py-3 px-4 font-medium text-sm cursor-pointer ${
-              activeTab === 3
+              activeTab === 2
                 ? 'text-blue-600 border-b-2 border-blue-600' 
                 : 'text-gray-600 hover:text-gray-900'
             }`}
@@ -576,83 +521,6 @@ const setAsLeader = (individual) => {
                       </table>
                     </div>
                   )}
-                </div>
-              )}
-            </div>
-          </div>
-        </TabPanel>
-        
-        <TabPanel>
-          {/* Temporary Teams Tab */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="font-bold text-lg">Temporary Teams</h2>
-              <p className="text-sm text-gray-500">
-                These teams are manually created and need to be converted to registered teams
-              </p>
-            </div>
-            
-            <div className="p-6">
-              {tempTeams.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No temporary teams have been created yet
-                </div>
-              ) : (
-                <div className="grid md:grid-cols-2 gap-6">
-                  {tempTeams.map(team => (
-                    <div key={team._id} className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                      <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-                        <h3 className="font-medium text-lg text-gray-900">{team.teamName}</h3>
-                        <div className="text-xs text-gray-500">
-                          Created {new Date(team.createdAt).toLocaleDateString()}
-                        </div>
-                      </div>
-                      
-                      <div className="p-4">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Members:</h4>
-                        <div className="space-y-2">
-                          {team.members.map(member => (
-                            <div key={member._id} className="flex items-center">
-                              <div className="flex-shrink-0 h-8 w-8">
-                                <img 
-                                  className="h-8 w-8 rounded-full" 
-                                  src={member.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                  alt="" 
-                                />
-                              </div>
-                              <div className="ml-3">
-                                <div className="text-sm font-medium flex items-center">
-                                  {member.name}
-                                  {member.isLeader && (
-                                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                      <Award size={12} className="mr-1" />
-                                      Leader
-                                    </span>
-                                  )}
-                                </div>
-                                <div className="text-xs text-gray-500">{member.email}</div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                        
-                        <div className="mt-4 flex justify-end space-x-3">
-                          <button
-                            onClick={() => handleDissolveTempTeam(team._id)}
-                            className="text-red-600 hover:text-red-900 bg-red-50 hover:bg-red-100 px-3 py-1 rounded-md text-sm"
-                          >
-                            Dissolve
-                          </button>
-                          <button
-                            onClick={() => handleConvertTempTeam(team._id)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded-md text-sm"
-                          >
-                            Convert to Team
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
                 </div>
               )}
             </div>
@@ -928,216 +796,215 @@ const setAsLeader = (individual) => {
                           <div className="p-4">
                             <div className="flex flex-wrap gap-2 mb-3">
                               {application.team.techStack?.map((tech, index) => (
-                                                                    // Continue from where the code was cut off
-                                                                  <span key={index} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                                    {tech}
-                                                                  </span>
-                                                                ))}
-                                                              </div>
-                                                              
-                                                              {expandedTeam === application._id ? (
-                                                                <div className="mt-3 border-t border-red-200 pt-3">
-                                                                  <h4 className="text-sm font-medium text-gray-700 mb-2">Team Members:</h4>
-                                                                  <div className="space-y-2">
-                                                                    {application.team.members.map(member => (
-                                                                      <div key={member._id} className="flex items-center">
-                                                                        <div className="flex-shrink-0 h-8 w-8">
-                                                                          <img 
-                                                                            className="h-8 w-8 rounded-full" 
-                                                                            src={member.student.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                                                            alt="" 
-                                                                          />
-                                                                        </div>
-                                                                        <div className="ml-3">
-                                                                          <div className="text-sm font-medium flex items-center">
-                                                                            {member.student.name}
-                                                                            {member.role === 'Leader' && (
-                                                                              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                                                <Award size={12} className="mr-1" />
-                                                                                Leader
-                                                                              </span>
-                                                                            )}
-                                                                          </div>
-                                                                          <div className="text-xs text-gray-500">{member.student.email}</div>
-                                                                        </div>
-                                                                      </div>
-                                                                    ))}
-                                                                  </div>
-                                                                  
-                                                                  <div className="mt-4 text-sm text-gray-700">
-                                                                    <h4 className="font-medium mb-1">Description:</h4>
-                                                                    <p>{application.team.description || 'No description provided.'}</p>
-                                                                  </div>
-                                                                  
-                                                                  <button
-                                                                    onClick={() => setExpandedTeam(null)}
-                                                                    className="mt-4 text-blue-600 text-sm flex items-center"
-                                                                  >
-                                                                    <ChevronUp size={16} className="mr-1" />
-                                                                    Hide Details
-                                                                  </button>
-                                                                </div>
-                                                              ) : (
-                                                                <button
-                                                                  onClick={() => setExpandedTeam(application._id)}
-                                                                  className="mt-3 text-blue-600 text-sm flex items-center"
-                                                                >
-                                                                  <ChevronDown size={16} className="mr-1" />
-                                                                  View Team Details
-                                                                </button>
-                                                              )}
-                                                            </div>
-                                                          </div>
-                                                        ))}
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                )}
-                                              </div>
-                                            </div>
-                                          </TabPanel>
-                                          
-                                          <TabPanel>
-                                            {/* Registered Teams Tab */}
-                                            <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-                                              <div className="px-6 py-4 border-b border-gray-200">
-                                                <h2 className="font-bold text-lg">Registered Teams</h2>
-                                              </div>
-                                              
-                                              <div className="p-6">
-                                                {registeredTeams.length === 0 ? (
-                                                  <div className="text-center py-8 text-gray-500">
-                                                    No registered teams yet
-                                                  </div>
-                                                ) : (
-                                                  <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                                    {registeredTeams.map(team => (
-                                                      <div key={team._id} className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow">
-                                                        <div className="px-4 py-3 bg-blue-50 border-b border-blue-200 flex justify-between items-center">
-                                                          <h3 className="font-semibold text-blue-900">
-                                                            {team.teamName}
-                                                          </h3>
-                                                          <div className="flex items-center">
-                                                            <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full flex items-center">
-                                                              <Users size={12} className="mr-1" />
-                                                              {team.members.length} members
-                                                            </span>
-                                                          </div>
-                                                        </div>
-                                                        
-                                                        <div className="p-4">
-                                                          <h4 className="text-sm font-medium text-gray-700 mb-2">Team Members:</h4>
-                                                          <div className="space-y-2">
-                                                            {team.members.slice(0, 2).map(member => (
-                                                              <div key={member._id} className="flex items-center">
-                                                                <div className="flex-shrink-0 h-8 w-8">
-                                                                  <img 
-                                                                    className="h-8 w-8 rounded-full" 
-                                                                    src={member.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                                                    alt="" 
-                                                                  />
-                                                                </div>
-                                                                <div className="ml-3">
-                                                                  <div className="text-sm font-medium flex items-center">
-                                                                    {member.name}
-                                                                    {member.isLeader && (
-                                                                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                                        <Award size={12} className="mr-1" />
-                                                                        Leader
-                                                                      </span>
-                                                                    )}
-                                                                  </div>
-                                                                  <div className="text-xs text-gray-500">{member.email}</div>
-                                                                </div>
-                                                              </div>
-                                                            ))}
-                                                            
-                                                            {team.members.length > 2 && (
-                                                              <div className="text-sm text-blue-600 mt-1">
-                                                                +{team.members.length - 2} more members
-                                                              </div>
-                                                            )}
-                                                          </div>
-                                                          
-                                                          {expandedTeam === team._id ? (
-                                                            <div className="mt-3 pt-3 border-t border-gray-200">
-                                                              <div className="space-y-2">
-                                                                {team.members.slice(2).map(member => (
-                                                                  <div key={member._id} className="flex items-center">
-                                                                    <div className="flex-shrink-0 h-8 w-8">
-                                                                      <img 
-                                                                        className="h-8 w-8 rounded-full" 
-                                                                        src={member.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                                                        alt="" 
-                                                                      />
-                                                                    </div>
-                                                                    <div className="ml-3">
-                                                                      <div className="text-sm font-medium flex items-center">
-                                                                        {member.name}
-                                                                        {member.isLeader && (
-                                                                          <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                                            <Award size={12} className="mr-1" />
-                                                                            Leader
-                                                                          </span>
-                                                                        )}
-                                                                      </div>
-                                                                      <div className="text-xs text-gray-500">{member.email}</div>
-                                                                    </div>
-                                                                  </div>
-                                                                ))}
-                                                              </div>
-                                                              
-                                                              <button
-                                                                onClick={() => setExpandedTeam(null)}
-                                                                className="mt-3 text-blue-600 text-sm flex items-center"
-                                                              >
-                                                                <ChevronUp size={16} className="mr-1" />
-                                                                Show Less
-                                                              </button>
-                                                            </div>
-                                                          ) : (
-                                                            team.members.length > 2 && (
-                                                              <button
-                                                                onClick={() => setExpandedTeam(team._id)}
-                                                                className="mt-3 text-blue-600 text-sm flex items-center"
-                                                              >
-                                                                <ChevronDown size={16} className="mr-1" />
-                                                                View All Members
-                                                              </button>
-                                                            )
-                                                          )}
-                                                        </div>
-                                                      </div>
-                                                    ))}
-                                                  </div>
-                                                )}
-                                              </div>
-                                            </div>
-                                          </TabPanel>
-                                        </Tabs>
-                                        
-                                        {/* Create Team Modal */}
-                                        {showTeamModal && (
-                                          <CreateTeamModal
-                                            showModal={showTeamModal}
-                                            onClose={() => {
-                                              setShowTeamModal(false);
-                                              setSelectedIndividuals([]);
-                                              setTeamLeader(null);
-                                              setTeamName('');
-                                            }}
-                                            teamName={teamName}
-                                            setTeamName={setTeamName}
-                                            availableIndividuals={individuals.approved.filter(i => !i.assignedToTempTeam)}
-                                            selectedIndividuals={selectedIndividuals}
-                                            teamLeader={teamLeader}
-                                            onToggleSelection={toggleIndividualSelection}
-                                            onSetLeader={setAsLeader}
-                                            onCreateTeam={handleCreateTempTeam}
-                                          />
-                                        )}
+                                <span key={index} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                  {tech}
+                                </span>
+                              ))}
+                            </div>
+                            
+                            {expandedTeam === application._id ? (
+                              <div className="mt-3 border-t border-red-200 pt-3">
+                                <h4 className="text-sm font-medium text-gray-700 mb-2">Team Members:</h4>
+                                <div className="space-y-2">
+                                  {application.team.members.map(member => (
+                                    <div key={member._id} className="flex items-center">
+                                      <div className="flex-shrink-0 h-8 w-8">
+                                        <img 
+                                          className="h-8 w-8 rounded-full" 
+                                          src={member.student.profile_picture || "https://via.placeholder.com/40?text=User"} 
+                                          alt="" 
+                                        />
                                       </div>
-                                    );
-                                  };
-                                  
-                                  export default HackathonParticipantManager;
+                                      <div className="ml-3">
+                                        <div className="text-sm font-medium flex items-center">
+                                          {member.student.name}
+                                          {member.role === 'Leader' && (
+                                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                              <Award size={12} className="mr-1" />
+                                              Leader
+                                            </span>
+                                          )}
+                                        </div>
+                                        <div className="text-xs text-gray-500">{member.student.email}</div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                                
+                                <div className="mt-4 text-sm text-gray-700">
+                                  <h4 className="font-medium mb-1">Description:</h4>
+                                  <p>{application.team.description || 'No description provided.'}</p>
+                                </div>
+                                
+                                <button
+                                  onClick={() => setExpandedTeam(null)}
+                                  className="mt-4 text-blue-600 text-sm flex items-center"
+                                >
+                                  <ChevronUp size={16} className="mr-1" />
+                                  Hide Details
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => setExpandedTeam(application._id)}
+                                className="mt-3 text-blue-600 text-sm flex items-center"
+                              >
+                                <ChevronDown size={16} className="mr-1" />
+                                View Team Details
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </TabPanel>
+        
+        <TabPanel>
+          {/* Registered Teams Tab */}
+          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h2 className="font-bold text-lg">Registered Teams</h2>
+            </div>
+            
+            <div className="p-6">
+              {registeredTeams.length === 0 ? (
+                <div className="text-center py-8 text-gray-500">
+                  No registered teams yet
+                </div>
+              ) : (
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {registeredTeams.map(team => (
+                    <div key={team._id} className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow">
+                      <div className="px-4 py-3 bg-blue-50 border-b border-blue-200 flex justify-between items-center">
+                        <h3 className="font-semibold text-blue-900">
+                          {team.teamName}
+                        </h3>
+                        <div className="flex items-center">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full flex items-center">
+                            <Users size={12} className="mr-1" />
+                            {team.members.length} members
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="p-4">
+                        <h4 className="text-sm font-medium text-gray-700 mb-2">Team Members:</h4>
+                        <div className="space-y-2">
+                          {team.members.slice(0, 2).map(member => (
+                            <div key={member._id} className="flex items-center">
+                              <div className="flex-shrink-0 h-8 w-8">
+                                <img 
+                                  className="h-8 w-8 rounded-full" 
+                                  src={member.profile_picture || "https://via.placeholder.com/40?text=User"} 
+                                  alt="" 
+                                />
+                              </div>
+                              <div className="ml-3">
+                                <div className="text-sm font-medium flex items-center">
+                                  {member.name}
+                                  {member.isLeader && (
+                                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                      <Award size={12} className="mr-1" />
+                                      Leader
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-xs text-gray-500">{member.email}</div>
+                              </div>
+                            </div>
+                          ))}
+                          
+                          {team.members.length > 2 && (
+                            <div className="text-sm text-blue-600 mt-1">
+                              +{team.members.length - 2} more members
+                            </div>
+                          )}
+                        </div>
+                        
+                        {expandedTeam === team._id ? (
+                          <div className="mt-3 pt-3 border-t border-gray-200">
+                            <div className="space-y-2">
+                              {team.members.slice(2).map(member => (
+                                <div key={member._id} className="flex items-center">
+                                  <div className="flex-shrink-0 h-8 w-8">
+                                    <img 
+                                      className="h-8 w-8 rounded-full" 
+                                      src={member.profile_picture || "https://via.placeholder.com/40?text=User"} 
+                                      alt="" 
+                                    />
+                                  </div>
+                                  <div className="ml-3">
+                                    <div className="text-sm font-medium flex items-center">
+                                      {member.name}
+                                      {member.isLeader && (
+                                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                          <Award size={12} className="mr-1" />
+                                          Leader
+                                        </span>
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-gray-500">{member.email}</div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                            
+                            <button
+                              onClick={() => setExpandedTeam(null)}
+                              className="mt-3 text-blue-600 text-sm flex items-center"
+                            >
+                              <ChevronUp size={16} className="mr-1" />
+                              Show Less
+                            </button>
+                          </div>
+                        ) : (
+                          team.members.length > 2 && (
+                            <button
+                              onClick={() => setExpandedTeam(team._id)}
+                              className="mt-3 text-blue-600 text-sm flex items-center"
+                            >
+                              <ChevronDown size={16} className="mr-1" />
+                              View All Members
+                            </button>
+                          )
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </TabPanel>
+      </Tabs>
+      
+      {/* Create Team Modal */}
+      {showTeamModal && (
+        <CreateTeamModal
+          showModal={showTeamModal}
+          onClose={() => {
+            setShowTeamModal(false);
+            setSelectedIndividuals([]);
+            setTeamLeader(null);
+            setTeamName('');
+          }}
+          teamName={teamName}
+          setTeamName={setTeamName}
+          availableIndividuals={individuals.approved.filter(i => !i.assignedToTempTeam)}
+          selectedIndividuals={selectedIndividuals}
+          teamLeader={teamLeader}
+          onToggleSelection={toggleIndividualSelection}
+          onSetLeader={setAsLeader}
+          onCreateTeam={handleCreateTempTeam}
+        />
+      )}
+    </div>
+  );
+};
+
+export default HackathonParticipantManager;
