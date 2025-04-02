@@ -30,13 +30,6 @@ const hackathonSchema = new mongoose.Schema({
   },
 
   // Array of all registered students (for quick access)
-  registeredStudents: [
-    { 
-      type: mongoose.Schema.Types.ObjectId, 
-      ref: "Student" 
-    }
-  ],
-
   registeredTeams: [
     { 
       type: mongoose.Schema.Types.ObjectId, 
@@ -79,41 +72,13 @@ individualApplicants: [
     skills: [{ type: String }],
     status: {
       type: String,
-      enum: ["Pending", "Approved", "Rejected"],
+      enum: ["Pending", "Approved", "Rejected","Completed"],
       default: "Pending"
     },
     assignedToTempTeam: { type: Boolean, default: false },
     tempTeamId: { type: String },
   }
 ],
-  // Temporary teams formed by admin (groups of 4 individual applicants)
-  temporaryTeams: [
-    {
-      tempTeamId: { type: String, required: true },
-      teamName: { type: String, required: true },
-      members: [
-        { 
-          type: mongoose.Schema.Types.ObjectId, 
-          ref: "Student",
-          required: true 
-        }
-      ],
-      leader: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "Student" 
-      },
-      formedAt: { type: Date, default: Date.now },
-      formedBy: { 
-        type: mongoose.Schema.Types.ObjectId, 
-        ref: "Admin" 
-      },
-      status: {
-        type: String,
-        enum: ["Active", "Disqualified", "Completed"],
-        default: "Active",
-      }
-    }
-  ],
 
   // Legacy applicants field (for backward compatibility)
   applicants: [
@@ -121,12 +86,14 @@ individualApplicants: [
       user: { type: mongoose.Schema.Types.ObjectId, ref: "Student", required: true },
       status: {
         type: String,
-        enum: ["Pending", "Accepted", "Rejected"],
+        enum: ["Pending", "Accepted", "Rejected","Assigned"],
         default: "Pending",
       },
       appliedAt: { type: Date, default: Date.now },
     }
   ],
+
+  
 
   // Hackathon results and analytics
   results: {
