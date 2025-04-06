@@ -6,12 +6,13 @@ import {
   MapPin, Briefcase, Star, BookOpen, Calendar, Clock, Award,
   FileText, ExternalLink, Mail, Phone, Languages, Coffee,
   Users, CheckCircle2, Rocket, Bookmark, Heart, Zap, 
-  Linkedin, Twitter
+  Linkedin, Twitter, AlertCircle, XCircle
 } from 'lucide-react';
 import axios from 'axios';
 import { useUser } from '../../../../context/UserContext';
 import ChatModal from '../ChatModal';
 import MentorPlaceholder from "../../../public/mentor_placeholder.png";
+import { toast, Toaster } from 'react-hot-toast';
 
 const MentorDetail = () => {
   const { mentorId } = useParams();
@@ -20,7 +21,10 @@ const MentorDetail = () => {
   
   const [mentor, setMentor] = useState({});
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState({
+    message: null,
+    type: null // 'fetch' | 'request' | null
+  });
   const [requestStatus, setRequestStatus] = useState(null);
   
   // Chat modal state
@@ -76,11 +80,14 @@ const MentorDetail = () => {
           
           setMentor(mentorData);
         } else {
-          setError("Failed to fetch mentor details");
+          setError({ message: "Failed to fetch mentor details", type: 'fetch' });
         }
       } catch (err) {
         console.error("Error fetching mentor details:", err);
-        setError(err.response?.data?.message || "An error occurred while fetching mentor details");
+        setError({
+          message: err.response?.data?.message || "An error occurred while fetching mentor details",
+          type: 'fetch'
+        });
       } finally {
         setLoading(false);
       }
@@ -90,7 +97,26 @@ const MentorDetail = () => {
       fetchMentorDetails();
     }
   }, [mentorId]);
-  
+
+useEffect(() => {
+  const checkRequestStatus = async () => {
+    try {
+      if (!mentorId || !userData?.firebaseUID) return;
+
+      const response = await axios.get(
+        `http://localhost:4000/api/student/mentor/${mentorId}/request-status?uid=${userData.firebaseUID}`
+      );
+
+      if (response.data.hasApplication) {
+        setRequestStatus(response.data.application.status);
+      }
+    } catch (error) {
+      console.error("Error checking request status:", error);
+    }
+  };
+
+  checkRequestStatus();
+}, [mentorId, userData]);
   const handleOpenChat = () => {
     if (mentor) {
       setIsChatOpen(true);
@@ -104,18 +130,66 @@ const MentorDetail = () => {
   const handleRequestMentorship = async () => {
     try {
       setRequestStatus('loading');
+      setError({ message: null, type: null });
       
-      // Here you would typically make an API call to request mentorship
-      // For now we'll just simulate it with a timeout
-      setTimeout(() => {
+      if (!userData?.firebaseUID) {
+        throw new Error('You must be logged in to request mentorship');
+      }
+      
+      const response = await axios.post(
+        `http://localhost:4000/api/student/mentor/${mentorId}/request`,
+        {
+          uid: userData.firebaseUID,
+          message: `Hello, I would like to request your mentorship.`
+        }
+      );
+  
+      if (response.data.success) {
         setRequestStatus('success');
-      }, 1500);
-      
+        toast.success('Mentorship request sent successfully!');
+      } else {
+        setRequestStatus('error');
+        setError({
+          type: 'request',
+          message: response.data.message || 'Failed to send request'
+        });
+        toast.error(response.data.message || 'Failed to send request');
+      }
     } catch (error) {
       console.error("Error requesting mentorship:", error);
       setRequestStatus('error');
+      setError({
+        type: 'request',
+        message: error.response?.data?.message || 'Failed to send mentorship request'
+      });
+      toast.error(error.response?.data?.message || 'Failed to send mentorship request');
     }
   };
+  
+  const ErrorBanner = ({ message, type, onDismiss }) => (
+    <div className="fixed top-4 right-4 max-w-md w-full bg-red-900/20 border border-red-800 rounded-lg p-4 z-50">
+      <div className="flex items-start">
+        <div className="flex-shrink-0">
+          <AlertCircle className="h-5 w-5 text-red-400" aria-hidden="true" />
+        </div>
+        <div className="ml-3 flex-1">
+          <p className="text-sm text-red-400">
+            {type === 'fetch' ? 'Error loading mentor details: ' : 'Error sending request: '}
+            {message}
+          </p>
+        </div>
+        <div className="ml-3 flex-shrink-0">
+          <button
+            type="button"
+            onClick={onDismiss}
+            className="inline-flex text-red-400 hover:text-red-300"
+          >
+            <XCircle className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
   
   if (loading) {
     return (
@@ -125,13 +199,13 @@ const MentorDetail = () => {
     );
   }
   
-  if (error || !mentor) {
+  if (error.message && error.type === 'fetch') {
     return (
       <div className="max-w-5xl mx-auto p-6 bg-[#121212]">
         <div className="text-center py-10 bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
           <User size={48} className="mx-auto text-[#E8C848]/50 mb-3" />
           <h2 className="text-xl font-medium text-white mb-2">Mentor Not Found</h2>
-          <p className="text-gray-400 mb-4">{error || "Unable to load mentor details"}</p>
+          <p className="text-gray-400 mb-4">{error.message}</p>
           <button 
             onClick={() => navigate('/student/mentors')}
             className="inline-flex items-center px-4 py-2 bg-[#E8C848]/10 text-[#E8C848] rounded-lg hover:bg-[#E8C848]/20 transition-all duration-300"
@@ -171,9 +245,42 @@ const MentorDetail = () => {
 
   return (
     <>
+      <Toaster
+        position="top-right"
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: '#1A1A1A',
+            color: '#fff',
+            border: '1px solid #2D2D2D',
+          },
+          success: {
+            iconTheme: {
+              primary: '#E8C848',
+              secondary: '#1A1A1A',
+            },
+          },
+          error: {
+            iconTheme: {
+              primary: '#EF4444',
+              secondary: '#1A1A1A',
+            },
+          },
+        }}
+      />
+      
       <Helmet>
         <title>{mentor.name || 'Mentor'} | Mentor Profile | TalentHunt</title>
       </Helmet>
+      
+      {/* Error Banner */}
+      {error.message && (
+        <ErrorBanner 
+          message={error.message}
+          type={error.type}
+          onDismiss={() => setError({ message: null, type: null })}
+        />
+      )}
       
       <div className="bg-[#121212] min-h-screen py-8">
         <div className="max-w-5xl mx-auto px-4">
@@ -244,6 +351,8 @@ const MentorDetail = () => {
                         className={`px-4 py-2 rounded-lg text-sm font-medium transition flex items-center 
                           ${requestStatus === 'success' 
                             ? 'bg-green-100 text-green-700' 
+                            : requestStatus === 'error'
+                            ? 'bg-red-500/10 text-red-500 hover:bg-red-500/20'
                             : 'bg-[#E8C848] text-white hover:bg-[#E8C848]/80'
                           } ${(requestStatus === 'loading' || requestStatus === 'success') && 'cursor-not-allowed opacity-80'}`}
                       >
@@ -256,6 +365,11 @@ const MentorDetail = () => {
                           <>
                             <CheckCircle2 size={16} className="mr-2" />
                             Request Sent
+                          </>
+                        ) : requestStatus === 'error' ? (
+                          <>
+                            <AlertCircle size={16} className="mr-2" />
+                            Try Again
                           </>
                         ) : (
                           <>
