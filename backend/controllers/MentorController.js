@@ -941,6 +941,98 @@ function calculateOverallRating(team) {
   // Calculate overall score (0-10)
   return Math.min(10, Math.max(1, Math.round((activityScore + projectScore + 5) / 3 * 10) / 10));
 }
+const getAllConversations = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+    
+    if (!mentorId) {
+      return res.status(400).json({ error: 'Mentor ID is required' });
+    }
+    
+    // Find all messages between mentor and other users
+    const conversations = await Message.aggregate([
+      // Match messages involving this mentor
+      { 
+        $match: { 
+          $or: [
+            { senderId: mentorId },
+            { receiverId: mentorId }
+          ] 
+        } 
+      },
+      // Sort by time descending
+      { $sort: { createdAt: -1 } },
+      // Group by conversation partner
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$senderId", mentorId] },
+              "$receiverId",
+              "$senderId"
+            ]
+          },
+          lastMessage: { $first: "$message" },
+          lastMessageTime: { $first: "$createdAt" },
+          unreadCount: { 
+            $sum: { 
+              $cond: [
+                { $and: [
+                  { $eq: ["$receiverId", mentorId] },
+                  { $eq: ["$isRead", false] }
+                ]},
+                1,
+                0
+              ] 
+            }
+          }
+        }
+      },
+      // Sort conversations by most recent message
+      { $sort: { lastMessageTime: -1 } }
+    ]);
+
+    // Fetch user details for each conversation
+    const conversationsWithDetails = await Promise.all(
+      conversations.map(async (conv) => {
+        // First try to find user in Student collection
+        let user = await Student.findById(conv._id, 'name email profile_picture');
+        
+        // If not found in students, check Mentors
+        if (!user) {
+          user = await Mentor.findById(conv._id, 'name email profile_picture');
+        }
+        
+        if (!user) {
+          return {
+            userId: conv._id,
+            name: "Unknown User",
+            profilePicture: null,
+            lastMessage: conv.lastMessage,
+            lastMessageTime: conv.lastMessageTime,
+            unreadCount: conv.unreadCount
+          };
+        }
+        
+        return {
+          userId: conv._id,
+          name: user.name,
+          email: user.email,
+          profilePicture: user.profile_picture,
+          lastMessage: conv.lastMessage,
+          lastMessageTime: conv.lastMessageTime,
+          unreadCount: conv.unreadCount
+        };
+      })
+    );
+    
+    return res.status(200).json(conversationsWithDetails);
+    
+  } catch (error) {
+    console.error('Error fetching all conversations:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
 
 
 // Update module exports to include the new functions
@@ -961,7 +1053,8 @@ module.exports = {
   submitMemberFeedback,
   submitProjectFeedback,
   getActiveMentorships,
-  getTeamDetails
+  getTeamDetails,
+  getAllConversations
 };
 
 

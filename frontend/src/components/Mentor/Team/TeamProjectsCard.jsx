@@ -2,20 +2,22 @@ import React, { useState } from 'react';
 import { FileCode, CheckCircle, Clock, XCircle, Github, ExternalLink, Calendar, Layers, HelpCircle, Edit } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import StudentPlaceholder from '../../../public/student_placeholder.png';
+import MentorPlaceholder from '../../../public/mentor_placeholder.png';
 
 const ProjectStatus = ({ status }) => {
   const getStatusInfo = () => {
     switch (status) {
       case 'planning':
-        return { icon: <Clock size={14} />, color: 'bg-blue-100 text-blue-800', label: 'Planning' };
+        return { icon: <Clock size={14} />, color: 'bg-[#E8C848]/10 text-[#E8C848]', label: 'Planning' };
       case 'in-progress':
-        return { icon: <Layers size={14} />, color: 'bg-amber-100 text-amber-800', label: 'In Progress' };
+        return { icon: <Layers size={14} />, color: 'bg-[#E8C848]/10 text-[#E8C848]', label: 'In Progress' };
       case 'completed':
-        return { icon: <CheckCircle size={14} />, color: 'bg-green-100 text-green-800', label: 'Completed' };
+        return { icon: <CheckCircle size={14} />, color: 'bg-[#E8C848]/10 text-[#E8C848]', label: 'Completed' };
       case 'abandoned':
-        return { icon: <XCircle size={14} />, color: 'bg-red-100 text-red-800', label: 'Abandoned' };
+        return { icon: <XCircle size={14} />, color: 'bg-red-500/10 text-red-500', label: 'Abandoned' };
       default:
-        return { icon: <HelpCircle size={14} />, color: 'bg-gray-100 text-gray-800', label: 'Unknown' };
+        return { icon: <HelpCircle size={14} />, color: 'bg-gray-800 text-gray-400', label: 'Unknown' };
     }
   };
 
@@ -33,7 +35,7 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
   const [expandedProject, setExpandedProject] = useState(null);
   const [feedbackText, setFeedbackText] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   const handleProjectClick = (projectId) => {
     if (expandedProject === projectId) {
       setExpandedProject(null);
@@ -42,22 +44,22 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
       setFeedbackText('');
     }
   };
-  
+
   const handleSubmitFeedback = async (projectId) => {
     if (!feedbackText.trim()) {
       toast.error("Feedback cannot be empty");
       return;
     }
-    
+
     try {
       setIsSubmitting(true);
-      
+
       const response = await axios.post(`http://localhost:4000/api/mentor/project-feedback/${team._id}`, {
         mentorId,
         projectId,
         feedback: feedbackText
       });
-      
+
       if (response.data.success) {
         toast.success("Project feedback submitted successfully");
         setFeedbackText('');
@@ -73,39 +75,39 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
       setIsSubmitting(false);
     }
   };
-  
+
   return (
-    <div className="bg-white rounded-xl shadow-sm">
-      <div className="p-6 border-b border-gray-200">
-        <h2 className="text-lg font-semibold flex items-center">
-          <FileCode size={20} className="mr-2 text-emerald-600" />
+    <div className="bg-[#1A1A1A] rounded-xl shadow-sm border border-gray-800">
+      <div className="p-6 border-b border-gray-800">
+        <h2 className="text-lg font-semibold flex items-center text-white">
+          <FileCode size={20} className="mr-2 text-[#E8C848]" />
           Team Projects ({team.projects?.length || 0})
         </h2>
-        <p className="text-sm text-gray-500 mt-1">Review and provide feedback on team projects</p>
+        <p className="text-sm text-gray-400 mt-1">Review and provide feedback on team projects</p>
       </div>
-      
-      <div className="divide-y divide-gray-100">
+
+      <div className="divide-y divide-gray-800">
         {team.projects && team.projects.length > 0 ? (
           team.projects.map((project) => (
             <div key={project._id} className="p-0">
-              <div 
-                className={`px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 ${
-                  expandedProject === project._id ? 'bg-blue-50' : ''
+              <div
+                className={`px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-[#121212] ${
+                  expandedProject === project._id ? 'bg-[#121212]' : ''
                 }`}
                 onClick={() => handleProjectClick(project._id)}
               >
                 <div className="flex-1">
                   <div className="flex items-center">
-                    <h3 className="font-medium text-gray-800">{project.name}</h3>
+                    <h3 className="font-medium text-white">{project.name}</h3>
                     <div className="ml-3">
                       <ProjectStatus status={project.status} />
                     </div>
                   </div>
-                  <p className="text-sm text-gray-500 mt-1 line-clamp-1">
+                  <p className="text-sm text-gray-400 mt-1 line-clamp-1">
                     {project.description || 'No description provided'}
                   </p>
                 </div>
-                
+
                 <div className="flex items-center text-gray-400">
                   <span className="text-sm">
                     {expandedProject === project._id ? 'Hide Details' : 'View Details'}
@@ -126,45 +128,45 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
                   </svg>
                 </div>
               </div>
-              
+
               {expandedProject === project._id && (
-                <div className="px-6 py-4 bg-gray-50 border-t border-gray-100">
+                <div className="px-6 py-4 bg-[#121212] border-t border-gray-800">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-3">Project Information</h4>
-                      
+                      <h4 className="text-sm font-medium text-gray-400 mb-3">Project Information</h4>
+
                       <div className="space-y-4">
                         <div>
                           <h5 className="text-xs text-gray-500 uppercase tracking-wide">Description</h5>
-                          <p className="mt-1 text-sm text-gray-800">{project.description || 'No description provided'}</p>
+                          <p className="mt-1 text-sm text-gray-300">{project.description || 'No description provided'}</p>
                         </div>
-                        
+
                         <div className="grid grid-cols-2 gap-4">
                           <div>
                             <h5 className="text-xs text-gray-500 uppercase tracking-wide">Start Date</h5>
-                            <p className="mt-1 text-sm text-gray-800 flex items-center">
-                              <Calendar size={14} className="mr-1 text-gray-400" />
+                            <p className="mt-1 text-sm text-gray-300 flex items-center">
+                              <Calendar size={14} className="mr-1 text-gray-500" />
                               {project.startDate ? new Date(project.startDate).toLocaleDateString() : 'Not set'}
                             </p>
                           </div>
-                          
+
                           <div>
                             <h5 className="text-xs text-gray-500 uppercase tracking-wide">End Date</h5>
-                            <p className="mt-1 text-sm text-gray-800 flex items-center">
-                              <Calendar size={14} className="mr-1 text-gray-400" />
+                            <p className="mt-1 text-sm text-gray-300 flex items-center">
+                              <Calendar size={14} className="mr-1 text-gray-500" />
                               {project.endDate ? new Date(project.endDate).toLocaleDateString() : 'Not set'}
                             </p>
                           </div>
                         </div>
-                        
+
                         {project.techStack && project.techStack.length > 0 && (
                           <div>
                             <h5 className="text-xs text-gray-500 uppercase tracking-wide">Tech Stack</h5>
                             <div className="flex flex-wrap gap-1 mt-1">
                               {project.techStack.map((tech, idx) => (
-                                <span 
-                                  key={idx} 
-                                  className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                                <span
+                                  key={idx}
+                                  className="px-2 py-1 bg-[#E8C848]/10 text-[#E8C848] text-xs rounded-full"
                                 >
                                   {tech}
                                 </span>
@@ -172,33 +174,33 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
                             </div>
                           </div>
                         )}
-                        
+
                         <div className="flex flex-wrap gap-3">
                           {project.githubRepo && (
-                            <a 
+                            <a
                               href={project.githubRepo}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md text-sm text-gray-700"
+                              className="inline-flex items-center px-3 py-1 bg-[#E8C848]/10 hover:bg-[#E8C848]/20 rounded-md text-sm text-[#E8C848]"
                             >
                               <Github size={14} className="mr-1" />
                               GitHub Repository
                             </a>
                           )}
-                          
+
                           {project.deployedUrl && (
-                            <a 
+                            <a
                               href={project.deployedUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded-md text-sm text-gray-700"
+                              className="inline-flex items-center px-3 py-1 bg-[#E8C848]/10 hover:bg-[#E8C848]/20 rounded-md text-sm text-[#E8C848]"
                             >
                               <ExternalLink size={14} className="mr-1" />
                               Live Demo
                             </a>
                           )}
                         </div>
-                        
+
                         {project.milestones && project.milestones.length > 0 && (
                           <div>
                             <h5 className="text-xs text-gray-500 uppercase tracking-wide">Milestones</h5>
@@ -207,15 +209,15 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
                                 let statusColor;
                                 switch (milestone.status) {
                                   case 'completed':
-                                    statusColor = 'text-green-600';
+                                    statusColor = 'text-[#E8C848]';
                                     break;
                                   case 'missed':
-                                    statusColor = 'text-red-600';
+                                    statusColor = 'text-red-500';
                                     break;
                                   default:
-                                    statusColor = 'text-amber-600';
+                                    statusColor = 'text-[#E8C848]';
                                 }
-                                
+
                                 return (
                                   <li key={idx} className="flex items-start">
                                     <div className={`mr-2 mt-0.5 ${statusColor}`}>
@@ -228,7 +230,7 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
                                       )}
                                     </div>
                                     <div>
-                                      <p className="text-sm font-medium">{milestone.title}</p>
+                                      <p className="text-sm font-medium text-gray-300">{milestone.title}</p>
                                       {milestone.description && (
                                         <p className="text-xs text-gray-500">{milestone.description}</p>
                                       )}
@@ -246,14 +248,14 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
                         )}
                       </div>
                     </div>
-                    
+
                     <div>
-                      <h4 className="text-sm font-medium text-gray-500 mb-3">Provide Project Feedback</h4>
+                      <h4 className="text-sm font-medium text-gray-400 mb-3">Provide Project Feedback</h4>
                       <textarea
                         value={feedbackText}
                         onChange={(e) => setFeedbackText(e.target.value)}
                         placeholder="Write your feedback for this project..."
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                        className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50 focus:border-[#E8C848] text-white placeholder-gray-500"
                         rows="5"
                       />
                       <div className="mt-3 flex justify-end">
@@ -262,22 +264,21 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
                           disabled={isSubmitting || !feedbackText.trim()}
                           className={`px-4 py-2 rounded-md ${
                             isSubmitting || !feedbackText.trim()
-                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              : 'bg-emerald-600 text-white hover:bg-emerald-700'
+                              ? 'bg-gray-800 text-gray-500 cursor-not-allowed'
+                              : 'bg-[#E8C848] text-[#121212] hover:bg-[#E8C848]/80'
                           }`}
                         >
                           {isSubmitting ? 'Submitting...' : 'Submit Feedback'}
                         </button>
                       </div>
-                      
-                      {/* Previous Feedback */}
+
                       {project.feedback && project.feedback.length > 0 && (
                         <div className="mt-6">
                           <h5 className="text-xs text-gray-500 uppercase tracking-wide mb-3">Previous Feedback</h5>
                           <div className="space-y-4">
                             {project.feedback.map((fb, idx) => (
-                              <div key={idx} className="bg-white p-3 rounded-md border border-gray-200">
-                                <p className="text-sm text-gray-800">{fb.content}</p>
+                              <div key={idx} className="bg-[#1A1A1A] p-3 rounded-md border border-gray-800">
+                                <p className="text-sm text-gray-300">{fb.content}</p>
                                 <div className="flex justify-between items-center mt-2 text-xs text-gray-500">
                                   <span>{new Date(fb.date).toLocaleDateString()}</span>
                                   <span>{fb.mentorName || 'You'}</span>
@@ -295,9 +296,9 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
           ))
         ) : (
           <div className="text-center py-12">
-            <FileCode size={32} className="mx-auto text-gray-300 mb-3" />
-            <h3 className="text-lg font-medium text-gray-700">No Projects Yet</h3>
-            <p className="text-gray-500 mt-1">This team hasn't created any projects</p>
+            <FileCode size={32} className="mx-auto text-gray-600 mb-3" />
+            <h3 className="text-lg font-medium text-white">No Projects Yet</h3>
+            <p className="text-gray-400 mt-1">This team hasn't created any projects</p>
           </div>
         )}
       </div>

@@ -12,6 +12,8 @@ import MentorLayout from '../../components/Layouts/MentorLayout';
 import TeamMembersList from '../../components/Mentor/Team/TeamMembersList';
 import TeamProjectsCard from '../../components/Mentor/Team/TeamProjectsCard';
 import TeamChatModal from '../../components/Mentor/Team/TeamChatModal';
+import StudentPlaceholder from '../../../public/student_placeholder.png';
+import MentorPlaceholder from '../../../public/mentor_placeholder.png';
 
 const TeamManagement = () => {
   const { teamId } = useParams();
@@ -121,9 +123,9 @@ const TeamManagement = () => {
   if (loading) {
     return (
       <MentorLayout>
-        <div className="p-8">
+        <div className="p-8 bg-[#121212]">
           <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E8C848]"></div>
           </div>
         </div>
       </MentorLayout>
@@ -133,14 +135,14 @@ const TeamManagement = () => {
   if (error) {
     return (
       <MentorLayout>
-        <div className="p-8">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-            <AlertTriangle size={48} className="mx-auto text-red-500 mb-4" />
-            <h2 className="text-xl font-bold text-red-700 mb-2">Error Loading Team</h2>
-            <p className="text-red-600 mb-4">{error}</p>
+        <div className="p-8 bg-[#121212]">
+          <div className="bg-[#1A1A1A] border border-gray-800 rounded-lg p-6 text-center">
+            <AlertTriangle size={48} className="mx-auto text-[#E8C848] mb-4" />
+            <h2 className="text-xl font-bold text-white mb-2">Error Loading Team</h2>
+            <p className="text-gray-400 mb-4">{error}</p>
             <button 
               onClick={() => navigate('/mentor/dashboard')}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+              className="px-4 py-2 bg-[#E8C848] text-[#121212] rounded-lg hover:bg-[#E8C848]/80 transition-colors"
             >
               Return to Dashboard
             </button>
@@ -153,14 +155,14 @@ const TeamManagement = () => {
   if (!team) {
     return (
       <MentorLayout>
-        <div className="p-8">
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 text-center">
-            <AlertTriangle size={48} className="mx-auto text-amber-500 mb-4" />
-            <h2 className="text-xl font-bold text-amber-700 mb-2">Team Not Found</h2>
-            <p className="text-amber-600 mb-4">The team you're looking for doesn't exist or you don't have permission to view it.</p>
+        <div className="p-8 bg-[#121212]">
+          <div className="bg-[#1A1A1A] border border-gray-800 rounded-lg p-6 text-center">
+            <AlertTriangle size={48} className="mx-auto text-[#E8C848] mb-4" />
+            <h2 className="text-xl font-bold text-white mb-2">Team Not Found</h2>
+            <p className="text-gray-400 mb-4">The team you're looking for doesn't exist or you don't have permission to view it.</p>
             <button 
               onClick={() => navigate('/mentor/dashboard')}
-              className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 transition-colors"
+              className="px-4 py-2 bg-[#E8C848] text-[#121212] rounded-lg hover:bg-[#E8C848]/80 transition-colors"
             >
               Return to Dashboard
             </button>
@@ -172,33 +174,29 @@ const TeamManagement = () => {
 
   return (
     <MentorLayout>
-      <div className="p-6">
+      <div className="p-6 bg-[#121212]">
         {/* Top bar with team info and actions */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center">
             <button 
               onClick={() => navigate('/mentor/dashboard')}
-              className="mr-4 p-2 rounded-full hover:bg-gray-100"
+              className="mr-4 p-2 rounded-full hover:bg-[#1A1A1A] text-white"
             >
               <ArrowLeft size={20} />
             </button>
             
             <div className="flex items-center">
-              <div className="h-16 w-16 rounded-lg mr-4 overflow-hidden bg-emerald-100 flex items-center justify-center">
+              <div className="h-16 w-16 rounded-lg mr-4 overflow-hidden bg-[#E8C848]/10 flex items-center justify-center">
                 {team.logo ? (
-                  <img 
-                    src={team.logo} 
-                    alt={team.name} 
-                    className="w-full h-full object-cover"
-                  />
+                  <img src={team.logo} alt={team.name} className="w-full h-full object-cover" />
                 ) : (
-                  <Users size={32} className="text-emerald-600" />
+                  <Users size={32} className="text-[#E8C848]" />
                 )}
               </div>
               
               <div>
-                <h1 className="text-2xl font-bold text-gray-800">{team.name}</h1>
-                <p className="text-gray-500">
+                <h1 className="text-2xl font-bold text-white">{team.name}</h1>
+                <p className="text-gray-400">
                   {team.members.length} members • Mentoring since {new Date(team.mentor.joinedAt).toLocaleDateString()}
                 </p>
               </div>
@@ -208,7 +206,7 @@ const TeamManagement = () => {
           <div className="flex space-x-3">
             <button 
               onClick={() => setIsChatOpen(true)}
-              className="px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors flex items-center"
+              className="px-4 py-2 bg-[#E8C848]/10 text-[#E8C848] rounded-lg hover:bg-[#E8C848]/20 transition-colors flex items-center"
             >
               <MessageCircle size={18} className="mr-2" />
               Message Team
@@ -216,7 +214,7 @@ const TeamManagement = () => {
             
             <button 
               onClick={() => setIsNotesModalOpen(true)}
-              className="px-4 py-2 bg-indigo-100 text-indigo-700 rounded-lg hover:bg-indigo-200 transition-colors flex items-center"
+              className="px-4 py-2 bg-[#E8C848]/10 text-[#E8C848] rounded-lg hover:bg-[#E8C848]/20 transition-colors flex items-center"
             >
               <FileText size={18} className="mr-2" />
               Add Feedback
@@ -224,7 +222,7 @@ const TeamManagement = () => {
             
             <button 
               onClick={() => setIsLeaveModalOpen(true)}
-              className="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors flex items-center"
+              className="px-4 py-2 bg-red-500/10 text-red-500 rounded-lg hover:bg-red-500/20 transition-colors flex items-center"
             >
               <X size={18} className="mr-2" />
               Leave Mentorship
@@ -233,117 +231,76 @@ const TeamManagement = () => {
         </div>
         
         {/* Navigation tabs */}
-        <div className="border-b border-gray-200 mb-6">
+        <div className="border-b border-gray-800 mb-6">
           <nav className="flex space-x-8">
-            <button 
-              onClick={() => setActiveTab('overview')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'overview' 
-                  ? 'border-emerald-500 text-emerald-600' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Overview
-            </button>
-            
-            <button 
-              onClick={() => setActiveTab('members')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'members' 
-                  ? 'border-emerald-500 text-emerald-600' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Members
-            </button>
-            
-            <button 
-              onClick={() => setActiveTab('projects')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'projects' 
-                  ? 'border-emerald-500 text-emerald-600' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Projects
-            </button>
-            
-            <button 
-              onClick={() => setActiveTab('activity')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'activity' 
-                  ? 'border-emerald-500 text-emerald-600' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Activity
-            </button>
-            
-            <button 
-              onClick={() => setActiveTab('meetings')}
-              className={`py-3 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'meetings' 
-                  ? 'border-emerald-500 text-emerald-600' 
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Meetings
-            </button>
+            {['overview', 'members', 'projects', 'activity', 'meetings'].map((tab) => (
+              <button 
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`py-3 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === tab 
+                    ? 'border-[#E8C848] text-[#E8C848]' 
+                    : 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-700'
+                }`}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
           </nav>
         </div>
-        
-        {/* Main content based on active tab */}
-        <div className="mb-6">
+
+        {/* Main content area */}
+        <div className="bg-[#1A1A1A] rounded-xl border border-gray-800 p-6">
           {activeTab === 'overview' && (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Team Overview */}
-              <div className="md:col-span-2 bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold mb-4 flex items-center">
-                  <Users size={20} className="mr-2 text-emerald-600" />
+              <div className="md:col-span-2 bg-[#1A1A1A] rounded-xl border border-gray-800 p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center text-white">
+                  <Users size={20} className="mr-2 text-[#E8C848]" />
                   Team Overview
                 </h2>
-                
-                <p className="text-gray-600 mb-6">{team.description || "No team description provided."}</p>
+                {console.log(team)} 
+                <p className="text-gray-400 mb-6">{team.description || "No team description provided."}</p>
                 
                 <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">Team Founded</h3>
-                    <p className="text-gray-800 font-medium">{new Date(team.formationDate).toLocaleDateString()}</p>
+                  <div className="bg-[#121212] rounded-lg p-4 border border-gray-800">
+                    <h3 className="text-sm font-medium text-gray-400 mb-2">Team Founded</h3>
+                    <p className="text-white font-medium">{new Date(team.formationDate).toLocaleDateString()}</p>
                   </div>
                   
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">Last Active</h3>
-                    <p className="text-gray-800 font-medium">{new Date(team.lastActivityDate).toLocaleDateString()}</p>
+                  <div className="bg-[#121212] rounded-lg p-4 border border-gray-800">
+                    <h3 className="text-sm font-medium text-gray-400 mb-2">Last Active</h3>
+                    <p className="text-white font-medium">{new Date(team.lastActivityDate).toLocaleDateString()}</p>
                   </div>
                   
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">Team Size</h3>
-                    <p className="text-gray-800 font-medium">{team.members.length} / {team.maxTeamSize} members</p>
+                  <div className="bg-[#121212] rounded-lg p-4 border border-gray-800">
+                    <h3 className="text-sm font-medium text-gray-400 mb-2">Team Size</h3>
+                    <p className="text-white font-medium">{team.members.length} / {team.maxTeamSize} members</p>
                   </div>
                   
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <h3 className="text-sm font-medium text-gray-500 mb-2">Team Status</h3>
+                  <div className="bg-[#121212] rounded-lg p-4 border border-gray-800">
+                    <h3 className="text-sm font-medium text-gray-400 mb-2">Team Status</h3>
                     <div className="flex items-center">
                       <span className={`w-2 h-2 rounded-full mr-2 ${
                         team.status === 'active' ? 'bg-green-500' : 
                         team.status === 'inactive' ? 'bg-amber-500' : 'bg-red-500'
                       }`}></span>
-                      <p className="text-gray-800 font-medium capitalize">{team.status}</p>
+                      <p className="text-white font-medium capitalize">{team.status}</p>
                     </div>
                   </div>
                 </div>
                 
                 {team.techStack && team.techStack.length > 0 && (
                   <div className="mb-6">
-                    <h3 className="text-sm font-medium text-gray-600 mb-2 flex items-center">
-                      <Code size={16} className="mr-1 text-emerald-600" />
+                    <h3 className="text-sm font-medium text-gray-400 mb-2 flex items-center">
+                      <Code size={16} className="mr-1 text-[#E8C848]" />
                       Tech Stack
                     </h3>
                     <div className="flex flex-wrap gap-2">
                       {team.techStack.map((tech, idx) => (
                         <span 
                           key={idx} 
-                          className="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-sm"
+                          className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-full text-sm"
                         >
                           {tech}
                         </span>
@@ -354,16 +311,16 @@ const TeamManagement = () => {
                 
                 {/* Mentorship History */}
                 <div className="mt-8">
-                  <h3 className="text-sm font-medium text-gray-600 mb-4 flex items-center">
-                    <Shield size={16} className="mr-1 text-emerald-600" />
+                  <h3 className="text-sm font-medium text-gray-400 mb-4 flex items-center">
+                    <Shield size={16} className="mr-1 text-[#E8C848]" />
                     Mentorship Notes & Feedback
                   </h3>
                   
                   {team.mentor.feedbackLog && team.mentor.feedbackLog.length > 0 ? (
                     <div className="space-y-4">
                       {team.mentor.feedbackLog.map((feedback, idx) => (
-                        <div key={idx} className="border-l-2 border-emerald-400 pl-4 py-1">
-                          <p className="text-gray-700">{feedback.content}</p>
+                        <div key={idx} className="border-l-2 border-[#E8C848] pl-4 py-1">
+                          <p className="text-gray-300">{feedback.content}</p>
                           <p className="text-xs text-gray-500 mt-1">
                             {new Date(feedback.date).toLocaleDateString()} at {new Date(feedback.date).toLocaleTimeString()}
                           </p>
@@ -371,13 +328,13 @@ const TeamManagement = () => {
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 bg-gray-50 rounded-lg">
+                    <div className="text-center py-8 bg-[#121212] rounded-lg border border-gray-800">
                       <FileText size={28} className="mx-auto text-gray-400 mb-2" />
-                      <p className="text-gray-500">No feedback notes yet</p>
-                      <p className="text-sm text-gray-400">Add feedback to track this team's progress</p>
+                      <p className="text-gray-400">No feedback notes yet</p>
+                      <p className="text-sm text-gray-500">Add feedback to track this team's progress</p>
                       <button 
                         onClick={() => setIsNotesModalOpen(true)}
-                        className="mt-3 px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200 transition-colors"
+                        className="mt-3 px-4 py-2 bg-[#E8C848]/10 text-[#E8C848] rounded-lg hover:bg-[#E8C848]/20 transition-colors"
                       >
                         Add First Feedback
                       </button>
@@ -387,19 +344,19 @@ const TeamManagement = () => {
               </div>
               
               {/* Team Performance Metrics */}
-              <div className="bg-white rounded-xl shadow-sm p-6">
-                <h2 className="text-lg font-semibold mb-4 flex items-center">
-                  <BarChart4 size={20} className="mr-2 text-emerald-600" />
+              <div className="bg-[#1A1A1A] rounded-xl border border-gray-800 p-6">
+                <h2 className="text-lg font-semibold mb-4 flex items-center text-white">
+                  <BarChart4 size={20} className="mr-2 text-[#E8C848]" />
                   Team Performance
                 </h2>
                 
                 {teamPerformanceMetrics ? (
                   <div className="space-y-6">
                     <div>
-                      <h3 className="text-sm font-medium text-gray-600 mb-2">Activity Level</h3>
-                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                      <h3 className="text-sm font-medium text-gray-400 mb-2">Activity Level</h3>
+                      <div className="w-full bg-gray-800 rounded-full h-2.5">
                         <div 
-                          className="bg-emerald-600 h-2.5 rounded-full" 
+                          className="bg-[#E8C848] h-2.5 rounded-full" 
                           style={{ width: `${teamPerformanceMetrics.activityLevel}%` }}
                         ></div>
                       </div>
@@ -412,32 +369,32 @@ const TeamManagement = () => {
                     
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Active Projects</span>
-                        <span className="font-medium">{teamPerformanceMetrics.activeProjects}</span>
+                        <span className="text-sm text-gray-400">Active Projects</span>
+                        <span className="font-medium text-white">{teamPerformanceMetrics.activeProjects}</span>
                       </div>
                       
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Completed Projects</span>
-                        <span className="font-medium">{teamPerformanceMetrics.completedProjects}</span>
+                        <span className="text-sm text-gray-400">Completed Projects</span>
+                        <span className="font-medium text-white">{teamPerformanceMetrics.completedProjects}</span>
                       </div>
                       
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Hackathon Participations</span>
-                        <span className="font-medium">{teamPerformanceMetrics.hackathonParticipations}</span>
+                        <span className="text-sm text-gray-400">Hackathon Participations</span>
+                        <span className="font-medium text-white">{teamPerformanceMetrics.hackathonParticipations}</span>
                       </div>
                       
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Avg. Member Contribution</span>
+                        <span className="text-sm text-gray-400">Avg. Member Contribution</span>
                         <div className="flex items-center">
-                          <span className="font-medium mr-1">{teamPerformanceMetrics.avgMemberContribution}</span>
+                          <span className="font-medium text-white mr-1">{teamPerformanceMetrics.avgMemberContribution}</span>
                           <span className="text-xs text-gray-500">/10</span>
                         </div>
                       </div>
                       
                       <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Team Cohesion</span>
+                        <span className="text-sm text-gray-400">Team Cohesion</span>
                         <div className="flex items-center">
-                          <span className="font-medium mr-1">{teamPerformanceMetrics.teamCohesion}</span>
+                          <span className="font-medium text-white mr-1">{teamPerformanceMetrics.teamCohesion}</span>
                           <span className="text-xs text-gray-500">/10</span>
                         </div>
                       </div>
@@ -445,19 +402,19 @@ const TeamManagement = () => {
                     
                     {/* Project Completion Rate */}
                     <div>
-                      <h3 className="text-sm font-medium text-gray-600 mb-2">Project Completion Rate</h3>
+                      <h3 className="text-sm font-medium text-gray-400 mb-2">Project Completion Rate</h3>
                       <div className="relative pt-1">
                         <div className="flex items-center justify-between">
                           <div>
-                            <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-emerald-600 bg-emerald-100">
+                            <span className="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full text-[#E8C848] bg-[#E8C848]/10">
                               {teamPerformanceMetrics.projectCompletionRate}%
                             </span>
                           </div>
                         </div>
-                        <div className="flex h-2 mt-2 bg-gray-200 rounded-full overflow-hidden">
+                        <div className="flex h-2 mt-2 bg-gray-800 rounded-full overflow-hidden">
                           <div 
                             style={{ width: `${teamPerformanceMetrics.projectCompletionRate}%` }} 
-                            className="bg-emerald-500"
+                            className="bg-[#E8C848]"
                           ></div>
                         </div>
                       </div>
@@ -466,17 +423,17 @@ const TeamManagement = () => {
                     {/* Recent Achievements */}
                     {teamPerformanceMetrics.recentAchievements && teamPerformanceMetrics.recentAchievements.length > 0 && (
                       <div>
-                        <h3 className="text-sm font-medium text-gray-600 mb-2 flex items-center">
-                          <Award size={16} className="mr-1 text-emerald-600" />
+                        <h3 className="text-sm font-medium text-gray-400 mb-2 flex items-center">
+                          <Award size={16} className="mr-1 text-[#E8C848]" />
                           Recent Achievements
                         </h3>
                         <ul className="space-y-2">
                           {teamPerformanceMetrics.recentAchievements.map((achievement, idx) => (
                             <li key={idx} className="text-sm flex items-start">
-                              <span className="h-5 w-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
+                              <span className="h-5 w-5 rounded-full bg-[#E8C848]/10 text-[#E8C848] flex items-center justify-center mr-2 flex-shrink-0 mt-0.5">
                                 <Award size={12} />
                               </span>
-                              <span className="text-gray-700">{achievement}</span>
+                              <span className="text-gray-300">{achievement}</span>
                             </li>
                           ))}
                         </ul>
@@ -484,8 +441,8 @@ const TeamManagement = () => {
                     )}
                     
                     {/* Overall Rating */}
-                    <div className="mt-4 pt-4 border-t border-gray-100">
-                      <h3 className="text-sm font-medium text-gray-600 mb-3">Overall Team Rating</h3>
+                    <div className="mt-4 pt-4 border-t border-gray-800">
+                      <h3 className="text-sm font-medium text-gray-400 mb-3">Overall Team Rating</h3>
                       <div className="flex items-center">
                         <div className="flex items-center">
                           {[...Array(5)].map((_, i) => (
@@ -493,21 +450,21 @@ const TeamManagement = () => {
                               key={i}
                               size={20} 
                               className={i < Math.round(teamPerformanceMetrics.overallRating / 2) 
-                                ? "text-amber-400 fill-amber-400" 
-                                : "text-gray-300"
+                                ? "text-[#E8C848] fill-[#E8C848]" 
+                                : "text-gray-800"
                               } 
                             />
                           ))}
                         </div>
-                        <span className="ml-2 text-gray-700 font-medium">{teamPerformanceMetrics.overallRating}/10</span>
+                        <span className="ml-2 text-gray-300 font-medium">{teamPerformanceMetrics.overallRating}/10</span>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="text-center py-10">
-                    <BarChart4 size={32} className="mx-auto text-gray-300 mb-3" />
-                    <p className="text-gray-500">Performance metrics unavailable</p>
-                    <p className="text-sm text-gray-400">Data will be available as the team progresses</p>
+                    <BarChart4 size={32} className="mx-auto text-gray-800 mb-3" />
+                    <p className="text-gray-400">Performance metrics unavailable</p>
+                    <p className="text-sm text-gray-500">Data will be available as the team progresses</p>
                   </div>
                 )}
               </div>

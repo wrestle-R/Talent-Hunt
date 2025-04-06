@@ -40,6 +40,7 @@ import Landing from './components/Landing'
 import HackathonParticipantManager from './components/Admin/HackathonParticipantManager'
 import ManageHackathons from './components/Admin/ManageHackathons'
 import ManageHackathonTeams from "./components/Admin/ManagehackathonTeams"
+import AllConversationsPageMentor from './components/Mentor/dashboard/AllConversationsPage';
 
 const role = localStorage.userRole
 console.log(role)
@@ -78,6 +79,7 @@ const App = () => {
               {/* Mentor Routes */}
               <Route path="/mentor/hero" element={<MentorHero />} />
               <Route path="/mentor/profile" element={<MentorProfile />} />
+              <Route path="/mentor/conversations" element={<AllConversationsPageMentor />} />
               
               {/* Admin Routes */}
               <Route path="/admin/hero" element={<AdminHero />} /> 

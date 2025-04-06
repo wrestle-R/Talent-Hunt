@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Users, CheckCircle, XCircle, AlertCircle, Clock, ChevronDown, ChevronUp } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import StudentPlaceholder from '../../../public/student_placeholder.png';
 
 const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
   const [applications, setApplications] = useState([]);
@@ -21,27 +22,20 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
       const response = await axios.get(`http://localhost:4000/api/mentor/team-applications/${mentorData._id}`);
       
       if (Array.isArray(response.data)) {
-        console.log("Applications data:", response.data);
+        const processedData = response.data.map(app => ({
+          applicationId: app._id,
+          teamId: app.teamId,
+          teamName: app.teamName || "Unnamed Team",
+          description: app.description || "",
+          memberCount: app.memberCount || 0,
+          techStack: Array.isArray(app.techStack) ? app.techStack : [],
+          message: app.message || "",
+          applicationDate: app.applicationDate || new Date(),
+          status: app.status || "pending",
+          team: app.team || null // Keep the full team object if available
+        }));
         
-        // Process the data to ensure it has the expected structure
-        const processedData = response.data.map(app => {
-          // Extract applicationId from the response
-          const applicationId = app._id || app.applicationId;
-          
-          // Format the application data consistently
-          return {
-            applicationId: applicationId,
-            teamId: app.teamId,
-            teamName: app.teamName,
-            description: app.description || "",
-            memberCount: app.memberCount || 0,
-            techStack: app.techStack || [],
-            message: app.message || "",
-            application_date: app.applicationDate || app.application_date || new Date(),
-            status: app.status || "pending"
-          };
-        });
-        
+        console.log("Processed applications:", processedData);
         setApplications(processedData);
       } else {
         console.warn("Unexpected applications response format:", response.data);
@@ -49,6 +43,7 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
       }
     } catch (error) {
       console.error("Error fetching pending applications:", error);
+      toast.error("Failed to load applications");
       setApplications([]);
     } finally {
       setLoading(false);
@@ -57,28 +52,19 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
 
   const handleAccept = async (applicationId) => {
     try {
-      // Make sure we have a valid ID
       if (!applicationId) {
         toast.error("Application ID is missing");
-        console.error("Missing application ID in handleAccept");
         return;
       }
       
       setProcessingId(applicationId);
-      console.log(`Accepting application with ID: ${applicationId}, Mentor ID: ${mentorData._id}`);
-      
-      // Simplified API call - don't send mentorId in body since it's in the URL
       const response = await axios.post(
         `http://localhost:4000/api/mentor/team-applications/${mentorData._id}/${applicationId}/accept`
       );
       
-      if (response.data && response.data.success) {
-        toast.success("You've accepted the mentorship request!");
-        
-        // Remove from applications list
-        setApplications(prev => prev.filter(app => app.applicationId !== applicationId));
-        
-        // Notify parent to refresh data
+      if (response.data?.success) {
+        toast.success("Application accepted successfully!");
+        fetchApplications(); // Refresh the list
         if (onRefresh) onRefresh();
       } else {
         toast.error(response.data?.message || "Failed to accept application");
@@ -93,28 +79,19 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
 
   const handleReject = async (applicationId) => {
     try {
-      // Make sure we have a valid ID
       if (!applicationId) {
         toast.error("Application ID is missing");
-        console.error("Missing application ID in handleReject");
         return;
       }
       
       setProcessingId(applicationId);
-      console.log(`Rejecting application with ID: ${applicationId}, Mentor ID: ${mentorData._id}`);
-      
-      // Simplified API call - don't send mentorId in body since it's in the URL
       const response = await axios.post(
         `http://localhost:4000/api/mentor/team-applications/${mentorData._id}/${applicationId}/reject`
       );
       
-      if (response.data && response.data.success) {
+      if (response.data?.success) {
         toast.success("Application rejected successfully");
-        
-        // Remove from applications list
-        setApplications(prev => prev.filter(app => app.applicationId !== applicationId));
-        
-        // Notify parent to refresh data
+        fetchApplications(); // Refresh the list
         if (onRefresh) onRefresh();
       } else {
         toast.error(response.data?.message || "Failed to reject application");
@@ -128,11 +105,7 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
   };
 
   const toggleExpand = (appId) => {
-    if (expandedApp === appId) {
-      setExpandedApp(null);
-    } else {
-      setExpandedApp(appId);
-    }
+    setExpandedApp(expandedApp === appId ? null : appId);
   };
 
   const formatDate = (dateString) => {
@@ -161,50 +134,50 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
 
   if (loading) {
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm">
-        <h3 className="font-bold text-lg flex items-center gap-2 mb-4">
-          <Users size={20} className="text-blue-600" />
+      <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-sm border border-gray-800">
+        <h3 className="font-bold text-lg flex items-center gap-2 mb-4 text-white">
+          <Users size={20} className="text-[#E8C848]" />
           Pending Applications
         </h3>
         <div className="flex justify-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E8C848]"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow-sm">
-      <h3 className="font-bold text-lg flex items-center gap-2 mb-4">
-        <Users size={20} className="text-blue-600" />
-        Pending Applications
+    <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-sm border border-gray-800">
+      <h3 className="font-bold text-lg flex items-center gap-2 mb-4 text-white">
+        <Users size={20} className="text-[#E8C848]" />
+        Pending Applications ({applications.length})
       </h3>
       
       {applications.length === 0 ? (
-        <div className="text-center py-8 text-gray-500">
-          <AlertCircle className="mx-auto mb-2 h-8 w-8 text-gray-400" />
+        <div className="text-center py-8 text-gray-400">
+          <AlertCircle className="mx-auto mb-2 h-8 w-8 text-gray-600" />
           <p>No pending applications</p>
         </div>
       ) : (
         <div className="space-y-4">
           {applications.map((app) => (
-            <div key={app.applicationId} className="border rounded-lg overflow-hidden">
+            <div key={app.applicationId} className="border border-gray-800 rounded-lg overflow-hidden bg-[#121212]">
               <div 
-                className="p-4 hover:bg-gray-50 cursor-pointer"
+                className="p-4 hover:bg-[#1A1A1A] cursor-pointer transition-colors"
                 onClick={() => toggleExpand(app.applicationId)}
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <div className="flex items-center">
-                      <h4 className="font-medium text-gray-900">
-                        {app.teamName || "Unnamed Team"}
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-medium text-white">
+                        {app.teamName}
                       </h4>
-                      <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                        {app.memberCount || 0} members
+                      <span className="text-xs bg-[#E8C848]/10 text-[#E8C848] px-2 py-0.5 rounded-full">
+                        {app.memberCount} members
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Requested {getTimeAgo(app.application_date)}
+                    <p className="text-sm text-gray-400 mt-1">
+                      Applied {getTimeAgo(app.applicationDate)}
                     </p>
                   </div>
                   <div className="flex items-center">
@@ -216,23 +189,23 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
                   </div>
                 </div>
               </div>
-              
+
               {expandedApp === app.applicationId && (
-                <div className="px-4 pb-4 border-t border-gray-100">
+                <div className="px-4 pb-4 border-t border-gray-800">
                   <div className="pt-3">
-                    <h5 className="text-sm font-medium text-gray-700 mb-2">Team Description</h5>
-                    <p className="text-sm text-gray-600 mb-4">
+                    <h5 className="text-sm font-medium text-gray-300 mb-2">Team Description</h5>
+                    <p className="text-sm text-gray-400 mb-4">
                       {app.description || "No team description provided."}
                     </p>
                     
-                    {app.techStack && app.techStack.length > 0 && (
+                    {app.techStack?.length > 0 && (
                       <div className="mb-4">
-                        <h5 className="text-sm font-medium text-gray-700 mb-1">Tech Stack</h5>
+                        <h5 className="text-sm font-medium text-gray-300 mb-1">Tech Stack</h5>
                         <div className="flex flex-wrap gap-1">
                           {app.techStack.map((tech, idx) => (
                             <span 
                               key={idx} 
-                              className="px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded-full"
+                              className="px-2 py-1 bg-[#E8C848]/10 text-[#E8C848] text-xs rounded-full"
                             >
                               {tech}
                             </span>
@@ -242,16 +215,9 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
                     )}
                     
                     <div className="mb-4">
-                      <h5 className="text-sm font-medium text-gray-700 mb-1">Request Message</h5>
-                      <div className="bg-gray-50 p-3 rounded-md text-sm text-gray-700">
-                        {app.message || "No message provided with this request."}
-                      </div>
-                    </div>
-                    
-                    <div className="grid grid-cols-1 gap-4 mb-4">
-                      <div>
-                        <h5 className="text-xs font-medium text-gray-500 mb-1">Request Date</h5>
-                        <p className="text-sm">{formatDate(app.application_date)}</p>
+                      <h5 className="text-sm font-medium text-gray-300 mb-1">Application Message</h5>
+                      <div className="bg-[#1A1A1A] p-3 rounded-md text-sm text-gray-400 border border-gray-800">
+                        {app.message || "No message provided with this application."}
                       </div>
                     </div>
                     
@@ -261,12 +227,12 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
                         disabled={processingId === app.applicationId}
                         className={`flex-1 py-2 px-4 rounded-md flex justify-center items-center ${
                           processingId === app.applicationId 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : 'bg-green-600 text-white hover:bg-green-700'
+                            ? 'bg-gray-800 text-gray-500 cursor-not-allowed' 
+                            : 'bg-[#E8C848] text-[#121212] hover:bg-[#E8C848]/80'
                         }`}
                       >
                         {processingId === app.applicationId ? (
-                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-transparent border-white mr-2"></div>
+                          <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-transparent border-[#121212] mr-2"></div>
                         ) : (
                           <CheckCircle size={16} className="mr-2" />
                         )}
@@ -278,8 +244,8 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
                         disabled={processingId === app.applicationId}
                         className={`flex-1 py-2 px-4 rounded-md flex justify-center items-center ${
                           processingId === app.applicationId 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : 'bg-red-100 text-red-600 hover:bg-red-200'
+                            ? 'bg-gray-800 text-gray-500 cursor-not-allowed' 
+                            : 'bg-[#E8C848]/10 text-[#E8C848] hover:bg-[#E8C848]/20'
                         }`}
                       >
                         <XCircle size={16} className="mr-2" />

@@ -10,6 +10,8 @@ import TeamMembersList from './Team/TeamMembersList';
 import TeamProjectsCard from './Team/TeamProjectsCard';
 import TeamMemberProfile from './Team/TeamMemberProfile';
 import { toast } from 'react-hot-toast';
+import StudentPlaceholder from '../../public/student_placeholder.png';
+import MentorPlaceholder from '../../public/mentor_placeholder.png';
 
 const MentorDashboard = ({ userData, refreshUserData }) => {
   // States
@@ -232,190 +234,206 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
   // Loading state
   if (!userData?._id) {
     return (
-      <div className="flex justify-center items-center h-screen">
+      <div className="flex justify-center items-center h-screen bg-[#121212]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500 mb-4"></div>
-          <p className="text-gray-600">Loading mentor dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E8C848] mb-4"></div>
+          <p className="text-gray-400">Loading mentor dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full p-4 md:p-6 max-w-7xl mx-auto">
-      {!selectedTeam ? (
-        // Main Dashboard View
-        <>
-          {/* Dashboard Header */}
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl md:text-2xl font-bold">Mentor Dashboard</h2>
-            <button 
-              onClick={refreshDashboard}
-              className="flex items-center gap-1 text-sm bg-blue-50 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-100"
-            >
-              <RefreshCw size={16} />
-              <span className="hidden sm:inline">Refresh</span>
-            </button>
-          </div>
-          
-          {/* Mentorships Section */}
-          <section className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Users className="text-indigo-600" size={20} />
-              <h3 className="text-lg font-semibold text-gray-800">Team Management</h3>
+    <div className="min-h-screen bg-[#121212] py-8">
+      <div className="w-full px-6 md:px-8 max-w-7xl mx-auto space-y-8">
+        {!selectedTeam ? (
+          <>
+            {/* Dashboard Header */}
+            <div className="flex justify-between items-center mb-12">
+              <div>
+                <h2 className="text-2xl md:text-3xl font-bold text-white">Welcome, {userData.name}!</h2>
+                <p className="text-gray-400 mt-2">
+                  {new Date().toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric' 
+                  })}
+                </p>
+              </div>
+              <button 
+                onClick={refreshDashboard}
+                className="flex items-center gap-2 text-sm bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg hover:bg-[#E8C848]/20 transition-all duration-300"
+              >
+                <RefreshCw size={18} />
+                <span className="hidden sm:inline">Refresh Dashboard</span>
+              </button>
             </div>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-              <TeamApplicationsCard 
-                applications={teamApplications}
-                mentorData={userData}
-                onRefresh={refreshDashboard}
-                isLoading={applicationsLoading}
-                key={`applications-${dashboardRefreshTrigger}`}
-              />
+            {/* Team Management Section */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 mb-6">
+                <Users className="text-[#E8C848]" size={24} />
+                <h3 className="text-xl font-semibold text-white">Team Management</h3>
+              </div>
               
-              <CurrentMentorshipsCard 
-                mentorships={activeMentorships}
-                mentorData={userData}
-                onViewTeam={handleViewTeam}
-                isLoading={mentorshipLoading}
-                key={`mentorships-${dashboardRefreshTrigger}`}
-              />
-            </div>
-          </section>
-          
-          {/* Communications Section */}
-          <section>
-            <div className="flex items-center gap-2 mb-4">
-              <MessageCircle className="text-blue-600" size={20} />
-              <h3 className="text-lg font-semibold text-gray-800">Communication & Events</h3>
-            </div>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <TeamApplicationsCard 
+                  applications={teamApplications}
+                  mentorData={userData}
+                  onRefresh={refreshDashboard}
+                  isLoading={applicationsLoading}
+                  key={`applications-${dashboardRefreshTrigger}`}
+                />
+                
+                <CurrentMentorshipsCard 
+                  mentorships={activeMentorships}
+                  mentorData={userData}
+                  onViewTeam={handleViewTeam}
+                  isLoading={mentorshipLoading}
+                  key={`mentorships-${dashboardRefreshTrigger}`}
+                />
+              </div>
+            </section>
             
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-              <ConversationsCard 
-                conversations={conversations} 
-                onOpenChat={handleOpenChat} 
-                formatTimeAgo={formatTimeAgo}
-                isLoading={conversationsLoading} 
-              />
+            {/* Recent Conversations Section */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 mb-6">
+                <MessageCircle className="text-[#E8C848]" size={24} />
+                <h3 className="text-xl font-semibold text-white">Recent Conversations</h3>
+              </div>
               
-              <div className="bg-white p-4 md:p-6 rounded-xl shadow-sm">
-                <h3 className="font-bold text-lg flex items-center gap-2 mb-4">
-                  <Award size={20} className="text-purple-600" />
-                  Upcoming Hackathons
-                </h3>
+              <div className="w-full">
+                <ConversationsCard 
+                  conversations={conversations} 
+                  onOpenChat={handleOpenChat} 
+                  formatTimeAgo={formatTimeAgo}
+                  isLoading={conversationsLoading} 
+                />
+              </div>
+            </section>
+            
+            {/* Upcoming Hackathons Section - Full Width */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-2 mb-6">
+                <Award className="text-[#E8C848]" size={24} />
+                <h3 className="text-xl font-semibold text-white">Upcoming Hackathons</h3>
+              </div>
+              
+              <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-sm border border-gray-800">
                 <UpcomingHackathons 
-                  limit={4} 
-                  layout="grid" 
+                  limit={6} 
+                  layout="grid"
+                  gridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
                   customData={hackathonData}
                   isLoading={hackathonLoading}
                 />
               </div>
-            </div>
-          </section>
-        </>
-      ) : (
-        // Team Details View
-        <>
-          {/* Team Details Header */}
-          <div className="mb-6">
-            <button 
-              onClick={handleBackToDashboard}
-              className="flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900 mb-4"
-            >
-              <ArrowLeft size={16} />
-              Back to Dashboard
-            </button>
-            
-            <div className="bg-white rounded-xl shadow-sm p-4 md:p-6">
-              <div className="flex items-start gap-4">
-                <div className="h-14 w-14 rounded-lg overflow-hidden bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                  {selectedTeam.logo ? (
-                    <img 
-                      src={selectedTeam.logo} 
-                      alt={selectedTeam.name} 
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <Users size={24} className="text-emerald-600" />
-                  )}
-                </div>
-                <div className="flex-1">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h2 className="text-xl font-bold">{selectedTeam.name}</h2>
-                      <p className="text-gray-500 text-sm">
-                        {selectedTeam.members?.length || 0} members • Mentoring since {new Date(selectedTeam.mentorJoinedDate || selectedTeam.mentor?.joinedAt).toLocaleDateString()}
-                      </p>
+            </section>
+          </>
+        ) : (
+          // Team Details View
+          <>
+            {/* Team Details Header */}
+            <div className="mb-6">
+              <button 
+                onClick={handleBackToDashboard}
+                className="flex items-center gap-1 text-sm text-gray-400 hover:text-white mb-4"
+              >
+                <ArrowLeft size={16} />
+                Back to Dashboard
+              </button>
+              
+              <div className="bg-[#1A1A1A] rounded-xl shadow-sm p-4 md:p-6 border border-gray-800">
+                <div className="flex items-start gap-4">
+                  <div className="h-14 w-14 rounded-lg overflow-hidden bg-[#E8C848]/10 flex items-center justify-center flex-shrink-0">
+                    {selectedTeam.logo ? (
+                      <img 
+                        src={selectedTeam.logo} 
+                        alt={selectedTeam.name} 
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <Users size={24} className="text-[#E8C848]" />
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h2 className="text-xl font-bold text-white">{selectedTeam.name}</h2>
+                        <p className="text-gray-400 text-sm">
+                          {selectedTeam.members?.length || 0} members • Mentoring since {new Date(selectedTeam.mentorJoinedDate || selectedTeam.mentor?.joinedAt).toLocaleDateString()}
+                        </p>
+                      </div>
+                      
+                      {/* Performance Score */}
+                      {selectedTeam.performanceMetrics && (
+                        <div className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-center">
+                          <div className="text-sm uppercase font-semibold tracking-wide">Team Score</div>
+                          <div className="text-2xl font-bold">{selectedTeam.performanceMetrics.overallRating || '7.5'}/10</div>
+                        </div>
+                      )}
                     </div>
                     
-                    {/* Performance Score */}
-                    {selectedTeam.performanceMetrics && (
-                      <div className="bg-emerald-50 text-emerald-800 px-4 py-2 rounded-lg text-center">
-                        <div className="text-sm uppercase font-semibold tracking-wide">Team Score</div>
-                        <div className="text-2xl font-bold">{selectedTeam.performanceMetrics.overallRating || '7.5'}/10</div>
+                    {selectedTeam.description && (
+                      <p className="text-gray-300 mt-2 max-w-2xl">
+                        {selectedTeam.description}
+                      </p>
+                    )}
+                    
+                    {selectedTeam.techStack && selectedTeam.techStack.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {selectedTeam.techStack.map((tech, idx) => (
+                          <span 
+                            key={idx} 
+                            className="px-2 py-0.5 bg-[#E8C848]/10 text-[#E8C848] rounded-full text-xs"
+                          >
+                            {tech}
+                          </span>
+                        ))}
                       </div>
                     )}
                   </div>
-                  
-                  {selectedTeam.description && (
-                    <p className="text-gray-700 mt-2 max-w-2xl">
-                      {selectedTeam.description}
-                    </p>
-                  )}
-                  
-                  {selectedTeam.techStack && selectedTeam.techStack.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-3">
-                      {selectedTeam.techStack.map((tech, idx) => (
-                        <span 
-                          key={idx} 
-                          className="px-2 py-0.5 bg-emerald-50 text-emerald-700 rounded-full text-xs"
-                        >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
-          </div>
-          
-          {/* Team Details Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-            <TeamMembersList 
-              team={selectedTeam} 
-              mentorId={userData._id}
-              onDataChange={refreshDashboard}
-              onViewProfile={handleViewMemberProfile}
-            />
             
-            <TeamProjectsCard 
-              team={selectedTeam} 
-              mentorId={userData._id}
-              onDataChange={refreshDashboard}
-            />
-          </div>
-        </>
-      )}
-      
-      {/* Modals */}
-      <MentorChatModal
-        isOpen={isChatOpen}
-        onClose={handleCloseChat}
-        student={activeStudent}
-        mentorData={userData}
-      />
-
-      {selectedMember && (
-        <TeamMemberProfile
-          isOpen={isProfileOpen}
-          onClose={handleCloseProfile}
-          member={selectedMember}
-          mentorId={userData._id}
-          onDataChange={refreshDashboard}
+            {/* Team Details Content */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+              <TeamMembersList 
+                team={selectedTeam} 
+                mentorId={userData._id}
+                onDataChange={refreshDashboard}
+                onViewProfile={handleViewMemberProfile}
+              />
+              
+              <TeamProjectsCard 
+                team={selectedTeam} 
+                mentorId={userData._id}
+                onDataChange={refreshDashboard}
+              />
+            </div>
+          </>
+        )}
+        
+        {/* Modals */}
+        <MentorChatModal
+          isOpen={isChatOpen}
+          onClose={handleCloseChat}
+          student={activeStudent}
+          mentorData={userData}
         />
-      )}
+
+        {selectedMember && (
+          <TeamMemberProfile
+            isOpen={isProfileOpen}
+            onClose={handleCloseProfile}
+            member={selectedMember}
+            mentorId={userData._id}
+            onDataChange={refreshDashboard}
+          />
+        )}
+      </div>
     </div>
   );
 };

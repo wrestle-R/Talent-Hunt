@@ -5,6 +5,8 @@ import axios from 'axios';
 import MentorHeroProfile from './MentorHeroProfile';
 import MentorDashboard from './MentorDashboard';
 import { toast } from 'react-hot-toast';
+import StudentPlaceholder from '../../public/student_placeholder.png';
+import MentorPlaceholder from '../../public/mentor_placeholder.png';
 
 const MentorHero = () => {
   // Initialize userData state with all expected properties
@@ -246,10 +248,10 @@ const MentorHero = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#121212]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your mentor dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#E8C848] border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading your mentor dashboard...</p>
         </div>
       </div>
     );
@@ -259,9 +261,9 @@ const MentorHero = () => {
   const profileWidth = "400px";
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-[#121212] flex">
       {/* Left Section - Fixed Profile */}
-      <div className="fixed w-full h-screen" style={{ width: profileWidth }}>
+      <div className="fixed w-full h-screen border-r border-gray-800" style={{ width: profileWidth }}>
         <MentorHeroProfile 
           userData={userData}
           dashboardData={dashboardData}
@@ -274,7 +276,16 @@ const MentorHero = () => {
       </div>
       
       {/* Right Section - Dashboard with left margin */}
-      <div className="flex-1" style={{ marginLeft: profileWidth }}>
+      <div 
+        className="flex-1 bg-[#121212]" 
+        style={{ 
+          marginLeft: profileWidth,
+          backgroundImage: `
+            radial-gradient(circle at 50% 50%, rgba(232, 200, 72, 0.03), transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(232, 200, 72, 0.02), transparent 30%)
+          `
+        }}
+      >
         <MentorDashboard 
           dashboardData={dashboardData}
           userData={userData}

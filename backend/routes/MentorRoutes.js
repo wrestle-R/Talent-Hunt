@@ -16,7 +16,8 @@ const {
   getStudentProfile,
   submitMemberFeedback,
   getTeamDetails,
-  submitProjectFeedback
+  submitProjectFeedback,
+  getAllConversations,
 } = require("../controllers/MentorController");
 
 // Public routes with no authentication
@@ -33,6 +34,7 @@ router.get("/dashboard/:mentorId", getDashboardData);
 // Chat routes
 router.get("/conversations/:mentorId", getRecentConversations);
 router.put("/messages/read/:mentorId/:senderId", markMessagesAsRead);
+router.get('/conversations/all/:mentorId', getAllConversations);
 
 // Team applications routes
 router.get('/team-applications/:mentorId', getTeamApplications);
