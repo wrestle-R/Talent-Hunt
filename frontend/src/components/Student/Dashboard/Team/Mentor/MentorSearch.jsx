@@ -165,7 +165,7 @@ const MentorSearch = ({ teamId, applications, onApplicationAdded }) => {
   };
 
   return (
-    <div>
+    <div className="text-white">
       <h3 className="font-medium text-lg mb-4">Browse All Mentors</h3>
       
       {/* Search and filter controls */}
@@ -177,14 +177,14 @@ const MentorSearch = ({ teamId, applications, onApplicationAdded }) => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search by name, skills, or expertise..."
-              className="w-full p-2 pl-10 border border-gray-300 rounded-lg"
+              className="w-full p-2 pl-10 bg-[#1A1A1A] border border-gray-800 hover:border-[#E8C848]/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#E8C848] transition-all duration-300"
             />
-            <Search size={18} className="absolute left-3 top-2.5 text-gray-400" />
+            <Search size={18} className="absolute left-3 top-2.5 text-[#E8C848]" />
           </div>
           
           <button 
             onClick={handleSearch}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg"
+            className="bg-[#E8C848] text-[#121212] px-4 py-2 rounded-lg hover:bg-[#E8C848]/80 transition-all duration-300 shadow-lg shadow-[#E8C848]/30"
           >
             Search
           </button>
@@ -192,16 +192,18 @@ const MentorSearch = ({ teamId, applications, onApplicationAdded }) => {
           <button 
             onClick={() => setShowFilters(!showFilters)}
             className={`p-2 rounded-lg border ${
-              showFilters ? 'bg-indigo-50 border-indigo-200' : 'border-gray-300'
-            }`}
+              showFilters 
+                ? 'bg-[#E8C848]/10 border-[#E8C848]/30 text-[#E8C848]' 
+                : 'border-gray-800 text-gray-400 hover:border-[#E8C848]/30'
+            } transition-all duration-300`}
           >
-            <Filter size={20} className={showFilters ? 'text-indigo-600' : 'text-gray-500'} />
+            <Filter size={20} />
           </button>
           
           {(filters.skills.length > 0 || filters.industries.length > 0 || filters.availability > 0) && (
             <button 
               onClick={clearFilters}
-              className="p-2 rounded-lg bg-gray-100 text-gray-700 flex items-center gap-1"
+              className="p-2 rounded-lg bg-[#1A1A1A] text-gray-300 hover:text-[#E8C848] flex items-center gap-1 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300"
             >
               <RefreshCw size={16} />
               Clear
@@ -211,21 +213,21 @@ const MentorSearch = ({ teamId, applications, onApplicationAdded }) => {
         
         {/* Filter panel */}
         {showFilters && (
-          <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-4">
+          <div className="bg-[#1A1A1A] border border-gray-800 hover:border-[#E8C848]/30 rounded-lg p-4 mb-4 transition-all duration-300">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {/* Skills Filter */}
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Technical Skills</h4>
-                <div className="space-y-1 max-h-48 overflow-y-auto">
+                <h4 className="text-sm font-medium text-white mb-2">Technical Skills</h4>
+                <div className="space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
                   {availableSkills.map(skill => (
                     <label key={skill} className="flex items-center">
                       <input
                         type="checkbox"
                         checked={filters.skills.includes(skill)}
                         onChange={() => handleFilterChange('skills', skill)}
-                        className="mr-2 h-4 w-4 text-indigo-600"
+                        className="mr-2 h-4 w-4 accent-[#E8C848] bg-[#121212] border-gray-800"
                       />
-                      <span className="text-sm text-gray-700">{skill}</span>
+                      <span className="text-sm text-gray-300 hover:text-white">{skill}</span>
                     </label>
                   ))}
                 </div>
@@ -233,17 +235,17 @@ const MentorSearch = ({ teamId, applications, onApplicationAdded }) => {
               
               {/* Industries Filter */}
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Industries</h4>
-                <div className="space-y-1 max-h-48 overflow-y-auto">
+                <h4 className="text-sm font-medium text-white mb-2">Industries</h4>
+                <div className="space-y-1 max-h-48 overflow-y-auto custom-scrollbar">
                   {availableIndustries.map(industry => (
                     <label key={industry} className="flex items-center">
                       <input
                         type="checkbox"
                         checked={filters.industries.includes(industry)}
                         onChange={() => handleFilterChange('industries', industry)}
-                        className="mr-2 h-4 w-4 text-indigo-600"
+                        className="mr-2 h-4 w-4 accent-[#E8C848] bg-[#121212] border-gray-800"
                       />
-                      <span className="text-sm text-gray-700">{industry}</span>
+                      <span className="text-sm text-gray-300 hover:text-white">{industry}</span>
                     </label>
                   ))}
                 </div>
@@ -251,11 +253,11 @@ const MentorSearch = ({ teamId, applications, onApplicationAdded }) => {
               
               {/* Availability Filter */}
               <div>
-                <h4 className="text-sm font-medium text-gray-700 mb-2">Availability (hours/week)</h4>
+                <h4 className="text-sm font-medium text-white mb-2">Availability (hours/week)</h4>
                 <select
                   value={filters.availability}
                   onChange={(e) => handleFilterChange('availability', e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-lg"
+                  className="w-full p-2 bg-[#121212] border border-gray-800 hover:border-[#E8C848]/30 rounded-lg text-gray-300 focus:outline-none focus:border-[#E8C848] transition-all duration-300"
                 >
                   <option value="0">Any availability</option>
                   <option value="1">At least 1 hour</option>
@@ -273,7 +275,7 @@ const MentorSearch = ({ teamId, applications, onApplicationAdded }) => {
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[...Array(4)].map((_, index) => (
-            <div key={index} className="animate-pulse border border-gray-200 rounded-lg p-4 h-48"></div>
+            <div key={index} className="animate-pulse bg-[#1A1A1A] border border-gray-800 rounded-lg p-4 h-48"></div>
           ))}
         </div>
       ) : mentors.length > 0 ? (
@@ -288,12 +290,12 @@ const MentorSearch = ({ teamId, applications, onApplicationAdded }) => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
-          <User size={40} className="mx-auto text-gray-300 mb-2" />
-          <p className="text-gray-500">No mentors found matching your criteria</p>
+        <div className="text-center py-10 bg-[#1A1A1A] border border-gray-800 hover:border-[#E8C848]/30 rounded-lg transition-all duration-300">
+          <User size={40} className="mx-auto text-[#E8C848]/30 mb-2" />
+          <p className="text-gray-400">No mentors found matching your criteria</p>
           <button 
             onClick={clearFilters}
-            className="mt-4 text-indigo-600 hover:text-indigo-800 flex items-center gap-1 mx-auto"
+            className="mt-4 text-[#E8C848] hover:text-[#E8C848]/80 flex items-center gap-1 mx-auto transition-all duration-300"
           >
             <RefreshCw size={16} />
             Clear filters and try again
@@ -314,6 +316,25 @@ const MentorSearch = ({ teamId, applications, onApplicationAdded }) => {
           }}
         />
       )}
+
+      <style jsx>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: #121212;
+          border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #E8C848;
+          border-radius: 4px;
+          opacity: 0.3;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #E8C848;
+          opacity: 0.5;
+        }
+      `}</style>
     </div>
   );
 };

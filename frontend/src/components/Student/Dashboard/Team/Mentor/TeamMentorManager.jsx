@@ -143,12 +143,12 @@ const TeamMentorManager = () => {
     return (
       <div className="max-w-6xl mx-auto p-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-24 bg-gray-200 rounded mb-6"></div>
+          <div className="h-8 bg-[#1A1A1A] rounded w-1/4 mb-4"></div>
+          <div className="h-24 bg-[#1A1A1A] rounded mb-6"></div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="h-60 bg-gray-200 rounded"></div>
-            <div className="h-60 bg-gray-200 rounded"></div>
-            <div className="h-60 bg-gray-200 rounded"></div>
+            <div className="h-60 bg-[#1A1A1A] rounded"></div>
+            <div className="h-60 bg-[#1A1A1A] rounded"></div>
+            <div className="h-60 bg-[#1A1A1A] rounded"></div>
           </div>
         </div>
       </div>
@@ -161,17 +161,17 @@ const TeamMentorManager = () => {
         <div className="flex items-center mb-6">
           <button
             onClick={() => navigate(`/student/team/${teamId}`)}
-            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors mr-4"
+            className="p-2 rounded-full bg-[#1A1A1A] hover:bg-[#E8C848]/10 text-[#E8C848] transition-all duration-300"
           >
             <ChevronLeft size={20} />
           </button>
-          <h2 className="text-2xl font-bold text-gray-800">Team Mentors</h2>
+          <h2 className="text-2xl font-bold text-white">Team Mentors</h2>
         </div>
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg">
+        <div className="bg-red-900/20 text-red-400 p-4 rounded-lg border border-red-800">
           <p>{error}</p>
           <button 
             onClick={() => window.location.reload()} 
-            className="mt-3 bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200"
+            className="mt-3 bg-red-900/30 text-red-400 px-4 py-2 rounded-lg hover:bg-red-900/40 transition-all duration-300"
           >
             Try Again
           </button>
@@ -181,25 +181,25 @@ const TeamMentorManager = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6 text-white">
       {/* Header with back button */}
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate(`/student/team/${teamId}`)}
-          className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors mr-4"
+          className="p-2 rounded-full bg-[#1A1A1A] hover:bg-[#E8C848]/10 text-[#E8C848] transition-all duration-300"
         >
           <ChevronLeft size={20} />
         </button>
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-gray-800">Team Mentors</h2>
-          <p className="text-gray-500">Manage mentors for {team?.name}</p>
+          <h2 className="text-2xl font-bold text-white">Team Mentors</h2>
+          <p className="text-gray-400">Manage mentors for {team?.name}</p>
         </div>
         
         {/* Invite Button (Leader only) */}
         {team?.userStatus?.isLeader && (
           <button
             onClick={() => setShowInviteForm(true)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+            className="bg-[#E8C848] text-[#121212] px-4 py-2 rounded-lg hover:bg-[#E8C848]/80 flex items-center gap-2 transition-all duration-300 shadow-lg shadow-[#E8C848]/30"
           >
             <UserPlus size={16} />
             Invite a Mentor
@@ -208,14 +208,14 @@ const TeamMentorManager = () => {
       </div>
 
       {/* Tab navigation */}
-      <div className="mb-6 border-b border-gray-200">
+      <div className="mb-6 border-b border-gray-800">
         <div className="flex space-x-8">
           <button
             onClick={() => setActiveTab('current')}
-            className={`pb-4 px-1 ${
+            className={`pb-4 px-1 transition-all duration-300 ${
               activeTab === 'current'
-                ? 'border-b-2 border-indigo-600 text-indigo-600 font-medium'
-                : 'text-gray-600 hover:text-gray-800'
+                ? 'border-b-2 border-[#E8C848] text-[#E8C848] font-medium'
+                : 'text-gray-400 hover:text-white'
             }`}
           >
             Current Mentor
@@ -223,10 +223,10 @@ const TeamMentorManager = () => {
           
           <button
             onClick={() => setActiveTab('applications')}
-            className={`pb-4 px-1 ${
+            className={`pb-4 px-1 transition-all duration-300 ${
               activeTab === 'applications'
-                ? 'border-b-2 border-indigo-600 text-indigo-600 font-medium'
-                : 'text-gray-600 hover:text-gray-800'
+                ? 'border-b-2 border-[#E8C848] text-[#E8C848] font-medium'
+                : 'text-gray-400 hover:text-white'
             }`}
           >
             Applications ({applications.filter(app => app.status === 'pending').length})
@@ -234,10 +234,10 @@ const TeamMentorManager = () => {
           
           <button
             onClick={() => setActiveTab('recommended')}
-            className={`pb-4 px-1 ${
+            className={`pb-4 px-1 transition-all duration-300 ${
               activeTab === 'recommended'
-                ? 'border-b-2 border-indigo-600 text-indigo-600 font-medium'
-                : 'text-gray-600 hover:text-gray-800'
+                ? 'border-b-2 border-[#E8C848] text-[#E8C848] font-medium'
+                : 'text-gray-400 hover:text-white'
             }`}
           >
             Recommended Mentors
@@ -245,10 +245,10 @@ const TeamMentorManager = () => {
           
           <button
             onClick={() => setActiveTab('browse')}
-            className={`pb-4 px-1 ${
+            className={`pb-4 px-1 transition-all duration-300 ${
               activeTab === 'browse'
-                ? 'border-b-2 border-indigo-600 text-indigo-600 font-medium'
-                : 'text-gray-600 hover:text-gray-800'
+                ? 'border-b-2 border-[#E8C848] text-[#E8C848] font-medium'
+                : 'text-gray-400 hover:text-white'
             }`}
           >
             Browse All Mentors
@@ -257,7 +257,7 @@ const TeamMentorManager = () => {
       </div>
 
       {/* Tab content */}
-      <div className="bg-white rounded-xl shadow-md p-6">
+      <div className="bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
         {activeTab === 'current' && (
           <CurrentTeamMentor 
             team={team} 

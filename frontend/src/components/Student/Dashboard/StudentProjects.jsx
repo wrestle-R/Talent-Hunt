@@ -76,28 +76,24 @@ const StudentProjects = ({
           }
         });
         
-// In the fetchProjects function, update the status counting and filtering:
-const counts = {
-  // Use case-insensitive comparison for status counting
-  Pending: fetchedProjects.filter(p => 
-    p.status && p.status.toLowerCase() === 'pending').length,
-  Approved: fetchedProjects.filter(p => 
-    p.status && p.status.toLowerCase() === 'approved').length,
-  Rejected: fetchedProjects.filter(p => 
-    p.status && p.status.toLowerCase() === 'rejected').length,
-  Total: fetchedProjects.length
-};
-setStatusCounts(counts);
+        const counts = {
+          Pending: fetchedProjects.filter(p => 
+            p.status && p.status.toLowerCase() === 'pending').length,
+          Approved: fetchedProjects.filter(p => 
+            p.status && p.status.toLowerCase() === 'approved').length,
+          Rejected: fetchedProjects.filter(p => 
+            p.status && p.status.toLowerCase() === 'rejected').length,
+          Total: fetchedProjects.length
+        };
+        setStatusCounts(counts);
 
-// Filter projects based on activeStatusFilter - using case-insensitive comparison
-let filteredProjects = fetchedProjects;
-if (activeStatusFilter !== 'all') {
-  filteredProjects = fetchedProjects.filter(p => 
-    p.status && p.status.toLowerCase() === activeStatusFilter.toLowerCase()
-  );
-}
+        let filteredProjects = fetchedProjects;
+        if (activeStatusFilter !== 'all') {
+          filteredProjects = fetchedProjects.filter(p => 
+            p.status && p.status.toLowerCase() === activeStatusFilter.toLowerCase()
+          );
+        }
         
-        // If in dashboard, limit the number of projects shown
         const limitedProjects = isInDashboard 
           ? filteredProjects.slice(0, limit) 
           : filteredProjects;
@@ -124,13 +120,12 @@ if (activeStatusFilter !== 'all') {
     try {
       setIsLoading(true);
       
-      // Convert comma-separated tech stack string to array
       const formattedProject = {
         ...newProject,
         tech_stack: newProject.tech_stack.includes(',') 
           ? newProject.tech_stack.split(',').map(tech => tech.trim())
           : [newProject.tech_stack.trim()],
-        status: 'Pending' // Always set new projects to pending
+        status: 'Pending'
       };
       
       const response = await axios.post(
@@ -138,7 +133,6 @@ if (activeStatusFilter !== 'all') {
         formattedProject
       );
       
-      // Refresh projects after adding new one
       fetchProjects();
       
       setIsAddModalOpen(false);
@@ -165,7 +159,6 @@ if (activeStatusFilter !== 'all') {
     try {
       setIsLoading(true);
       
-      // Convert comma-separated tech stack string to array
       const formattedProject = {
         ...currentProject,
         tech_stack: typeof currentProject.tech_stack === 'string'
@@ -173,7 +166,7 @@ if (activeStatusFilter !== 'all') {
               ? currentProject.tech_stack.split(',').map(tech => tech.trim())
               : [currentProject.tech_stack.trim()])
           : currentProject.tech_stack,
-        status: 'Pending' // Reset to pending when edited
+        status: 'Pending'
       };
       
       const response = await axios.put(
@@ -181,7 +174,6 @@ if (activeStatusFilter !== 'all') {
         formattedProject
       );
       
-      // Refresh projects after editing
       fetchProjects();
       
       setIsEditModalOpen(false);
@@ -195,7 +187,6 @@ if (activeStatusFilter !== 'all') {
 
   // Helper to format tech stack for display
   const formatTechStack = (techStack) => {
-    // Handle both array and string formats
     const technologies = Array.isArray(techStack) 
       ? techStack 
       : (typeof techStack === 'string' 
@@ -209,8 +200,8 @@ if (activeStatusFilter !== 'all') {
         key={tech} 
         className={`text-xs px-2 py-1 rounded-full mr-1 mb-1 inline-block ${
           techFilter === tech 
-            ? 'bg-indigo-600 text-white' 
-            : 'bg-indigo-100 text-indigo-800'
+            ? 'bg-[#E8C848] text-[#121212]' 
+            : 'bg-[#E8C848]/10 text-[#E8C848]'
         }`}
       >
         {tech}
@@ -218,334 +209,286 @@ if (activeStatusFilter !== 'all') {
     ));
   };
 
-// Get status badge based on project status
-const getStatusBadge = (status) => {
-  const statusLower = status ? status.toLowerCase() : 'pending';
-  
-  switch(statusLower) {
-    case 'approved':
-      return (
-        <span className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full bg-green-100 text-green-800 font-medium border border-green-200">
-          <CheckCircle2 size={14} />
-          Approved
-        </span>
-      );
-    case 'rejected':
-      return (
-        <span className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full bg-red-100 text-red-800 font-medium border border-red-200">
-          <XCircle size={14} />
-          Rejected
-        </span>
-      );
-    case 'pending':
-    default:
-      return (
-        <span className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full bg-yellow-100 text-yellow-800 font-medium border border-yellow-200">
-          <Clock size={14} />
-          Pending Review
-        </span>
-      );
-  }
-};
+  const getStatusBadge = (status) => {
+    const statusLower = status ? status.toLowerCase() : 'pending';
+    
+    switch(statusLower) {
+      case 'approved':
+        return (
+          <span className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full bg-green-500/10 text-green-500 font-medium border border-green-500/20">
+            <CheckCircle2 size={14} />
+            Approved
+          </span>
+        );
+      case 'rejected':
+        return (
+          <span className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full bg-red-500/10 text-red-500 font-medium border border-red-500/20">
+            <XCircle size={14} />
+            Rejected
+          </span>
+        );
+      case 'pending':
+      default:
+        return (
+          <span className="flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-full bg-[#E8C848]/10 text-[#E8C848] font-medium border border-[#E8C848]/20">
+            <Clock size={14} />
+            Pending Review
+          </span>
+        );
+    }
+  };
 
-  // Load project data when component mounts or when userData or filters change
   useEffect(() => {
     if (userData && userData._id) {
       fetchProjects();
     }
   }, [userData, isInDashboard, searchFilter, techFilter, sortOrder, activeStatusFilter]);
 
-  // Loading state
   if (isLoading && !projects.length) {
     return (
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <FolderGit2 size={20} className="text-indigo-600" />
-            {isInDashboard ? 'My Projects' : 'All Projects'}
-          </h3>
-          <div className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full animate-pulse">
-            Loading...
+      <div className={`${!isInDashboard ? 'min-h-screen bg-[#121212] p-6' : ''}`}>
+        <div className="bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+              <FolderGit2 size={20} className="text-[#E8C848]" />
+              {isInDashboard ? 'My Projects' : 'All Projects'}
+            </h3>
+            <div className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-1 rounded-full animate-pulse">
+              Loading...
+            </div>
+          </div>
+          <div className="space-y-4">
+            {[...Array(isInDashboard ? limit : 4)].map((_, index) => (
+              <div key={index} className="animate-pulse border border-gray-800 rounded-lg p-4">
+                <div className="h-4 bg-[#121212] rounded w-1/3 mb-2"></div>
+                <div className="h-3 bg-[#121212] rounded w-full mb-3"></div>
+                <div className="flex mb-3">
+                  <div className="h-6 bg-[#121212] rounded w-20 mr-2"></div>
+                  <div className="h-6 bg-[#121212] rounded w-20 mr-2"></div>
+                </div>
+                <div className="flex justify-end">
+                  <div className="h-8 bg-[#121212] rounded w-24"></div>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
-        <div className="space-y-4">
-          {[...Array(isInDashboard ? limit : 4)].map((_, index) => (
-            <div key={index} className="animate-pulse border rounded-lg p-4">
-              <div className="h-4 bg-gray-200 rounded w-1/3 mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded w-full mb-3"></div>
-              <div className="flex mb-3">
-                <div className="h-6 bg-gray-200 rounded w-20 mr-2"></div>
-                <div className="h-6 bg-gray-200 rounded w-20 mr-2"></div>
-              </div>
-              <div className="flex justify-end">
-                <div className="h-8 bg-gray-200 rounded w-24"></div>
-              </div>
-            </div>
-          ))}
-        </div>
       </div>
     );
   }
-
-  // Error state
-  if (error && !projects.length) {
-    return (
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <FolderGit2 size={20} className="text-indigo-600" />
-            {isInDashboard ? 'My Projects' : 'All Projects'}
-          </h3>
-        </div>
-        <div className="bg-red-50 p-4 rounded-lg text-center text-red-700">
-          <p>{error}</p>
-          <button 
-            onClick={fetchProjects} 
-            className="mt-2 bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm hover:bg-indigo-200"
-          >
-            Try Again
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Empty state after filtering
-  const isFilteredEmpty = !isLoading && projects.length === 0 && (searchFilter || techFilter || activeStatusFilter !== 'all');
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6">
-      <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-lg flex items-center gap-2">
-          <FolderGit2 size={20} className="text-indigo-600" />
-          {isInDashboard ? 'My Projects' : 'All Projects'}
-        </h3>
-        <div className="flex items-center gap-2">
-          {statusCounts.Total > 0 && (
-            <span className="bg-indigo-100 text-indigo-800 text-xs px-2 py-1 rounded-full">
-              {statusCounts.Total} {statusCounts.Total === 1 ? 'Project' : 'Projects'}
-              {!isInDashboard && (activeStatusFilter !== 'all' || searchFilter || techFilter) && ' (filtered)'}
-            </span>
-          )}
-          <button 
-            className="bg-indigo-600 text-white px-3 py-1 rounded-lg text-sm flex items-center gap-1"
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            <Plus size={14} /> Add Project
-          </button>
-        </div>
-      </div>
-      
-      {/* Status Tabs - Only show when not in dashboard or when there are enough projects */}
-      {(!isInDashboard || statusCounts.Total > 3) && (
-        <div className="mb-6 border-b border-gray-200">
-          <div className="flex space-x-4">
-            <button
-              onClick={() => setActiveStatusFilter('all')}
-              className={`py-2 px-1 font-medium text-sm relative ${
-                activeStatusFilter === 'all'
-                  ? 'text-indigo-600 border-b-2 border-indigo-500'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              All Projects
-              <span className="ml-1 bg-gray-100 text-gray-700 text-xs px-1.5 py-0.5 rounded-full">
-                {statusCounts.Total}
+    <div className={`${!isInDashboard ? 'min-h-screen bg-[#121212] p-6' : ''}`}>
+      <div className="bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+            <FolderGit2 size={20} className="text-[#E8C848]" />
+            {isInDashboard ? 'My Projects' : 'All Projects'}
+          </h3>
+          <div className="flex items-center gap-2">
+            {statusCounts.Total > 0 && (
+              <span className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-1 rounded-full">
+                {statusCounts.Total} {statusCounts.Total === 1 ? 'Project' : 'Projects'}
+                {!isInDashboard && (activeStatusFilter !== 'all' || searchFilter || techFilter) && ' (filtered)'}
               </span>
-            </button>
-            
-            <button
-              onClick={() => setActiveStatusFilter('Pending')}
-              className={`py-2 px-1 font-medium text-sm relative ${
-                activeStatusFilter === 'Pending'
-                  ? 'text-yellow-600 border-b-2 border-yellow-500'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
+            )}
+            <button 
+              className="bg-[#E8C848] text-[#121212] px-3 py-1 rounded-lg text-sm flex items-center gap-1 hover:bg-[#E8C848]/80 transition-all duration-300 shadow-lg shadow-[#E8C848]/30"
+              onClick={() => setIsAddModalOpen(true)}
             >
-              Pending
-              <span className="ml-1 bg-yellow-100 text-yellow-700 text-xs px-1.5 py-0.5 rounded-full">
-                {statusCounts.Pending}
-              </span>
-            </button>
-            
-            <button
-              onClick={() => setActiveStatusFilter('Approved')}
-              className={`py-2 px-1 font-medium text-sm relative ${
-                activeStatusFilter === 'Approved'
-                  ? 'text-green-600 border-b-2 border-green-500'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Approved
-              <span className="ml-1 bg-green-100 text-green-700 text-xs px-1.5 py-0.5 rounded-full">
-                {statusCounts.Approved}
-              </span>
-            </button>
-            
-            <button
-              onClick={() => setActiveStatusFilter('Rejected')}
-              className={`py-2 px-1 font-medium text-sm relative ${
-                activeStatusFilter === 'Rejected'
-                  ? 'text-red-600 border-b-2 border-red-500'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              Rejected
-              <span className="ml-1 bg-red-100 text-red-700 text-xs px-1.5 py-0.5 rounded-full">
-                {statusCounts.Rejected}
-              </span>
+              <Plus size={14} /> Add Project
             </button>
           </div>
         </div>
-      )}
-      
-      {projects.length > 0 ? (
-        <div className="space-y-4">
-          {projects.map(project => (
-            <div 
-              key={project._id} 
-              className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
-                project.status === 'Pending' 
-                  ? 'border-l-4 border-l-yellow-400' 
-                  : project.status === 'Approved' 
-                    ? 'border-l-4 border-l-green-400' 
-                    : project.status === 'Rejected'
-                      ? 'border-l-4 border-l-red-400'
-                      : ''
-              }`}
-            >
-              <div className="flex justify-between">
-                <div className="flex items-start gap-2">
-                  <h4 className="font-medium text-lg">{project.name}</h4>
-                  {getStatusBadge(project.status)}
-                </div>
-                <div className="flex gap-2">
-                  <button 
-                    onClick={() => {
-                      setCurrentProject({
-                        ...project,
-                        // Normalize tech_stack for the form - handle both property names
-                        tech_stack: Array.isArray(project.tech_stack) 
-                          ? project.tech_stack.join(', ')
-                          : (Array.isArray(project.techStack) 
-                            ? project.techStack.join(', ') 
-                            : '')
-                      });
-                      setIsEditModalOpen(true);
-                    }}
-                    className="text-gray-500 hover:text-indigo-600 transition-colors"
-                    title="Edit project (will reset to pending status)"
-                  >
-                    <Edit size={16} />
-                  </button>
-                </div>
-              </div>
+
+        {(!isInDashboard || statusCounts.Total > 3) && (
+          <div className="mb-6 border-b border-gray-800">
+            <div className="flex space-x-4">
+              <button
+                onClick={() => setActiveStatusFilter('all')}
+                className={`py-2 px-1 font-medium text-sm relative ${
+                  activeStatusFilter === 'all'
+                    ? 'text-[#E8C848] border-b-2 border-[#E8C848]'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                All Projects
+                <span className="ml-1 bg-[#121212] text-gray-300 text-xs px-1.5 py-0.5 rounded-full">
+                  {statusCounts.Total}
+                </span>
+              </button>
               
-              <p className="text-gray-600 mt-1 mb-3 text-sm">
-                {project.description}
-              </p>
+              <button
+                onClick={() => setActiveStatusFilter('Pending')}
+                className={`py-2 px-1 font-medium text-sm relative ${
+                  activeStatusFilter === 'Pending'
+                    ? 'text-[#E8C848] border-b-2 border-[#E8C848]'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                Pending
+                <span className="ml-1 bg-[#121212] text-gray-300 text-xs px-1.5 py-0.5 rounded-full">
+                  {statusCounts.Pending}
+                </span>
+              </button>
               
-              <div className="flex flex-wrap mb-3">
-                {formatTechStack(project.tech_stack || project.techStack)}
-              </div>
+              <button
+                onClick={() => setActiveStatusFilter('Approved')}
+                className={`py-2 px-1 font-medium text-sm relative ${
+                  activeStatusFilter === 'Approved'
+                    ? 'text-green-500 border-b-2 border-green-500'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                Approved
+                <span className="ml-1 bg-[#121212] text-gray-300 text-xs px-1.5 py-0.5 rounded-full">
+                  {statusCounts.Approved}
+                </span>
+              </button>
               
-              <div className="flex justify-end gap-2 mt-2">
-                {(project.github_link || project.githubLink) && (
-                  <a 
-                    href={project.github_link || project.githubLink} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm hover:bg-gray-200 flex items-center gap-1"
-                  >
-                    <Github size={14} /> GitHub
-                  </a>
-                )}
-                {(project.live_demo || project.liveDemo) && (
-                  <a 
-                    href={project.live_demo || project.liveDemo} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm hover:bg-indigo-200 flex items-center gap-1"
-                  >
-                    <Globe size={14} /> Live Demo
-                  </a>
-                )}
-              </div>
-              
-              {/* Display moderator notes if available */}
-              {project.moderatorNotes && (
-                <div className="mt-3 p-4 bg-gray-50 rounded-lg border border-gray-200 shadow-sm">
-                  <p className="text-sm font-medium text-gray-700 mb-2 flex items-center">
-                    <MessageCircle size={16} className="mr-1 text-indigo-500" />
-                    Moderator Feedback:
-                  </p>
-                  <p className="text-sm text-gray-600">{project.moderatorNotes}</p>
-                </div>
-              )}
+              <button
+                onClick={() => setActiveStatusFilter('Rejected')}
+                className={`py-2 px-1 font-medium text-sm relative ${
+                  activeStatusFilter === 'Rejected'
+                    ? 'text-red-500 border-b-2 border-red-500'
+                    : 'text-gray-400 hover:text-gray-300'
+                }`}
+              >
+                Rejected
+                <span className="ml-1 bg-[#121212] text-gray-300 text-xs px-1.5 py-0.5 rounded-full">
+                  {statusCounts.Rejected}
+                </span>
+              </button>
             </div>
-          ))}
-        </div>
-      ) : isFilteredEmpty ? (
-        <div className="text-center text-gray-500 py-8">
-          <AlertCircle size={32} className="mx-auto text-gray-300 mb-3" />
-          <h4 className="text-lg font-medium text-gray-500 mb-1">No matching projects</h4>
-          <p className="text-gray-400 text-sm">
-            {activeStatusFilter !== 'all' 
-              ? `You don't have any ${activeStatusFilter.toLowerCase()} projects` 
-              : 'Try adjusting your filters to find what youre looking for'}
-          </p>
-          <button 
-            onClick={() => {
-              setActiveStatusFilter('all');
-              if (searchFilter || techFilter) window.location.reload();
-            }} 
-            className="mt-4 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg text-sm hover:bg-indigo-200"
+          </div>
+        )}
+
+        {projects.length > 0 ? (
+          <div className="space-y-4">
+            {projects.map(project => (
+              <div 
+                key={project._id} 
+                className={`bg-[#121212] rounded-lg p-4 hover:shadow-lg transition-all duration-300 border border-gray-800 hover:border-[#E8C848]/30 ${
+                  project.status === 'Pending' 
+                    ? 'border-l-4 border-l-[#E8C848]' 
+                    : project.status === 'Approved' 
+                      ? 'border-l-4 border-l-green-500' 
+                      : project.status === 'Rejected'
+                        ? 'border-l-4 border-l-red-500'
+                        : ''
+                }`}
+              >
+                <div className="flex justify-between">
+                  <div className="flex items-start gap-2">
+                    <h4 className="font-medium text-lg text-white">{project.name}</h4>
+                    {getStatusBadge(project.status)}
+                  </div>
+                  <div className="flex gap-2">
+                    <button 
+                      onClick={() => {
+                        setCurrentProject({
+                          ...project,
+                          tech_stack: Array.isArray(project.tech_stack) 
+                            ? project.tech_stack.join(', ')
+                            : (Array.isArray(project.techStack) 
+                              ? project.techStack.join(', ') 
+                              : '')
+                        });
+                        setIsEditModalOpen(true);
+                      }}
+                      className="text-gray-400 hover:text-[#E8C848] transition-colors"
+                      title="Edit project (will reset to pending status)"
+                    >
+                      <Edit size={16} />
+                    </button>
+                  </div>
+                </div>
+                
+                <p className="text-gray-400 mt-1 mb-3 text-sm">
+                  {project.description}
+                </p>
+                
+                <div className="flex flex-wrap mb-3">
+                  {formatTechStack(project.tech_stack || project.techStack)}
+                </div>
+                
+                <div className="flex justify-end gap-2 mt-2">
+                  {(project.github_link || project.githubLink) && (
+                    <a 
+                      href={project.github_link || project.githubLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm hover:bg-[#E8C848]/20 transition-all duration-300 flex items-center gap-1"
+                    >
+                      <Github size={14} /> GitHub
+                    </a>
+                  )}
+                  {(project.live_demo || project.liveDemo) && (
+                    <a 
+                      href={project.live_demo || project.liveDemo} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm hover:bg-[#E8C848]/20 transition-all duration-300 flex items-center gap-1"
+                    >
+                      <Globe size={14} /> Live Demo
+                    </a>
+                  )}
+                </div>
+                
+                {project.moderatorNotes && (
+                  <div className="mt-3 p-4 bg-[#121212] rounded-lg border border-gray-800 shadow-sm">
+                    <p className="text-sm font-medium text-[#E8C848] mb-2 flex items-center">
+                      <MessageCircle size={16} className="mr-1 text-[#E8C848]" />
+                      Moderator Feedback:
+                    </p>
+                    <p className="text-sm text-gray-400">{project.moderatorNotes}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8">
+            <FolderGit2 size={32} className="mx-auto text-[#E8C848]/30 mb-3" />
+            <h4 className="text-lg font-medium text-white mb-1">No projects yet</h4>
+            <p className="text-gray-400 text-sm">
+              Showcase your skills by adding projects to your profile
+            </p>
+            <button 
+              className="mt-4 bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-sm hover:bg-[#E8C848]/20 transition-all duration-300 flex items-center gap-1 mx-auto"
+              onClick={() => setIsAddModalOpen(true)}
+            >
+              <Plus size={16} /> Add Your First Project
+            </button>
+          </div>
+        )}
+
+        {isInDashboard && statusCounts.Total > limit && (
+          <Link 
+            to="/student/projects" 
+            className="text-[#E8C848] text-sm font-medium mt-4 hover:text-[#E8C848]/80 flex items-center justify-end"
           >
-            Clear Filters
-          </button>
-        </div>
-      ) : (
-        <div className="text-center text-gray-500 py-8">
-          <FolderGit2 size={32} className="mx-auto text-gray-300 mb-3" />
-          <h4 className="text-lg font-medium text-gray-500 mb-1">No projects yet</h4>
-          <p className="text-gray-400 text-sm">
-            Showcase your skills by adding projects to your profile
-          </p>
-          <button 
-            className="mt-4 bg-indigo-100 text-indigo-700 px-4 py-2 rounded-lg text-sm hover:bg-indigo-200 flex items-center gap-1 mx-auto"
-            onClick={() => setIsAddModalOpen(true)}
-          >
-            <Plus size={16} /> Add Your First Project
-          </button>
-        </div>
-      )}
-      
-      {/* Show "View All" link if in dashboard */}
-      {isInDashboard && statusCounts.Total > limit && (
-        <Link 
-          to="/student/projects" 
-          className="text-indigo-600 text-sm font-medium mt-4 hover:text-indigo-800 flex items-center justify-end"
-        >
-          View All Projects <ChevronRight size={16} />
-        </Link>
-      )}
-      
-      {/* Add Project Modal */}
+            View All Projects <ChevronRight size={16} />
+          </Link>
+        )}
+      </div>
+
+      {/* Modals */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-[#121212]/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#1A1A1A] rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg">Add New Project</h3>
+              <h3 className="font-bold text-lg text-white">Add New Project</h3>
               <button 
                 onClick={() => setIsAddModalOpen(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-300"
               >
                 &times;
               </button>
             </div>
             
-            <div className="mb-4 bg-blue-50 p-3 rounded-lg text-sm text-blue-700 flex items-start gap-2">
-              <AlertCircle size={18} className="text-blue-600 flex-shrink-0 mt-0.5" />
+            <div className="mb-4 bg-[#E8C848]/10 p-3 rounded-lg text-sm text-[#E8C848] flex items-start gap-2">
+              <AlertCircle size={18} className="text-[#E8C848] flex-shrink-0 mt-0.5" />
               <div>
                 All new projects will be marked as "Pending" and require moderator approval before becoming visible to others.
               </div>
@@ -553,67 +496,67 @@ const getStatusBadge = (status) => {
             
             <form onSubmit={handleAddProject}>
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-1">
+                <label className="block text-gray-400 text-sm font-medium mb-1">
                   Project Name*
                 </label>
                 <input 
                   type="text" 
                   value={newProject.name}
                   onChange={(e) => setNewProject({...newProject, name: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                   required
                 />
               </div>
               
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-1">
+                <label className="block text-gray-400 text-sm font-medium mb-1">
                   Description*
                 </label>
                 <textarea 
                   value={newProject.description}
                   onChange={(e) => setNewProject({...newProject, description: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                   rows="3"
                   required
                 />
               </div>
               
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-1">
+                <label className="block text-gray-400 text-sm font-medium mb-1">
                   Tech Stack* (comma separated)
                 </label>
                 <input 
                   type="text" 
                   value={newProject.tech_stack}
                   onChange={(e) => setNewProject({...newProject, tech_stack: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                   placeholder="React, Node.js, MongoDB"
                   required
                 />
               </div>
               
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-1">
+                <label className="block text-gray-400 text-sm font-medium mb-1">
                   GitHub Link
                 </label>
                 <input 
                   type="url" 
                   value={newProject.github_link}
                   onChange={(e) => setNewProject({...newProject, github_link: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                   placeholder="https://github.com/yourusername/project"
                 />
               </div>
               
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-1">
+                <label className="block text-gray-400 text-sm font-medium mb-1">
                   Live Demo URL
                 </label>
                 <input 
                   type="url" 
                   value={newProject.live_demo}
                   onChange={(e) => setNewProject({...newProject, live_demo: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                   placeholder="https://your-project-demo.com"
                 />
               </div>
@@ -622,13 +565,13 @@ const getStatusBadge = (status) => {
                 <button 
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100"
+                  className="px-4 py-2 border border-gray-800 rounded-lg text-gray-400 hover:bg-gray-800"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  className="px-4 py-2 bg-[#E8C848] text-[#121212] rounded-lg hover:bg-[#E8C848]/80 transition-all duration-300"
                 >
                   Add Project
                 </button>
@@ -637,26 +580,25 @@ const getStatusBadge = (status) => {
           </div>
         </div>
       )}
-      
-      {/* Edit Project Modal */}
+
       {isEditModalOpen && currentProject && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-[#121212]/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#1A1A1A] rounded-lg p-6 w-full max-w-md max-h-[90vh] overflow-y-auto border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-bold text-lg">Edit Project</h3>
+              <h3 className="font-bold text-lg text-white">Edit Project</h3>
               <button 
                 onClick={() => {
                   setIsEditModalOpen(false);
                   setCurrentProject(null);
                 }}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-400 hover:text-gray-300"
               >
                 &times;
               </button>
             </div>
             
-            <div className="mb-4 bg-yellow-50 p-3 rounded-lg text-sm text-yellow-700 flex items-start gap-2">
-              <AlertCircle size={18} className="text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="mb-4 bg-[#E8C848]/10 p-3 rounded-lg text-sm text-[#E8C848] flex items-start gap-2">
+              <AlertCircle size={18} className="text-[#E8C848] flex-shrink-0 mt-0.5" />
               <div>
                 Editing this project will reset its status to "Pending" and it will require moderator approval again.
               </div>
@@ -664,47 +606,47 @@ const getStatusBadge = (status) => {
             
             <form onSubmit={handleEditProject}>
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-1">
+                <label className="block text-gray-400 text-sm font-medium mb-1">
                   Project Name*
                 </label>
                 <input 
                   type="text" 
                   value={currentProject.name}
                   onChange={(e) => setCurrentProject({...currentProject, name: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                   required
                 />
               </div>
               
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-1">
+                <label className="block text-gray-400 text-sm font-medium mb-1">
                   Description*
                 </label>
                 <textarea 
                   value={currentProject.description}
                   onChange={(e) => setCurrentProject({...currentProject, description: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                   rows="3"
                   required
                 />
               </div>
               
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-1">
+                <label className="block text-gray-400 text-sm font-medium mb-1">
                   Tech Stack* (comma separated)
                 </label>
                 <input 
                   type="text" 
                   value={currentProject.tech_stack}
                   onChange={(e) => setCurrentProject({...currentProject, tech_stack: e.target.value})}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                   placeholder="React, Node.js, MongoDB"
                   required
                 />
               </div>
               
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-1">
+                <label className="block text-gray-400 text-sm font-medium mb-1">
                   GitHub Link
                 </label>
                 <input 
@@ -715,13 +657,13 @@ const getStatusBadge = (status) => {
                     github_link: e.target.value,
                     githubLink: e.target.value
                   })}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                   placeholder="https://github.com/yourusername/project"
                 />
               </div>
               
               <div className="mb-4">
-                <label className="block text-gray-700 text-sm font-medium mb-1">
+                <label className="block text-gray-400 text-sm font-medium mb-1">
                   Live Demo URL
                 </label>
                 <input 
@@ -732,7 +674,7 @@ const getStatusBadge = (status) => {
                     live_demo: e.target.value,
                     liveDemo: e.target.value
                   })}
-                  className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full px-3 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                   placeholder="https://your-project-demo.com"
                 />
               </div>
@@ -744,13 +686,13 @@ const getStatusBadge = (status) => {
                     setIsEditModalOpen(false);
                     setCurrentProject(null);
                   }}
-                  className="px-4 py-2 border rounded-lg text-gray-700 hover:bg-gray-100"
+                  className="px-4 py-2 border border-gray-800 rounded-lg text-gray-400 hover:bg-gray-800"
                 >
                   Cancel
                 </button>
                 <button 
                   type="submit"
-                  className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+                  className="px-4 py-2 bg-[#E8C848] text-[#121212] rounded-lg hover:bg-[#E8C848]/80 transition-all duration-300"
                 >
                   Save Changes
                 </button>

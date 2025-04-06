@@ -30,7 +30,6 @@ const StudentProfile = () => {
     mentorship_interests: { seeking_mentor: false, mentor_topics: [] },
     preferred_working_hours: { start_time: '09:00', end_time: '17:00' },
     goals: [],
-    // Add new fields for teammate search preferences
     teammate_search: {
       looking_for_teammates: false,
       purpose: 'Both',
@@ -39,7 +38,6 @@ const StudentProfile = () => {
       team_size_preference: '',
       urgency_level: 'Medium'
     },
-    // Current search preferences
     current_search_preferences: {
       looking_for: 'None',
       hackathon_teammate_preferences: {
@@ -60,8 +58,8 @@ const StudentProfile = () => {
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeTab, setActiveTab] = useState('basic'); // To manage tabs
-  const [newItem, setNewItem] = useState({ // Generic state for new items
+  const [activeTab, setActiveTab] = useState('basic');
+  const [newItem, setNewItem] = useState({
     skill: '',
     interest: '',
     hackathonInterest: '',
@@ -69,7 +67,6 @@ const StudentProfile = () => {
     goal: '',
     mentorTopic: '',
     tech: '',
-    // New fields for collaboration
     desiredSkill: '',
     hackathonRequiredSkill: '',
     projectRequiredSkill: ''
@@ -109,7 +106,6 @@ const StudentProfile = () => {
     fetchProfile();
   }, []);
   
-  // Handle form field changes - unified handler for all types
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     
@@ -167,7 +163,6 @@ const StudentProfile = () => {
     }
   };
   
-  // Generic functions for array operations
   const addItem = (field, value) => {
     if (!value.trim()) return;
     
@@ -202,7 +197,6 @@ const StudentProfile = () => {
       }));
     }
     
-    // Reset the input
     const inputType = field.includes('.') ? field.split('.').pop() : field;
     setNewItem(prev => ({ ...prev, [inputType]: '' }));
   };
@@ -240,7 +234,6 @@ const StudentProfile = () => {
     }
   };
   
-  // Generic function to add a nested object to an array
   const addNestedObject = (field, template) => {
     setFormData(prev => ({
       ...prev,
@@ -248,7 +241,6 @@ const StudentProfile = () => {
     }));
   };
   
-  // Generic function to update a nested object in an array
   const updateNestedObject = (field, index, subfield, value) => {
     setFormData(prev => {
       const items = [...prev[field]];
@@ -257,7 +249,6 @@ const StudentProfile = () => {
     });
   };
   
-  // Generic function to remove a nested object from an array
   const removeNestedObject = (field, index) => {
     setFormData(prev => ({
       ...prev,
@@ -265,7 +256,6 @@ const StudentProfile = () => {
     }));
   };
   
-  // Form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -276,21 +266,18 @@ const StudentProfile = () => {
     
       await axios.put(`http://localhost:4000/api/student/profile/${user.uid}`, formData);
       
-      // Show success toast
       setToast({
         show: true,
         message: 'Profile updated successfully',
         type: 'success'
       });
 
-      // Auto-hide toast after 3 seconds
       setTimeout(() => {
         setToast(prev => ({ ...prev, show: false }));
       }, 3000);
     } catch (error) {
       console.error("Error updating profile:", error);
       
-      // Show error toast
       setToast({
         show: true,
         message: 'Failed to update profile. Please try again.',
@@ -302,84 +289,86 @@ const StudentProfile = () => {
   };
   
   if (loading) {
-    return <div className="flex justify-center p-8">Loading profile...</div>;
+    return (
+      <div className="flex justify-center p-8 text-gray-300">
+        <div className="animate-pulse flex items-center space-x-2">
+          <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
+          <div>Loading profile...</div>
+        </div>
+      </div>
+    );
   }
 
-  // Render form based on active tab
   const renderTabContent = () => {
     switch (activeTab) {
       case 'basic':
         return (
           <>
-            {/* Basic Information */}
-            <div className="bg-white p-5 rounded shadow-sm">
-              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <User className="text-blue-600" /> Basic Information
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800">
+              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2 text-yellow-400">
+                <User className="text-yellow-400" /> Basic Information
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-1">Name</label>
+                  <label className="block text-sm mb-1 text-gray-300">Name</label>
                   <input type="text" name="name" value={formData.name} onChange={handleChange} 
-                    className="w-full p-2 border rounded" />
+                    className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">Email</label>
+                  <label className="block text-sm mb-1 text-gray-300">Email</label>
                   <input type="email" name="email" value={formData.email} onChange={handleChange} 
-                    className="w-full p-2 border rounded" readOnly />
+                    className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-400 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" readOnly />
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">Phone</label>
+                  <label className="block text-sm mb-1 text-gray-300">Phone</label>
                   <input type="tel" name="phone" value={formData.phone} onChange={handleChange} 
-                    className="w-full p-2 border rounded" />
+                    className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">Profile Picture URL</label>
+                  <label className="block text-sm mb-1 text-gray-300">Profile Picture URL</label>
                   <input type="url" name="profile_picture" value={formData.profile_picture} onChange={handleChange} 
-                    className="w-full p-2 border rounded" />
+                    className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                 </div>
               </div>
             </div>
             
-            {/* Location */}
-            <div className="bg-white p-5 rounded shadow-sm mt-4">
-              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Globe className="text-blue-600" /> Location
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800 mt-4">
+              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2 text-yellow-400">
+                <Globe className="text-yellow-400" /> Location
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-1">City</label>
+                  <label className="block text-sm mb-1 text-gray-300">City</label>
                   <input type="text" name="location.city" value={formData.location.city} onChange={handleChange} 
-                    className="w-full p-2 border rounded" />
+                    className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">Country</label>
+                  <label className="block text-sm mb-1 text-gray-300">Country</label>
                   <input type="text" name="location.country" value={formData.location.country} onChange={handleChange} 
-                    className="w-full p-2 border rounded" />
+                    className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                 </div>
-                
               </div>
             </div>
             
-            {/* Education */}
-            <div className="bg-white p-5 rounded shadow-sm mt-4">
-              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <GraduationCap className="text-blue-600" /> Education
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800 mt-4">
+              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2 text-yellow-400">
+                <GraduationCap className="text-yellow-400" /> Education
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm mb-1">Institution</label>
+                  <label className="block text-sm mb-1 text-gray-300">Institution</label>
                   <input type="text" name="education.institution" value={formData.education.institution} 
-                    onChange={handleChange} className="w-full p-2 border rounded" />
+                    onChange={handleChange} className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">Degree</label>
+                  <label className="block text-sm mb-1 text-gray-300">Degree</label>
                   <input type="text" name="education.degree" value={formData.education.degree} 
-                    onChange={handleChange} className="w-full p-2 border rounded" />
+                    onChange={handleChange} className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">Graduation Year</label>
+                  <label className="block text-sm mb-1 text-gray-300">Graduation Year</label>
                   <input type="number" name="education.graduation_year" value={formData.education.graduation_year} 
-                    onChange={handleChange} min="2000" max="2030" className="w-full p-2 border rounded" />
+                    onChange={handleChange} min="2000" max="2030" className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                 </div>
               </div>
             </div>
@@ -389,20 +378,18 @@ const StudentProfile = () => {
       case 'skills':
         return (
           <>
-            {/* Skills & Interests */}
-            <div className="bg-white p-5 rounded shadow-sm">
-              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Code className="text-blue-600" /> Skills & Interests
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800">
+              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2 text-yellow-400">
+                <Code className="text-yellow-400" /> Skills & Interests
               </h2>
               
-              {/* Skills */}
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Skills</label>
+                <label className="block text-sm font-medium mb-2 text-gray-300">Skills</label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.skills.map((skill, index) => (
-                    <div key={index} className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full flex items-center gap-1">
+                    <div key={index} className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full flex items-center gap-1 text-sm">
                       {skill}
-                      <button type="button" onClick={() => removeItem('skills', index)} className="text-blue-700">
+                      <button type="button" onClick={() => removeItem('skills', index)} className="text-yellow-400 hover:text-yellow-300">
                         <X size={14} />
                       </button>
                     </div>
@@ -410,22 +397,21 @@ const StudentProfile = () => {
                 </div>
                 <div className="flex">
                   <input type="text" value={newItem.skill} onChange={(e) => setNewItem({...newItem, skill: e.target.value})} 
-                    className="flex-1 p-2 border rounded-l" placeholder="Add a skill" />
+                    className="flex-1 p-2 rounded-l bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="Add a skill" />
                   <button type="button" onClick={() => addItem('skills', newItem.skill)} 
-                    className="bg-blue-600 text-white px-3 py-2 rounded-r">
+                    className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-3 py-2 rounded-r">
                     <Plus size={18} />
                   </button>
                 </div>
               </div>
               
-              {/* Fields of Interest */}
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">Fields of Interest</label>
+                <label className="block text-sm font-medium mb-2 text-gray-300">Fields of Interest</label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.interests.map((interest, index) => (
-                    <div key={index} className="bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
+                    <div key={index} className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full flex items-center gap-1 text-sm">
                       {interest}
-                      <button type="button" onClick={() => removeItem('interests', index)} className="text-green-700">
+                      <button type="button" onClick={() => removeItem('interests', index)} className="text-green-400 hover:text-green-300">
                         <X size={14} />
                       </button>
                     </div>
@@ -433,22 +419,21 @@ const StudentProfile = () => {
                 </div>
                 <div className="flex">
                   <input type="text" value={newItem.interest} onChange={(e) => setNewItem({...newItem, interest: e.target.value})}
-                    className="flex-1 p-2 border rounded-l" placeholder="Add an interest" />
+                    className="flex-1 p-2 rounded-l bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="Add an interest" />
                   <button type="button" onClick={() => addItem('interests', newItem.interest)}
-                    className="bg-green-600 text-white px-3 py-2 rounded-r">
+                    className="bg-green-500 hover:bg-green-600 text-gray-900 px-3 py-2 rounded-r">
                     <Plus size={18} />
                   </button>
                 </div>
               </div>
               
-              {/* Goals */}
               <div>
-                <label className="block text-sm font-medium mb-2">Career & Learning Goals</label>
+                <label className="block text-sm font-medium mb-2 text-gray-300">Career & Learning Goals</label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.goals.map((goal, index) => (
-                    <div key={index} className="bg-amber-100 text-amber-700 px-2 py-1 rounded-full flex items-center gap-1">
+                    <div key={index} className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full flex items-center gap-1 text-sm">
                       {goal}
-                      <button type="button" onClick={() => removeItem('goals', index)} className="text-amber-700">
+                      <button type="button" onClick={() => removeItem('goals', index)} className="text-purple-400 hover:text-purple-300">
                         <X size={14} />
                       </button>
                     </div>
@@ -456,25 +441,24 @@ const StudentProfile = () => {
                 </div>
                 <div className="flex">
                   <input type="text" value={newItem.goal} onChange={(e) => setNewItem({...newItem, goal: e.target.value})}
-                    className="flex-1 p-2 border rounded-l" placeholder="Add a goal" />
+                    className="flex-1 p-2 rounded-l bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="Add a goal" />
                   <button type="button" onClick={() => addItem('goals', newItem.goal)}
-                    className="bg-amber-600 text-white px-3 py-2 rounded-r">
+                    className="bg-purple-500 hover:bg-purple-600 text-gray-900 px-3 py-2 rounded-r">
                     <Plus size={18} />
                   </button>
                 </div>
               </div>
             </div>
             
-            {/* Certifications */}
-            <div className="bg-white p-5 rounded shadow-sm mt-4">
-              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Award className="text-blue-600" /> Certifications
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800 mt-4">
+              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2 text-yellow-400">
+                <Award className="text-yellow-400" /> Certifications
               </h2>
               <div className="flex flex-wrap gap-2 mb-2">
                 {formData.certifications.map((cert, index) => (
-                  <div key={index} className="bg-indigo-100 text-indigo-700 px-2 py-1 rounded-lg flex items-center gap-1">
+                  <div key={index} className="bg-blue-500/20 text-blue-400 px-3 py-1 rounded-lg flex items-center gap-1 text-sm">
                     {cert}
-                    <button type="button" onClick={() => removeItem('certifications', index)} className="text-indigo-700">
+                    <button type="button" onClick={() => removeItem('certifications', index)} className="text-blue-400 hover:text-blue-300">
                       <X size={14} />
                     </button>
                   </div>
@@ -482,9 +466,9 @@ const StudentProfile = () => {
               </div>
               <div className="flex">
                 <input type="text" value={newItem.certification} onChange={(e) => setNewItem({...newItem, certification: e.target.value})}
-                  className="flex-1 p-2 border rounded-l" placeholder="Add a certification" />
+                  className="flex-1 p-2 rounded-l bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="Add a certification" />
                 <button type="button" onClick={() => addItem('certifications', newItem.certification)}
-                  className="bg-indigo-600 text-white px-3 py-2 rounded-r">
+                  className="bg-blue-500 hover:bg-blue-600 text-gray-900 px-3 py-2 rounded-r">
                   <Plus size={18} />
                 </button>
               </div>
@@ -494,14 +478,14 @@ const StudentProfile = () => {
         
       case 'projects':
         return (
-          <div className="bg-white p-5 rounded shadow-sm">
+          <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800">
             <div className="flex justify-between items-center mb-3">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <Briefcase className="text-blue-600" /> Projects
+              <h2 className="text-xl font-semibold flex items-center gap-2 text-yellow-400">
+                <Briefcase className="text-yellow-400" /> Projects
               </h2>
               <button type="button" onClick={() => addNestedObject('projects', { 
                 name: '', description: '', tech_stack: [], github_link: '', live_demo: '' 
-              })} className="bg-blue-600 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
+              })} className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-3 py-1 rounded text-sm flex items-center gap-1">
                 <Plus size={16} /> Add Project
               </button>
             </div>
@@ -510,29 +494,30 @@ const StudentProfile = () => {
               <p className="text-gray-500 text-sm italic">No projects added yet</p>
             ) : (
               formData.projects.map((project, index) => (
-                <div key={index} className="border rounded p-3 mb-3">
+                <div key={index} className="border border-gray-700 rounded-lg p-4 mb-3 bg-[#121212]">
                   <div className="flex justify-between">
-                    <h3 className="font-medium">{project.name || `Project ${index + 1}`}</h3>
-                    <button type="button" onClick={() => removeNestedObject('projects', index)} className="text-red-600">
+                    <h3 className="font-medium text-gray-200">{project.name || `Project ${index + 1}`}</h3>
+                    <button type="button" onClick={() => removeNestedObject('projects', index)} className="text-red-500 hover:text-red-400">
                       <X size={18} />
                     </button>
                   </div>
-                  <div className="grid grid-cols-1 gap-2 mt-2">
+                  <div className="grid grid-cols-1 gap-3 mt-3">
                     <input type="text" placeholder="Project name" value={project.name}
-                      onChange={(e) => updateNestedObject('projects', index, 'name', e.target.value)} className="w-full p-2 border rounded" />
+                      onChange={(e) => updateNestedObject('projects', index, 'name', e.target.value)} 
+                      className="w-full p-2 rounded bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                     <textarea placeholder="Description" value={project.description}
-                      onChange={(e) => updateNestedObject('projects', index, 'description', e.target.value)} className="w-full p-2 border rounded" rows="2"></textarea>
+                      onChange={(e) => updateNestedObject('projects', index, 'description', e.target.value)} 
+                      className="w-full p-2 rounded bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" rows="2"></textarea>
                     
-                    {/* Tech stack */}
                     <div>
-                      <div className="flex flex-wrap gap-1 mb-2">
+                      <div className="flex flex-wrap gap-2 mb-2">
                         {project.tech_stack.map((tech, techIndex) => (
-                          <div key={techIndex} className="bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full flex items-center gap-1 text-xs">
+                          <div key={techIndex} className="bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full flex items-center gap-1 text-xs">
                             {tech}
                             <button type="button" onClick={() => {
                               const newStack = project.tech_stack.filter((_, i) => i !== techIndex);
                               updateNestedObject('projects', index, 'tech_stack', newStack);
-                            }} className="text-blue-700">
+                            }} className="text-yellow-400 hover:text-yellow-300">
                               <X size={12} />
                             </button>
                           </div>
@@ -540,7 +525,8 @@ const StudentProfile = () => {
                       </div>
                       <div className="flex">
                         <input type="text" placeholder="Add technology" value={newItem.tech || ''} 
-                          onChange={(e) => setNewItem({...newItem, tech: e.target.value})} className="flex-1 p-2 border rounded-l text-sm" />
+                          onChange={(e) => setNewItem({...newItem, tech: e.target.value})} 
+                          className="flex-1 p-2 rounded-l bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 text-sm" />
                         <button type="button" onClick={() => {
                           if (newItem.tech?.trim()) {
                             const newStack = [...project.tech_stack, newItem.tech.trim()];
@@ -548,16 +534,18 @@ const StudentProfile = () => {
                             setNewItem({...newItem, tech: ''});
                           }
                         }}
-                        className="bg-blue-600 text-white px-2 py-1 rounded-r">
+                        className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-3 py-1 rounded-r">
                           <Plus size={16} />
                         </button>
                       </div>
                     </div>
                     
                     <input type="url" placeholder="GitHub link" value={project.github_link}
-                      onChange={(e) => updateNestedObject('projects', index, 'github_link', e.target.value)} className="w-full p-2 border rounded" />
+                      onChange={(e) => updateNestedObject('projects', index, 'github_link', e.target.value)} 
+                      className="w-full p-2 rounded bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                     <input type="url" placeholder="Live demo URL" value={project.live_demo}
-                      onChange={(e) => updateNestedObject('projects', index, 'live_demo', e.target.value)} className="w-full p-2 border rounded" />
+                      onChange={(e) => updateNestedObject('projects', index, 'live_demo', e.target.value)} 
+                      className="w-full p-2 rounded bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                   </div>
                 </div>
               ))
@@ -568,15 +556,14 @@ const StudentProfile = () => {
       case 'experience':
         return (
           <>
-            {/* Experience */}
-            <div className="bg-white p-5 rounded shadow-sm">
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800">
               <div className="flex justify-between items-center mb-3">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <Briefcase className="text-blue-600" /> Experience
+                <h2 className="text-xl font-semibold flex items-center gap-2 text-yellow-400">
+                  <Briefcase className="text-yellow-400" /> Experience
                 </h2>
                 <button type="button" onClick={() => addNestedObject('experience', { 
                   title: '', description: '', date: new Date().toISOString().split('T')[0], type: 'Project' 
-                })} className="bg-blue-600 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
+                })} className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-3 py-1 rounded text-sm flex items-center gap-1">
                   <Plus size={16} /> Add Experience
                 </button>
               </div>
@@ -585,17 +572,19 @@ const StudentProfile = () => {
                 <p className="text-gray-500 text-sm italic">No experience added yet</p>
               ) : (
                 formData.experience.map((exp, index) => (
-                  <div key={index} className="border rounded p-3 mb-3">
+                  <div key={index} className="border border-gray-700 rounded-lg p-4 mb-3 bg-[#121212]">
                     <div className="flex justify-between">
-                      <h3 className="font-medium">{exp.title || `Experience ${index + 1}`}</h3>
-                      <button type="button" onClick={() => removeNestedObject('experience', index)} className="text-red-600">
+                      <h3 className="font-medium text-gray-200">{exp.title || `Experience ${index + 1}`}</h3>
+                      <button type="button" onClick={() => removeNestedObject('experience', index)} className="text-red-500 hover:text-red-400">
                         <X size={18} />
                       </button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                       <input type="text" placeholder="Title/Position" value={exp.title}
-                        onChange={(e) => updateNestedObject('experience', index, 'title', e.target.value)} className="w-full p-2 border rounded" />
-                      <select value={exp.type} onChange={(e) => updateNestedObject('experience', index, 'type', e.target.value)} className="w-full p-2 border rounded">
+                        onChange={(e) => updateNestedObject('experience', index, 'title', e.target.value)} 
+                        className="w-full p-2 rounded bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
+                      <select value={exp.type} onChange={(e) => updateNestedObject('experience', index, 'type', e.target.value)} 
+                        className="w-full p-2 rounded bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400">
                         <option value="Hackathon">Hackathon</option>
                         <option value="Internship">Internship</option>
                         <option value="Project">Project</option>
@@ -603,34 +592,36 @@ const StudentProfile = () => {
                       </select>
                       <div className="md:col-span-2">
                         <textarea placeholder="Description" value={exp.description}
-                          onChange={(e) => updateNestedObject('experience', index, 'description', e.target.value)} className="w-full p-2 border rounded" rows="2"></textarea>
+                          onChange={(e) => updateNestedObject('experience', index, 'description', e.target.value)} 
+                          className="w-full p-2 rounded bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" rows="2"></textarea>
                       </div>
                       <input type="date" value={exp.date ? exp.date.substring(0,10) : ''}
-                        onChange={(e) => updateNestedObject('experience', index, 'date', e.target.value)} className="w-full p-2 border rounded" />
+                        onChange={(e) => updateNestedObject('experience', index, 'date', e.target.value)} 
+                        className="w-full p-2 rounded bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                     </div>
                   </div>
                 ))
               )}
             </div>
             
-            {/* Hackathon Interests */}
-            <div className="bg-white p-5 rounded shadow-sm mt-4">
-              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2">
-                <Award className="text-blue-600" /> Hackathon Information
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800 mt-4">
+              <h2 className="text-xl font-semibold mb-3 flex items-center gap-2 text-yellow-400">
+                <Award className="text-yellow-400" /> Hackathon Information
               </h2>
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-1">Previous Hackathon Experience</label>
+                <label className="block text-sm font-medium mb-1 text-gray-300">Previous Hackathon Experience</label>
                 <input type="number" name="hackathon_prev_experiences" value={formData.hackathon_prev_experiences}
-                  onChange={handleChange} min="0" className="w-32 p-2 border rounded" />
+                  onChange={handleChange} min="0" 
+                  className="w-32 p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
               </div>
               
               <div>
-                <label className="block text-sm font-medium mb-2">Hackathon Interests</label>
+                <label className="block text-sm font-medium mb-2 text-gray-300">Hackathon Interests</label>
                 <div className="flex flex-wrap gap-2 mb-2">
                   {formData.hackathon_current_interests.map((interest, index) => (
-                    <div key={index} className="bg-purple-100 text-purple-700 px-2 py-1 rounded-full flex items-center gap-1">
+                    <div key={index} className="bg-purple-500/20 text-purple-400 px-3 py-1 rounded-full flex items-center gap-1 text-sm">
                       {interest}
-                      <button type="button" onClick={() => removeItem('hackathon_current_interests', index)} className="text-purple-700">
+                      <button type="button" onClick={() => removeItem('hackathon_current_interests', index)} className="text-purple-400 hover:text-purple-300">
                         <X size={14} />
                       </button>
                     </div>
@@ -638,24 +629,23 @@ const StudentProfile = () => {
                 </div>
                 <div className="flex">
                   <input type="text" value={newItem.hackathonInterest} onChange={(e) => setNewItem({...newItem, hackathonInterest: e.target.value})}
-                    className="flex-1 p-2 border rounded-l" placeholder="Add hackathon interest" />
+                    className="flex-1 p-2 rounded-l bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="Add hackathon interest" />
                   <button type="button" onClick={() => addItem('hackathon_current_interests', newItem.hackathonInterest)}
-                    className="bg-purple-600 text-white px-3 py-2 rounded-r">
+                    className="bg-purple-500 hover:bg-purple-600 text-gray-900 px-3 py-2 rounded-r">
                     <Plus size={18} />
                   </button>
                 </div>
               </div>
             </div>
             
-            {/* Achievements */}
-            <div className="bg-white p-5 rounded shadow-sm mt-4">
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800 mt-4">
               <div className="flex justify-between items-center mb-3">
-                <h2 className="text-xl font-semibold flex items-center gap-2">
-                  <Award className="text-blue-600" /> Achievements
+                <h2 className="text-xl font-semibold flex items-center gap-2 text-yellow-400">
+                  <Award className="text-yellow-400" /> Achievements
                 </h2>
                 <button type="button" onClick={() => addNestedObject('achievements', { 
                   title: '', description: '', date: new Date().toISOString().split('T')[0]
-                })} className="bg-blue-600 text-white px-2 py-1 rounded text-sm flex items-center gap-1">
+                })} className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-3 py-1 rounded text-sm flex items-center gap-1">
                   <Plus size={16} /> Add Achievement
                 </button>
               </div>
@@ -664,21 +654,24 @@ const StudentProfile = () => {
                 <p className="text-gray-500 text-sm italic">No achievements added yet</p>
               ) : (
                 formData.achievements.map((achievement, index) => (
-                  <div key={index} className="border rounded p-3 mb-3">
+                  <div key={index} className="border border-gray-700 rounded-lg p-4 mb-3 bg-[#121212]">
                     <div className="flex justify-between">
-                      <h3 className="font-medium">{achievement.title || `Achievement ${index + 1}`}</h3>
-                      <button type="button" onClick={() => removeNestedObject('achievements', index)} className="text-red-600">
+                      <h3 className="font-medium text-gray-200">{achievement.title || `Achievement ${index + 1}`}</h3>
+                      <button type="button" onClick={() => removeNestedObject('achievements', index)} className="text-red-500 hover:text-red-400">
                         <X size={18} />
                       </button>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                       <input type="text" placeholder="Achievement title" value={achievement.title}
-                        onChange={(e) => updateNestedObject('achievements', index, 'title', e.target.value)} className="w-full p-2 border rounded" />
+                        onChange={(e) => updateNestedObject('achievements', index, 'title', e.target.value)} 
+                        className="w-full p-2 rounded bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                       <input type="date" value={achievement.date ? achievement.date.substring(0,10) : ''}
-                        onChange={(e) => updateNestedObject('achievements', index, 'date', e.target.value)} className="w-full p-2 border rounded" />
+                        onChange={(e) => updateNestedObject('achievements', index, 'date', e.target.value)} 
+                        className="w-full p-2 rounded bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                       <div className="md:col-span-2">
                         <textarea placeholder="Description" value={achievement.description}
-                          onChange={(e) => updateNestedObject('achievements', index, 'description', e.target.value)} className="w-full p-2 border rounded" rows="2"></textarea>
+                          onChange={(e) => updateNestedObject('achievements', index, 'description', e.target.value)} 
+                          className="w-full p-2 rounded bg-[#1A1A1A] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" rows="2"></textarea>
                       </div>
                     </div>
                   </div>
@@ -691,10 +684,9 @@ const StudentProfile = () => {
       case 'connections':
         return (
           <>
-            {/* Mentorship Interests */}
-            <div className="bg-white p-5 rounded shadow-sm">
-              <h2 className="text-xl font-semibold mb-              4 flex items-center gap-2">
-                <User className="text-blue-600" /> Mentorship Preferences
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-yellow-400">
+                <User className="text-yellow-400" /> Mentorship Preferences
               </h2>
               
               <div className="mb-4">
@@ -704,19 +696,19 @@ const StudentProfile = () => {
                     name="mentorship_interests.seeking_mentor" 
                     checked={formData.mentorship_interests.seeking_mentor} 
                     onChange={handleChange}
-                    className="mr-2 h-4 w-4 text-blue-600" 
+                    className="mr-2 h-4 w-4 text-yellow-500 rounded bg-[#121212] border-gray-600 focus:ring-yellow-500" 
                   />
-                  <span className="text-md">I'm looking for a mentor</span>
+                  <span className="text-md text-gray-300">I'm looking for a mentor</span>
                 </label>
                 
                 {formData.mentorship_interests.seeking_mentor && (
-                  <div className="pl-6 border-l-2 border-blue-100">
-                    <label className="block text-sm font-medium mb-2">Topics I'm seeking mentorship in:</label>
+                  <div className="pl-6 border-l-2 border-yellow-500/30">
+                    <label className="block text-sm font-medium mb-2 text-gray-300">Topics I'm seeking mentorship in:</label>
                     <div className="flex flex-wrap gap-2 mb-2">
                       {formData.mentorship_interests.mentor_topics.map((topic, index) => (
-                        <div key={index} className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full flex items-center gap-1">
+                        <div key={index} className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full flex items-center gap-1 text-sm">
                           {topic}
-                          <button type="button" onClick={() => removeItem('mentorship_interests.mentor_topics', index)} className="text-blue-700">
+                          <button type="button" onClick={() => removeItem('mentorship_interests.mentor_topics', index)} className="text-yellow-400 hover:text-yellow-300">
                             <X size={14} />
                           </button>
                         </div>
@@ -724,9 +716,9 @@ const StudentProfile = () => {
                     </div>
                     <div className="flex">
                       <input type="text" value={newItem.mentorTopic} onChange={(e) => setNewItem({...newItem, mentorTopic: e.target.value})}
-                        className="flex-1 p-2 border rounded-l" placeholder="Add mentorship topic" />
+                        className="flex-1 p-2 rounded-l bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="Add mentorship topic" />
                       <button type="button" onClick={() => addItem('mentorship_interests.mentor_topics', newItem.mentorTopic)}
-                        className="bg-blue-600 text-white px-3 py-2 rounded-r">
+                        className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-3 py-2 rounded-r">
                         <Plus size={18} />
                       </button>
                     </div>
@@ -735,42 +727,46 @@ const StudentProfile = () => {
               </div>
               
               <div>
-                <h3 className="font-medium mb-2">Preferred Working Hours</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <h3 className="font-medium mb-2 text-gray-300">Preferred Working Hours</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm mb-1">Start Time</label>
+                    <label className="block text-sm mb-1 text-gray-300">Start Time</label>
                     <input type="time" name="preferred_working_hours.start_time" value={formData.preferred_working_hours.start_time}
-                      onChange={handleChange} className="w-full p-2 border rounded" />
+                      onChange={handleChange} 
+                      className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                   </div>
                   <div>
-                    <label className="block text-sm mb-1">End Time</label>
+                    <label className="block text-sm mb-1 text-gray-300">End Time</label>
                     <input type="time" name="preferred_working_hours.end_time" value={formData.preferred_working_hours.end_time}
-                      onChange={handleChange} className="w-full p-2 border rounded" />
+                      onChange={handleChange} 
+                      className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" />
                   </div>
                 </div>
               </div>
             </div>
             
-            {/* Social Links */}
-            <div className="bg-white p-5 rounded shadow-sm mt-4">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Globe className="text-blue-600" /> Social Links
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800 mt-4">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-yellow-400">
+                <Globe className="text-yellow-400" /> Social Links
               </h2>
-              <div className="grid grid-cols-1 gap-3">
+              <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className="block text-sm mb-1">GitHub</label>
+                  <label className="block text-sm mb-1 text-gray-300">GitHub</label>
                   <input type="url" name="social_links.github" value={formData.social_links.github}
-                    onChange={handleChange} className="w-full p-2 border rounded" placeholder="https://github.com/username" />
+                    onChange={handleChange} 
+                    className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="https://github.com/username" />
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">LinkedIn</label>
+                  <label className="block text-sm mb-1 text-gray-300">LinkedIn</label>
                   <input type="url" name="social_links.linkedin" value={formData.social_links.linkedin}
-                    onChange={handleChange} className="w-full p-2 border rounded" placeholder="https://linkedin.com/in/username" />
+                    onChange={handleChange} 
+                    className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="https://linkedin.com/in/username" />
                 </div>
                 <div>
-                  <label className="block text-sm mb-1">Portfolio Website</label>
+                  <label className="block text-sm mb-1 text-gray-300">Portfolio Website</label>
                   <input type="url" name="social_links.portfolio" value={formData.social_links.portfolio}
-                    onChange={handleChange} className="w-full p-2 border rounded" placeholder="https://yourportfolio.com" />
+                    onChange={handleChange} 
+                    className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="https://yourportfolio.com" />
                 </div>
               </div>
             </div>
@@ -780,10 +776,9 @@ const StudentProfile = () => {
       case 'collaborate':
         return (
           <>
-            {/* Teammate Search Preferences */}
-            <div className="bg-white p-5 rounded shadow-sm">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Users className="text-blue-600" /> Teammate Search Preferences
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-yellow-400">
+                <Users className="text-yellow-400" /> Teammate Search Preferences
               </h2>
               
               <div className="mb-4">
@@ -793,41 +788,43 @@ const StudentProfile = () => {
                     name="teammate_search.looking_for_teammates" 
                     checked={formData.teammate_search.looking_for_teammates} 
                     onChange={handleChange}
-                    className="mr-2 h-4 w-4 text-blue-600" 
+                    className="mr-2 h-4 w-4 text-yellow-500 rounded bg-[#121212] border-gray-600 focus:ring-yellow-500" 
                   />
-                  <span className="text-md font-medium">I'm looking for teammates</span>
+                  <span className="text-md font-medium text-gray-300">I'm looking for teammates</span>
                 </label>
                 
                 {formData.teammate_search.looking_for_teammates && (
-                  <div className="pl-6 border-l-2 border-blue-100 space-y-4">
-                    {/* Purpose */}
+                  <div className="pl-6 border-l-2 border-yellow-500/30 space-y-4">
                     <div>
-                      <label className="block text-sm font-medium mb-1">I'm looking for teammates for:</label>
-                      <div className="grid grid-cols-3 gap-2">
+                      <label className="block text-sm font-medium mb-2 text-gray-300">I'm looking for teammates for:</label>
+                      <div className="grid grid-cols-2 gap-2">
                         {['Project', 'Hackathon'].map((option) => (
-                          <label key={option} className="flex items-center p-2 border rounded-md cursor-pointer hover:bg-blue-50">
+                          <label key={option} className={`flex items-center p-2 border rounded-md cursor-pointer ${
+                            formData.teammate_search.purpose === option 
+                              ? 'bg-yellow-500/20 border-yellow-500/50' 
+                              : 'bg-[#121212] border-gray-700 hover:bg-[#252525]'
+                          }`}>
                             <input
                               type="radio"
                               name="teammate_search.purpose"
                               value={option}
                               checked={formData.teammate_search.purpose === option}
                               onChange={handleChange}
-                              className="mr-2 text-blue-600"
+                              className="mr-2 text-yellow-500"
                             />
-                            <span>{option}</span>
+                            <span className="text-gray-300">{option}</span>
                           </label>
                         ))}
                       </div>
                     </div>
                     
-                    {/* Desired Skills */}
                     <div>
-                      <label className="block text-sm font-medium mb-2">Skills I'm looking for in teammates:</label>
+                      <label className="block text-sm font-medium mb-2 text-gray-300">Skills I'm looking for in teammates:</label>
                       <div className="flex flex-wrap gap-2 mb-2">
                         {formData.teammate_search.desired_skills.map((skill, index) => (
-                          <div key={index} className="bg-blue-100 text-blue-700 px-2 py-1 rounded-full flex items-center gap-1">
+                          <div key={index} className="bg-yellow-500/20 text-yellow-400 px-3 py-1 rounded-full flex items-center gap-1 text-sm">
                             {skill}
-                            <button type="button" onClick={() => removeItem('teammate_search.desired_skills', index)} className="text-blue-700">
+                            <button type="button" onClick={() => removeItem('teammate_search.desired_skills', index)} className="text-yellow-400 hover:text-yellow-300">
                               <X size={14} />
                             </button>
                           </div>
@@ -836,35 +833,33 @@ const StudentProfile = () => {
                       <div className="flex">
                         <input type="text" value={newItem.desiredSkill} 
                           onChange={(e) => setNewItem({...newItem, desiredSkill: e.target.value})}
-                          className="flex-1 p-2 border rounded-l" placeholder="Add desired skill" />
+                          className="flex-1 p-2 rounded-l bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="Add desired skill" />
                         <button type="button" onClick={() => addItem('teammate_search.desired_skills', newItem.desiredSkill)}
-                          className="bg-blue-600 text-white px-3 py-2 rounded-r">
+                          className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-3 py-2 rounded-r">
                           <Plus size={18} />
                         </button>
                       </div>
                     </div>
                     
-                    {/* Project Description */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">Brief description of your project/idea:</label>
+                      <label className="block text-sm font-medium mb-1 text-gray-300">Brief description of your project/idea:</label>
                       <textarea 
                         name="teammate_search.project_description" 
                         value={formData.teammate_search.project_description} 
                         onChange={handleChange}
-                        className="w-full p-2 border rounded" 
+                        className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" 
                         rows="3" 
                         placeholder="Describe what you're working on or planning to work on"
                       ></textarea>
                     </div>
                     
-                    {/* Team Size Preference */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">Team size preference:</label>
+                      <label className="block text-sm font-medium mb-1 text-gray-300">Team size preference:</label>
                       <select 
                         name="teammate_search.team_size_preference"
                         value={formData.teammate_search.team_size_preference}
                         onChange={handleChange}
-                        className="w-full p-2 border rounded"
+                        className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
                       >
                         <option value="">Select a preference</option>
                         <option value="Small (2-3 people)">Small (2-3 people)</option>
@@ -874,15 +869,14 @@ const StudentProfile = () => {
                       </select>
                     </div>
                     
-                    {/* Urgency Level */}
                     <div>
-                      <label className="block text-sm font-medium mb-1">Urgency level:</label>
+                      <label className="block text-sm font-medium mb-1 text-gray-300">Urgency level:</label>
                       <div className="grid grid-cols-3 gap-2">
                         {['Low', 'Medium', 'High'].map((level) => (
                           <label key={level} className={`flex items-center p-2 border rounded-md cursor-pointer ${
                             formData.teammate_search.urgency_level === level 
-                              ? 'bg-blue-100 border-blue-300' 
-                              : 'hover:bg-blue-50'
+                              ? 'bg-yellow-500/20 border-yellow-500/50' 
+                              : 'bg-[#121212] border-gray-700 hover:bg-[#252525]'
                           }`}>
                             <input
                               type="radio"
@@ -890,9 +884,9 @@ const StudentProfile = () => {
                               value={level}
                               checked={formData.teammate_search.urgency_level === level}
                               onChange={handleChange}
-                              className="mr-2 text-blue-600"
+                              className="mr-2 text-yellow-500"
                             />
-                            <span>{level}</span>
+                            <span className="text-gray-300">{level}</span>
                           </label>
                         ))}
                       </div>
@@ -902,21 +896,19 @@ const StudentProfile = () => {
               </div>
             </div>
 
-            {/* Current Search Preferences */}
-            <div className="bg-white p-5 rounded shadow-sm mt-4">
-              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-                <Target className="text-blue-600" /> Current Search Status
+            <div className="bg-[#1A1A1A] p-5 rounded-lg shadow-lg border border-gray-800 mt-4">
+              <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-yellow-400">
+                <Target className="text-yellow-400" /> Current Search Status
               </h2>
               
-              {/* What are you currently looking for */}
               <div className="mb-4">
-                <label className="block text-sm font-medium mb-2">I'm currently looking for:</label>
+                <label className="block text-sm font-medium mb-2 text-gray-300">I'm currently looking for:</label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                   {['Teammates', 'Mentors', 'Both', 'None'].map((option) => (
                     <label key={option} className={`flex items-center p-2 border rounded-md cursor-pointer ${
                       formData.current_search_preferences.looking_for === option 
-                        ? 'bg-blue-100 border-blue-300' 
-                        : 'hover:bg-blue-50'
+                        ? 'bg-yellow-500/20 border-yellow-500/50' 
+                        : 'bg-[#121212] border-gray-700 hover:bg-[#252525]'
                     }`}>
                       <input
                         type="radio"
@@ -924,35 +916,33 @@ const StudentProfile = () => {
                         value={option}
                         checked={formData.current_search_preferences.looking_for === option}
                         onChange={handleChange}
-                        className="mr-2 text-blue-600"
+                        className="mr-2 text-yellow-500"
                       />
-                      <span>{option}</span>
+                      <span className="text-gray-300">{option}</span>
                     </label>
                   ))}
                 </div>
               </div>
               
-              {/* Conditional sections based on what they're looking for */}
               {['Teammates', 'Both'].includes(formData.current_search_preferences.looking_for) && (
                 <div className="mt-6 space-y-6">
-                  {/* Hackathon Section */}
-                  <div className="border-t pt-4">
-                    <h3 className="font-medium mb-3">Hackathon Teammate Preferences</h3>
-                    <div className="space-y-3 pl-3 border-l-2 border-blue-100">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="border-t border-gray-700 pt-4">
+                    <h3 className="font-medium mb-3 text-gray-300">Hackathon Teammate Preferences</h3>
+                    <div className="space-y-3 pl-3 border-l-2 border-yellow-500/30">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-1">Hackathon Name</label>
+                          <label className="block text-sm font-medium mb-1 text-gray-300">Hackathon Name</label>
                           <input 
                             type="text" 
                             name="current_search_preferences.hackathon_teammate_preferences.hackathon_name" 
                             value={formData.current_search_preferences.hackathon_teammate_preferences.hackathon_name} 
                             onChange={handleChange}
-                            className="w-full p-2 border rounded" 
+                            className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" 
                             placeholder="Name of the hackathon"
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1">Date</label>
+                          <label className="block text-sm font-medium mb-1 text-gray-300">Date</label>
                           <input 
                             type="date" 
                             name="current_search_preferences.hackathon_teammate_preferences.hackathon_date" 
@@ -960,16 +950,16 @@ const StudentProfile = () => {
                               ? formData.current_search_preferences.hackathon_teammate_preferences.hackathon_date.substring(0,10) 
                               : ''} 
                             onChange={handleChange}
-                            className="w-full p-2 border rounded"
+                            className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400"
                           />
                         </div>
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2">Required Skills:</label>
+                        <label className="block text-sm font-medium mb-2 text-gray-300">Required Skills:</label>
                         <div className="flex flex-wrap gap-2 mb-2">
                           {formData.current_search_preferences.hackathon_teammate_preferences.required_skills.map((skill, index) => (
-                            <div key={index} className="bg-green-100 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
+                            <div key={index} className="bg-green-500/20 text-green-400 px-3 py-1 rounded-full flex items-center gap-1 text-sm">
                               {skill}
                               <button type="button" onClick={() => {
                                 const newSkills = [...formData.current_search_preferences.hackathon_teammate_preferences.required_skills];
@@ -984,7 +974,7 @@ const StudentProfile = () => {
                                     }
                                   }
                                 });
-                              }} className="text-green-700">
+                              }} className="text-green-400 hover:text-green-300">
                                 <X size={14} />
                               </button>
                             </div>
@@ -993,7 +983,7 @@ const StudentProfile = () => {
                         <div className="flex">
                           <input type="text" value={newItem.hackathonRequiredSkill} 
                             onChange={(e) => setNewItem({...newItem, hackathonRequiredSkill: e.target.value})}
-                            className="flex-1 p-2 border rounded-l" placeholder="Add required skill" />
+                            className="flex-1 p-2 rounded-l bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="Add required skill" />
                           <button type="button" onClick={() => {
                             if (newItem.hackathonRequiredSkill.trim()) {
                               setFormData({
@@ -1012,31 +1002,31 @@ const StudentProfile = () => {
                               setNewItem({...newItem, hackathonRequiredSkill: ''});
                             }
                           }}
-                          className="bg-green-600 text-white px-3 py-2 rounded-r">
+                          className="bg-green-500 hover:bg-green-600 text-gray-900 px-3 py-2 rounded-r">
                             <Plus size={18} />
                           </button>
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-1">Team Size</label>
+                          <label className="block text-sm font-medium mb-1 text-gray-300">Team Size</label>
                           <input 
                             type="number" 
                             name="current_search_preferences.hackathon_teammate_preferences.team_size" 
                             value={formData.current_search_preferences.hackathon_teammate_preferences.team_size} 
                             onChange={handleChange}
                             min="1"
-                            className="w-full p-2 border rounded" 
+                            className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" 
                           />
                         </div>
                         <div className="md:col-span-2">
-                          <label className="block text-sm font-medium mb-1">Project/Idea Description</label>
+                          <label className="block text-sm font-medium mb-1 text-gray-300">Project/Idea Description</label>
                           <textarea 
                             name="current_search_preferences.hackathon_teammate_preferences.idea_description" 
                             value={formData.current_search_preferences.hackathon_teammate_preferences.idea_description} 
                             onChange={handleChange}
-                            className="w-full p-2 border rounded" 
+                            className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" 
                             rows="2" 
                             placeholder="Briefly describe your hackathon idea"
                           ></textarea>
@@ -1045,40 +1035,39 @@ const StudentProfile = () => {
                     </div>
                   </div>
                   
-                  {/* Project Section */}
-                  <div className="border-t pt-4">
-                    <h3 className="font-medium mb-3">Project Teammate Preferences</h3>
-                    <div className="space-y-3 pl-3 border-l-2 border-blue-100">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="border-t border-gray-700 pt-4">
+                    <h3 className="font-medium mb-3 text-gray-300">Project Teammate Preferences</h3>
+                    <div className="space-y-3 pl-3 border-l-2 border-yellow-500/30">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <label className="block text-sm font-medium mb-1">Project Type</label>
+                          <label className="block text-sm font-medium mb-1 text-gray-300">Project Type</label>
                           <input 
                             type="text" 
                             name="current_search_preferences.project_teammate_preferences.project_type" 
                             value={formData.current_search_preferences.project_teammate_preferences.project_type} 
                             onChange={handleChange}
-                            className="w-full p-2 border rounded" 
+                            className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" 
                             placeholder="Web app, mobile app, etc."
                           />
                         </div>
                         <div>
-                          <label className="block text-sm font-medium mb-1">Expected Duration</label>
+                          <label className="block text-sm font-medium mb-1 text-gray-300">Expected Duration</label>
                           <input 
                             type="text" 
                             name="current_search_preferences.project_teammate_preferences.project_duration" 
                             value={formData.current_search_preferences.project_teammate_preferences.project_duration} 
                             onChange={handleChange}
-                            className="w-full p-2 border rounded" 
+                            className="w-full p-2 rounded bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" 
                             placeholder="2 weeks, 3 months, etc."
                           />
                         </div>
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-2">Required Skills:</label>
+                        <label className="block text-sm font-medium mb-2 text-gray-300">Required Skills:</label>
                         <div className="flex flex-wrap gap-2 mb-2">
                           {formData.current_search_preferences.project_teammate_preferences.required_skills.map((skill, index) => (
-                            <div key={index} className="bg-amber-100 text-amber-700 px-2 py-1 rounded-full flex items-center gap-1">
+                            <div key={index} className="bg-amber-500/20 text-amber-400 px-3 py-1 rounded-full flex items-center gap-1 text-sm">
                               {skill}
                               <button type="button" onClick={() => {
                                 const newSkills = [...formData.current_search_preferences.project_teammate_preferences.required_skills];
@@ -1093,7 +1082,7 @@ const StudentProfile = () => {
                                     }
                                   }
                                 });
-                              }} className="text-amber-700">
+                              }} className="text-amber-400 hover:text-amber-300">
                                 <X size={14} />
                               </button>
                             </div>
@@ -1102,7 +1091,7 @@ const StudentProfile = () => {
                         <div className="flex">
                           <input type="text" value={newItem.projectRequiredSkill} 
                             onChange={(e) => setNewItem({...newItem, projectRequiredSkill: e.target.value})}
-                            className="flex-1 p-2 border rounded-l" placeholder="Add required skill" />
+                            className="flex-1 p-2 rounded-l bg-[#121212] border border-gray-700 text-gray-200 focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400" placeholder="Add required skill" />
                           <button type="button" onClick={() => {
                             if (newItem.projectRequiredSkill.trim()) {
                               setFormData({
@@ -1121,20 +1110,20 @@ const StudentProfile = () => {
                               setNewItem({...newItem, projectRequiredSkill: ''});
                             }
                           }}
-                          className="bg-amber-600 text-white px-3 py-2 rounded-r">
+                          className="bg-amber-500 hover:bg-amber-600 text-gray-900 px-3 py-2 rounded-r">
                             <Plus size={18} />
                           </button>
                         </div>
                       </div>
                       
                       <div>
-                        <label className="block text-sm font-medium mb-1">Commitment Level</label>
+                        <label className="block text-sm font-medium mb-1 text-gray-300">Commitment Level</label>
                         <div className="grid grid-cols-3 gap-2">
                           {['Low', 'Medium', 'High'].map((level) => (
                             <label key={level} className={`flex items-center p-2 border rounded-md cursor-pointer ${
                               formData.current_search_preferences.project_teammate_preferences.commitment_level === level 
-                                ? 'bg-amber-100 border-amber-300' 
-                                : 'hover:bg-amber-50'
+                                ? 'bg-amber-500/20 border-amber-500/50' 
+                                : 'bg-[#121212] border-gray-700 hover:bg-[#252525]'
                             }`}>
                               <input
                                 type="radio"
@@ -1142,9 +1131,9 @@ const StudentProfile = () => {
                                 value={level}
                                 checked={formData.current_search_preferences.project_teammate_preferences.commitment_level === level}
                                 onChange={handleChange}
-                                className="mr-2 text-amber-600"
+                                className="mr-2 text-amber-500"
                               />
-                              <span>{level}</span>
+                              <span className="text-gray-300">{level}</span>
                             </label>
                           ))}
                         </div>
@@ -1158,22 +1147,27 @@ const StudentProfile = () => {
         );
         
       default:
-        return <div>Select a tab to view profile sections</div>;
+        return <div className="text-gray-300">Select a tab to view profile sections</div>;
     }
   };
 
   return (
-    <div className="p-4 sm:p-6 bg-gray-50 min-h-screen relative">
+    <div className="p-4 sm:p-6 bg-[#121212] min-h-screen relative">
       <form onSubmit={handleSubmit}>
         <div className="max-w-4xl mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Student Profile</h1>
+            <h1 className="text-2xl sm:text-3xl font-bold text-yellow-400">Student Profile</h1>
             <button 
               type="submit"
               disabled={saving}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded flex items-center gap-2"
+              className="bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-medium py-2 px-4 rounded-lg flex items-center gap-2 transition-colors"
             >
-              {saving ? 'Saving...' : (
+              {saving ? (
+                <>
+                  <Clock size={18} className="animate-spin" />
+                  Saving...
+                </>
+              ) : (
                 <>
                   <Save size={18} />
                   Save Changes
@@ -1182,67 +1176,37 @@ const StudentProfile = () => {
             </button>
           </div>
           
-          {/* Navigation Tabs */}
           <div className="flex flex-wrap gap-2 mb-6 justify-center">
-            <button 
-              onClick={() => setActiveTab('basic')} 
-              className={`px-4 py-2 rounded-lg ${activeTab === 'basic' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-            >
-              Basic Info
-            </button>
-            <button 
-              onClick={() => setActiveTab('skills')} 
-              className={`px-4 py-2 rounded-lg ${activeTab === 'skills' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-            >
-              Skills & Interests
-            </button>
-            <button 
-              onClick={() => setActiveTab('projects')} 
-              className={`px-4 py-2 rounded-lg ${activeTab === 'projects' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-            >
-              Projects
-            </button>
-            <button 
-              onClick={() => setActiveTab('experience')} 
-              className={`px-4 py-2 rounded-lg ${activeTab === 'experience' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-            >
-              Experience
-            </button>
-            <button 
-              onClick={() => setActiveTab('connections')}   
-              className={`px-4 py-2 rounded-lg ${activeTab === 'connections' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-            >
-              Connections
-            </button>
-            <button 
-              onClick={() => setActiveTab('collaborate')} 
-              className={`px-4 py-2 rounded-lg ${activeTab === 'collaborate' 
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-200 text-gray-700 hover:bg-gray-300'}`}
-            >
-              Collaboration
-            </button>
+            {[
+              { id: 'basic', label: 'Basic Info', icon: <User size={16} /> },
+              { id: 'skills', label: 'Skills & Interests', icon: <Code size={16} /> },
+              { id: 'projects', label: 'Projects', icon: <Briefcase size={16} /> },
+              { id: 'experience', label: 'Experience', icon: <Award size={16} /> },
+              { id: 'connections', label: 'Connections', icon: <Users size={16} /> },
+              { id: 'collaborate', label: 'Collaboration', icon: <Target size={16} /> }
+            ].map((tab) => (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)} 
+                className={`px-4 py-2 rounded-lg flex items-center gap-1 transition-colors ${
+                  activeTab === tab.id 
+                    ? 'bg-yellow-500 text-gray-900' 
+                    : 'bg-[#1A1A1A] text-gray-300 hover:bg-[#252525]'
+                }`}
+              >
+                {tab.icon}
+                {tab.label}
+              </button>
+            ))}
           </div>
           
-          {/* Tab Content */}
           {renderTabContent()}
           
-          {/* Bottom Save Button for Mobile */}
           <div className="mt-6 sm:hidden">
             <button 
               type="submit"
               disabled={saving}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 px-4 rounded flex items-center justify-center gap-2"
+              className="w-full bg-yellow-500 hover:bg-yellow-600 text-gray-900 font-medium py-3 px-4 rounded-lg flex items-center justify-center gap-2"
             >
               {saving ? 'Saving...' : (
                 <>
@@ -1255,32 +1219,30 @@ const StudentProfile = () => {
         </div>
       </form>
 
-      {/* Add Toast Component */}
       {toast.show && (
         <div 
           className={`fixed bottom-4 right-4 px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 animate-slide-up ${
             toast.type === 'success' 
-              ? 'bg-green-100 text-green-800 border-l-4 border-green-500' 
-              : 'bg-red-100 text-red-800 border-l-4 border-red-500'
+              ? 'bg-green-900/80 text-green-200 border-l-4 border-green-500' 
+              : 'bg-red-900/80 text-red-200 border-l-4 border-red-500'
           }`}
           style={{ zIndex: 1000 }}
         >
           {toast.type === 'success' ? (
-            <CheckCircle className="text-green-600" size={20} />
+            <CheckCircle className="text-green-400" size={20} />
           ) : (
-            <X className="text-red-600" size={20} />
+            <X className="text-red-400" size={20} />
           )}
           <span className="font-medium">{toast.message}</span>
           <button 
             onClick={() => setToast(prev => ({ ...prev, show: false }))}
-            className="ml-3 text-gray-500 hover:text-gray-700"
+            className="ml-3 text-gray-300 hover:text-white"
           >
             <X size={16} />
           </button>
         </div>
       )}
 
-      {/* Add animation styles */}
       <style jsx>{`
         @keyframes slide-up {
           from {

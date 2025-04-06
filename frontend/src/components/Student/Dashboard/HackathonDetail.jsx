@@ -238,21 +238,21 @@ const HackathonDetail = () => {
 
   if (loading) {
     return (
-      <div className="w-full p-6 flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-purple-600"></div>
+      <div className="w-full p-6 flex justify-center items-center min-h-screen bg-[#121212]">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-[#E8C848]"></div>
       </div>
     );
   }
 
   if (error || !hackathon) {
     return (
-      <div className="w-full p-6 bg-red-50 flex justify-center items-center min-h-screen">
-        <div className="text-center text-red-700">
-          <h2 className="text-xl font-bold mb-2">Error Loading Hackathon</h2>
-          <p>{error || "Hackathon not found"}</p>
+      <div className="w-full p-6 bg-[#1A1A1A] flex justify-center items-center min-h-screen">
+        <div className="text-center">
+          <h2 className="text-xl font-bold mb-2 text-white">Error Loading Hackathon</h2>
+          <p className="text-gray-400">{error || "Hackathon not found"}</p>
           <button 
             onClick={() => navigate(-1)}
-            className="mt-4 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-lg"
+            className="mt-4 px-4 py-2 bg-[#E8C848]/10 hover:bg-[#E8C848]/20 text-[#E8C848] rounded-lg transition-all duration-300"
           >
             Back
           </button>
@@ -271,27 +271,27 @@ const HackathonDetail = () => {
   const hasSpaceAvailable = hackathon.registration.currentlyRegistered < hackathon.registration.totalCapacity;
 
   return (
-    <div className="w-full p-6 bg-gray-50 min-h-screen">
+    <div className="w-full p-6 bg-[#121212] min-h-screen">
       <button 
         onClick={() => navigate(-1)}
-        className="bg-purple-100 text-purple-700 p-2 rounded-full mb-6 hover:bg-purple-200 transition-colors flex items-center"
+        className="bg-[#E8C848]/10 text-[#E8C848] p-2 rounded-full mb-6 hover:bg-[#E8C848]/20 transition-all duration-300 flex items-center"
       >
         <ArrowLeft size={20} />
       </button>
       
-      <div className="bg-white rounded-xl shadow-md overflow-hidden mb-6">
+      <div className="bg-[#1A1A1A] rounded-xl shadow-lg overflow-hidden mb-6 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
         <div className="p-6">
           <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">{hackathon.hackathonName}</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-white">{hackathon.hackathonName}</h1>
             
             <div className="flex items-center gap-4">
               {isMentor ? (
-                <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg flex items-center">
+                <div className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg flex items-center">
                   <Eye size={18} className="mr-2" />
                   View Only (Mentor)
                 </div>
               ) : registered ? (
-                <div className="bg-green-100 text-green-800 px-4 py-2 rounded-lg flex items-center">
+                <div className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg flex items-center">
                   <Check size={18} className="mr-2" />
                   Registered
                 </div>
@@ -301,9 +301,9 @@ const HackathonDetail = () => {
                   disabled={registering || !isRegistrationOpen || !hasSpaceAvailable || registered}
                   className={`px-6 py-3 rounded-lg font-medium flex items-center ${
                     isRegistrationOpen && hasSpaceAvailable && !registered
-                      ? "bg-purple-600 hover:bg-purple-700 text-white"
-                      : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  }`}
+                      ? "bg-[#E8C848] text-[#121212] hover:bg-[#E8C848]/80 shadow-lg shadow-[#E8C848]/30"
+                      : "bg-gray-800 text-gray-500 cursor-not-allowed"
+                  } transition-all duration-300`}
                 >
                   {registering ? (
                     <>
@@ -321,19 +321,19 @@ const HackathonDetail = () => {
           <div className="flex flex-wrap gap-4 mb-6">
             <div className={`px-4 py-2 rounded-lg text-sm font-medium ${
               isRegistrationOpen 
-                ? "bg-green-100 text-green-800" 
-                : "bg-red-100 text-red-800"
+                ? "bg-[#E8C848]/10 text-[#E8C848]" 
+                : "bg-red-800 text-red-400"
             }`}>
               {isRegistrationOpen 
                 ? `Registration open until ${formatDate(hackathon.lastRegisterDate)}` 
                 : "Registration closed"}
             </div>
             
-            <div className="bg-purple-100 text-purple-800 px-4 py-2 rounded-lg text-sm font-medium">
+            <div className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-sm font-medium">
               {getDaysRemaining(hackathon.startDate)}
             </div>
             
-            <div className="bg-blue-100 text-blue-800 px-4 py-2 rounded-lg text-sm font-medium">
+            <div className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-sm font-medium">
               Teams of {hackathon.registration.requiredTeamSize} • {hackathon.registration.currentlyRegistered} / {hackathon.registration.totalCapacity} registered
             </div>
           </div>
@@ -341,43 +341,43 @@ const HackathonDetail = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-2 space-y-6">
               <div>
-                <h2 className="text-xl font-bold mb-3">About this Hackathon</h2>
-                <p className="text-gray-700 whitespace-pre-line">{hackathon.description}</p>
+                <h2 className="text-xl font-bold mb-3 text-white">About this Hackathon</h2>
+                <p className="text-gray-400 whitespace-pre-line">{hackathon.description}</p>
               </div>
               
               <div>
-                <h2 className="text-xl font-bold mb-3">Problem Statement</h2>
-                <div className="bg-orange-50 border border-orange-100 p-4 rounded-lg">
-                  <p>{hackathon.primaryProblemStatement}</p>
+                <h2 className="text-xl font-bold mb-3 text-white">Problem Statement</h2>
+                <div className="bg-[#E8C848]/10 border border-[#E8C848]/20 p-4 rounded-lg">
+                  <p className="text-[#E8C848]">{hackathon.primaryProblemStatement}</p>
                 </div>
               </div>
               
               <div>
-                <h2 className="text-xl font-bold mb-3">Domain</h2>
-                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full">
+                <h2 className="text-xl font-bold mb-3 text-white">Domain</h2>
+                <span className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-full">
                   {hackathon.primaryDomain}
                 </span>
               </div>
             </div>
             
             <div>
-              <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-                <h2 className="text-lg font-bold mb-4">Event Details</h2>
+              <div className="bg-[#1A1A1A] p-6 rounded-xl border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+                <h2 className="text-lg font-bold mb-4 text-white">Event Details</h2>
                 
                 <div className="space-y-4">
                   <div className="flex items-start">
-                    <Calendar className="text-purple-600 mt-1 mr-3" size={20} />
+                    <Calendar className="text-[#E8C848] mt-1 mr-3" size={20} />
                     <div>
-                      <h3 className="font-medium">Event Dates</h3>
-                      <p className="text-gray-600">{formatDate(hackathon.startDate)} - {formatDate(hackathon.endDate)}</p>
+                      <h3 className="font-medium text-white">Event Dates</h3>
+                      <p className="text-gray-400">{formatDate(hackathon.startDate)} - {formatDate(hackathon.endDate)}</p>
                     </div>
                   </div>
                   
                   <div className="flex items-start">
-                    <MapPin className="text-purple-600 mt-1 mr-3" size={20} />
+                    <MapPin className="text-[#E8C848] mt-1 mr-3" size={20} />
                     <div>
-                      <h3 className="font-medium">Mode</h3>
-                      <p className="text-gray-600">
+                      <h3 className="font-medium text-white">Mode</h3>
+                      <p className="text-gray-400">
                         {hackathon.mode}
                         {hackathon.mode !== 'Online' && ` • ${hackathon.location}`}
                       </p>
@@ -386,22 +386,22 @@ const HackathonDetail = () => {
                   
                   {hackathon.prizePool > 0 && (
                     <div className="flex items-start">
-                      <Award className="text-purple-600 mt-1 mr-3" size={20} />
+                      <Award className="text-[#E8C848] mt-1 mr-3" size={20} />
                       <div>
-                        <h3 className="font-medium">Prize Pool</h3>
-                        <p className="text-gray-600">₹{hackathon.prizePool.toLocaleString()}</p>
+                        <h3 className="font-medium text-white">Prize Pool</h3>
+                        <p className="text-gray-400">₹{hackathon.prizePool.toLocaleString()}</p>
                       </div>
                     </div>
                   )}
                   
                   <div className="flex items-start">
-                    <Users className="text-purple-600 mt-1 mr-3" size={20} />
+                    <Users className="text-[#E8C848] mt-1 mr-3" size={20} />
                     <div>
-                      <h3 className="font-medium">Team Structure</h3>
-                      <p className="text-gray-600">
+                      <h3 className="font-medium text-white">Team Structure</h3>
+                      <p className="text-gray-400">
                         Teams of {hackathon.registration.requiredTeamSize} members
                       </p>
-                      <p className="text-gray-600">
+                      <p className="text-gray-400">
                         {hackathon.registration.currentlyRegistered} registered out of {hackathon.registration.totalCapacity} spots
                       </p>
                     </div>
@@ -409,10 +409,10 @@ const HackathonDetail = () => {
                 </div>
               </div>
               
-              <div className="mt-6 bg-gray-50 p-6 rounded-xl border border-gray-200">
-                <h2 className="text-lg font-bold mb-4">Organized by</h2>
-                <p className="font-medium">{hackathon.postedByAdmin?.name || "Admin"}</p>
-                <p className="text-gray-600">{hackathon.postedByAdmin?.organization || ""}</p>
+              <div className="mt-6 bg-[#1A1A1A] p-6 rounded-xl border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+                <h2 className="text-lg font-bold mb-4 text-white">Organized by</h2>
+                <p className="font-medium text-[#E8C848]">{hackathon.postedByAdmin?.name || "Admin"}</p>
+                <p className="text-gray-400">{hackathon.postedByAdmin?.organization || ""}</p>
               </div>
             </div>
           </div>
@@ -421,13 +421,13 @@ const HackathonDetail = () => {
 
       {/* Registration Type Modal */}
       {showRegistrationModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-[#121212]/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#1A1A1A] rounded-xl p-6 max-w-md w-full mx-4 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-800">Choose Registration Type</h3>
+              <h3 className="text-xl font-bold text-white">Choose Registration Type</h3>
               <button 
                 onClick={() => setShowRegistrationModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-400"
               >
                 <X size={20} />
               </button>
@@ -435,7 +435,7 @@ const HackathonDetail = () => {
 
             {/* Error Message */}
             {registrationError && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-start">
+              <div className="mb-4 p-3 bg-red-800 border border-red-400 rounded-lg text-red-400 flex items-start">
                 <AlertTriangle className="mr-2 flex-shrink-0 mt-0.5" size={16} />
                 <p>{registrationError}</p>
               </div>
@@ -443,7 +443,7 @@ const HackathonDetail = () => {
 
             {/* Success Message */}
             {successMessage && (
-              <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-green-700 flex items-start">
+              <div className="mb-4 p-3 bg-[#E8C848]/10 border border-[#E8C848]/20 rounded-lg text-[#E8C848] flex items-start">
                 <Check className="mr-2 flex-shrink-0 mt-0.5" size={16} />
                 <p>{successMessage}</p>
               </div>
@@ -455,23 +455,23 @@ const HackathonDetail = () => {
                 <div>
                   <button
                     onClick={() => setShowTeamModal(true)}
-                    className="w-full p-4 border border-purple-200 rounded-lg hover:bg-purple-50 transition-colors flex items-center"
+                    className="w-full p-4 border border-[#E8C848]/20 rounded-lg hover:bg-[#E8C848]/10 transition-all duration-300 flex items-center"
                     disabled={currentTeam.members.length !== hackathon.registration.requiredTeamSize}
                   >
-                    <Group className="text-purple-600 mr-3" size={24} />
+                    <Group className="text-[#E8C848] mr-3" size={24} />
                     <div className="text-left flex-grow">
-                      <h4 className="font-medium text-gray-800">Register with Your Team</h4>
-                      <p className="text-sm text-gray-600">Team Name: {currentTeam.name}</p>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-medium text-white">Register with Your Team</h4>
+                      <p className="text-sm text-gray-400">Team Name: {currentTeam.name}</p>
+                      <p className="text-sm text-gray-400">
                         Members: {currentTeam.members.length}/{hackathon.registration.requiredTeamSize}
                       </p>
                     </div>
                   </button>
 
                   {currentTeam.members.length < hackathon.registration.requiredTeamSize && (
-                    <div className="mt-2 px-4 py-2 bg-yellow-50 border border-yellow-200 rounded-lg flex items-center">
-                      <AlertTriangle className="text-yellow-600 mr-2" size={16} />
-                      <p className="text-sm text-yellow-700">
+                    <div className="mt-2 px-4 py-2 bg-yellow-800 border border-yellow-400 rounded-lg flex items-center">
+                      <AlertTriangle className="text-yellow-400 mr-2" size={16} />
+                      <p className="text-sm text-yellow-400">
                         Your team needs {hackathon.registration.requiredTeamSize - currentTeam.members.length} more member{hackathon.registration.requiredTeamSize - currentTeam.members.length > 1 ? 's' : ''} to register
                       </p>
                     </div>
@@ -482,13 +482,13 @@ const HackathonDetail = () => {
               {/* Individual Registration Option */}
               <button
                 onClick={handleRegisterIndividually}
-                className="w-full p-4 border border-blue-200 rounded-lg hover:bg-blue-50 transition-colors flex items-center"
+                className="w-full p-4 border border-[#E8C848]/20 rounded-lg hover:bg-[#E8C848]/10 transition-all duration-300 flex items-center"
                 disabled={registering}
               >
-                <UserPlus className="text-blue-600 mr-3" size={24} />
+                <UserPlus className="text-[#E8C848] mr-3" size={24} />
                 <div className="text-left">
-                  <h4 className="font-medium text-gray-800">Register as Individual</h4>
-                  <p className="text-sm text-gray-600">Admin will assign you to a team</p>
+                  <h4 className="font-medium text-white">Register as Individual</h4>
+                  <p className="text-sm text-gray-400">Admin will assign you to a team</p>
                 </div>
               </button>
             </div>
@@ -498,33 +498,33 @@ const HackathonDetail = () => {
 
       {/* Team Confirmation Modal */}
       {showTeamModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4">
+        <div className="fixed inset-0 bg-[#121212]/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#1A1A1A] rounded-xl p-6 max-w-md w-full mx-4 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-gray-800">Confirm Team Registration</h3>
+              <h3 className="text-xl font-bold text-white">Confirm Team Registration</h3>
               <button 
                 onClick={() => setShowTeamModal(false)}
-                className="text-gray-500 hover:text-gray-700"
+                className="text-gray-500 hover:text-gray-400"
               >
                 <X size={20} />
               </button>
             </div>
 
             {registrationError && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 flex items-start">
+              <div className="mb-4 p-3 bg-red-800 border border-red-400 rounded-lg text-red-400 flex items-start">
                 <AlertTriangle className="mr-2 flex-shrink-0 mt-0.5" size={16} />
                 <p>{registrationError}</p>
               </div>
             )}
 
             <div className="space-y-4">
-              <div className="bg-purple-50 p-4 rounded-lg">
-                <h4 className="font-medium text-purple-800">Team Details</h4>
-                <p className="text-purple-600">Name: {currentTeam.name}</p>
-                <p className="text-purple-600">Members: {currentTeam.members.length}/{hackathon.registration.requiredTeamSize}</p>
+              <div className="bg-[#E8C848]/10 p-4 rounded-lg">
+                <h4 className="font-medium text-[#E8C848]">Team Details</h4>
+                <p className="text-[#E8C848]">Name: {currentTeam.name}</p>
+                <p className="text-[#E8C848]">Members: {currentTeam.members.length}/{hackathon.registration.requiredTeamSize}</p>
                 
                 {currentTeam.members.length < hackathon.registration.requiredTeamSize && (
-                  <div className="mt-3 flex items-start text-yellow-700">
+                  <div className="mt-3 flex items-start text-yellow-400">
                     <AlertTriangle className="mr-2 flex-shrink-0 mt-0.5" size={16} />
                     <p className="text-sm">
                       Cannot register - Team requires {hackathon.registration.requiredTeamSize} members
@@ -536,7 +536,7 @@ const HackathonDetail = () => {
               <div className="flex items-center justify-end gap-4">
                 <button
                   onClick={() => setShowTeamModal(false)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                  className="px-4 py-2 text-gray-400 hover:bg-gray-800 rounded-lg"
                 >
                   Cancel
                 </button>
@@ -545,13 +545,13 @@ const HackathonDetail = () => {
                   disabled={registering || currentTeam.members.length !== hackathon.registration.requiredTeamSize}
                   className={`px-4 py-2 rounded-lg flex items-center ${
                     currentTeam.members.length === hackathon.registration.requiredTeamSize
-                      ? "bg-purple-600 hover:bg-purple-700 text-white"
-                      : "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  }`}
+                      ? "bg-[#E8C848] hover:bg-[#E8C848]/80 text-[#121212] shadow-lg shadow-[#E8C848]/30"
+                      : "bg-gray-800 text-gray-500 cursor-not-allowed"
+                  } transition-all duration-300`}
                 >
                   {registering ? (
                     <>
-                      <div className="animate-spin mr-2 h-4 w-4 border-2 border-white rounded-full border-t-transparent"></div>
+                      <div className="animate-spin mr-2 h-4 w-4 border-2 border-[#121212] rounded-full border-t-transparent"></div>
                       Processing...
                     </>
                   ) : (

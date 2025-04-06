@@ -6,9 +6,9 @@ const MentorCard = ({ mentor, hasApplied, onApply }) => {
   const navigate = useNavigate();
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 hover:border-indigo-200 transition-colors">
+    <div className="bg-[#1A1A1A] border border-gray-800 hover:border-[#E8C848]/30 rounded-lg p-4 transition-all duration-300 shadow-lg">
       <div className="flex">
-        <div className="h-14 w-14 rounded-full overflow-hidden bg-gray-200 mr-3 flex-shrink-0">
+        <div className="h-14 w-14 rounded-full overflow-hidden bg-[#121212] mr-3 flex-shrink-0">
           {mentor.profile_picture ? (
             <img 
               src={mentor.profile_picture} 
@@ -16,26 +16,26 @@ const MentorCard = ({ mentor, hasApplied, onApply }) => {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="h-full w-full flex items-center justify-center bg-indigo-100 text-indigo-600">
+            <div className="h-full w-full flex items-center justify-center bg-[#E8C848]/10 text-[#E8C848]">
               <User size={24} />
             </div>
           )}
         </div>
         
         <div className="flex-1">
-          <h4 className="font-semibold text-gray-800">{mentor.name}</h4>
+          <h4 className="font-semibold text-white">{mentor.name}</h4>
           
           {mentor.current_role && (
-            <p className="text-sm text-gray-600 flex items-center gap-1">
-              <Briefcase size={14} />
+            <p className="text-sm text-gray-300 flex items-center gap-1">
+              <Briefcase size={14} className="text-[#E8C848]" />
               {mentor.current_role.title}
               {mentor.current_role.company && ` at ${mentor.current_role.company}`}
             </p>
           )}
           
           {mentor.years_of_experience && (
-            <p className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-              <Award size={12} />
+            <p className="text-xs text-gray-400 flex items-center gap-1 mt-1">
+              <Award size={12} className="text-[#E8C848]" />
               {mentor.years_of_experience} years of experience
             </p>
           )}
@@ -47,12 +47,12 @@ const MentorCard = ({ mentor, hasApplied, onApply }) => {
         <div className="mt-3">
           <div className="flex flex-wrap gap-1">
             {mentor.expertise.technical_skills.slice(0, 5).map((skill, idx) => (
-              <span key={idx} className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0.5 rounded-full">
+              <span key={idx} className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
                 {skill}
               </span>
             ))}
             {mentor.expertise.technical_skills.length > 5 && (
-              <span className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0.5 rounded-full">
+              <span className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
                 +{mentor.expertise.technical_skills.length - 5} more
               </span>
             )}
@@ -64,21 +64,21 @@ const MentorCard = ({ mentor, hasApplied, onApply }) => {
       <div className="mt-4 flex justify-between items-center">
         <button
           onClick={() => navigate(`/student/team/mentor/${mentor._id}`)}
-          className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+          className="text-[#E8C848] hover:text-[#E8C848]/80 text-sm flex items-center gap-1 transition-colors duration-300"
         >
           <ExternalLink size={14} />
           View Profile
         </button>
         
         {hasApplied ? (
-          <div className="text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded-full flex items-center">
+          <div className="text-xs bg-blue-900/20 text-blue-400 px-2 py-1 rounded-full flex items-center">
             <Clock size={12} className="mr-1" />
             Application Pending
           </div>
         ) : (
           <button
             onClick={onApply}
-            className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded hover:bg-indigo-200 text-sm flex items-center gap-1"
+            className="bg-[#E8C848] text-[#121212] px-3 py-1 rounded hover:bg-[#E8C848]/80 text-sm flex items-center gap-1 transition-all duration-300 shadow-lg shadow-[#E8C848]/30"
           >
             <Check size={14} />
             Request Mentorship

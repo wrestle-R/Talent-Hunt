@@ -55,16 +55,19 @@ const RecommendedMentors = ({ teamId, teamTechStack, applications, onApplication
   };
 
   return (
-    <div>
+    <div className="text-white">
       <div className="flex items-center mb-4">
-        <Sparkles size={20} className="text-indigo-500 mr-2" />
+        <Sparkles size={20} className="text-[#E8C848] mr-2" />
         <h3 className="font-medium text-lg">Recommended Mentors for Your Team</h3>
       </div>
       
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {[...Array(4)].map((_, index) => (
-            <div key={index} className="animate-pulse border border-gray-200 rounded-lg p-4 h-48"></div>
+            <div 
+              key={index} 
+              className="animate-pulse bg-[#1A1A1A] border border-gray-800 hover:border-[#E8C848]/30 rounded-lg p-4 h-48 transition-all duration-300"
+            ></div>
           ))}
         </div>
       ) : recommendedMentors.length > 0 ? (
@@ -79,9 +82,9 @@ const RecommendedMentors = ({ teamId, teamTechStack, applications, onApplication
           ))}
         </div>
       ) : (
-        <div className="text-center py-10 bg-gray-50 rounded-lg">
-          <User size={40} className="mx-auto text-gray-300 mb-2" />
-          <p className="text-gray-500">No recommended mentors found</p>
+        <div className="text-center py-10 bg-[#1A1A1A] border border-gray-800 hover:border-[#E8C848]/30 rounded-lg transition-all duration-300">
+          <User size={40} className="mx-auto text-[#E8C848]/30 mb-2" />
+          <p className="text-gray-300">No recommended mentors found</p>
           <p className="text-gray-400 text-sm mt-2">Try browsing all mentors instead</p>
         </div>
       )}

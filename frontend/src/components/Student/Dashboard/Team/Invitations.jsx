@@ -44,7 +44,6 @@ const Invitations = ({ limit }) => {
     }
   };
 
-  // FIX: Updating to match expected backend parameters
   const handleInvitation = async (invitationId, teamId, status) => {
     try {
       const user = JSON.parse(localStorage.getItem('user'));
@@ -53,12 +52,10 @@ const Invitations = ({ limit }) => {
         return;
       }
   
-      // Update loading state for specific invitation
       setInvitations(prev => 
         prev.map(inv => inv._id === invitationId ? { ...inv, isResponding: true } : inv)
       );
   
-      // FIX: Make sure the endpoint and parameters match what the backend expects
       const response = await axios.put(
         `http://localhost:4000/api/student/team-invitations/${invitationId}/respond`,
         {
@@ -74,11 +71,9 @@ const Invitations = ({ limit }) => {
       }
     } catch (err) {
       console.error('Error responding to invitation:', err);
-      // Display the specific error message from the backend if available
       const errorMessage = err.response?.data?.message || 'Failed to respond to invitation';
       toast.error(errorMessage);
       
-      // Reset loading state
       setInvitations(prev => 
         prev.map(inv => inv._id === invitationId ? { ...inv, isResponding: false } : inv)
       );
@@ -111,13 +106,11 @@ const Invitations = ({ limit }) => {
 
   const handleViewProfile = async (userId) => {
     try {
-      // Check if userId is valid
       if (!userId) {
         toast.error('Invalid user ID');
         return;
       }
   
-      // FIX: Use the correct endpoint for fetching user profiles
       const response = await axios.get(
         `http://localhost:4000/api/student/teammate/${userId}`
       );
@@ -134,50 +127,46 @@ const Invitations = ({ limit }) => {
     }
   };
 
-  // FIX: Define TeamDetailsModal component 
   const TeamDetailsModal = ({ team, onClose }) => {
     if (!team) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-[#121212]/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-[#1A1A1A] rounded-xl p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold">{team.name}</h3>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <h3 className="text-xl font-bold text-white">{team.name}</h3>
+            <button onClick={onClose} className="text-gray-400 hover:text-[#E8C848] transition-colors duration-300">
               <X className="w-6 h-6" />
             </button>
           </div>
 
           <div className="space-y-4">
-            {/* Team Description */}
             <div>
-              <h4 className="font-medium text-gray-700">About Team</h4>
-              <p className="text-gray-600">{team.description || 'No description provided'}</p>
+              <h4 className="font-medium text-gray-300">About Team</h4>
+              <p className="text-gray-400">{team.description || 'No description provided'}</p>
             </div>
 
-            {/* Tech Stack */}
             <div>
-              <h4 className="font-medium text-gray-700">Tech Stack</h4>
+              <h4 className="font-medium text-gray-300">Tech Stack</h4>
               <div className="flex flex-wrap gap-2 mt-1">
                 {team.techStack && team.techStack.length > 0 ? (
                   team.techStack.map((tech, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-sm">
+                    <span key={index} className="px-2 py-1 bg-[#E8C848]/10 text-[#E8C848] rounded-md text-sm">
                       {tech}
                     </span>
                   ))
                 ) : (
-                  <span className="text-gray-500">No tech stack specified</span>
+                  <span className="text-gray-400">No tech stack specified</span>
                 )}
               </div>
             </div>
 
-            {/* Team Members */}
             <div>
-              <h4 className="font-medium text-gray-700">Team Members</h4>
+              <h4 className="font-medium text-gray-300">Team Members</h4>
               <div className="space-y-2 mt-2">
                 {teamMembers && teamMembers.length > 0 ? (
                   teamMembers.map((member) => (
-                    <div key={member._id || member.student?._id || index} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                    <div key={member._id || member.student?._id || index} className="flex items-center justify-between p-2 bg-[#121212] rounded-lg border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
                       <div className="flex items-center gap-3">
                         <img 
                           src={member.profile_picture || member.student?.profile_picture || '/default-avatar.png'} 
@@ -189,14 +178,14 @@ const Invitations = ({ limit }) => {
                           }}
                         />
                         <div>
-                          <p className="font-medium">{member.name || member.student?.name || 'Team member'}</p>
-                          <p className="text-sm text-gray-500">{member.role || 'Member'}</p>
+                          <p className="font-medium text-white">{member.name || member.student?.name || 'Team member'}</p>
+                          <p className="text-sm text-gray-400">{member.role || 'Member'}</p>
                         </div>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-500">No team members</p>
+                  <p className="text-gray-400">No team members</p>
                 )}
               </div>
             </div>
@@ -206,73 +195,68 @@ const Invitations = ({ limit }) => {
     );
   };
 
-  // FIX: Define ProfileModal component
   const ProfileModal = ({ profile, onClose }) => {
     if (!profile) return null;
 
     return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div className="bg-white rounded-xl p-6 max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="fixed inset-0 bg-[#121212]/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-[#1A1A1A] rounded-xl p-6 max-w-xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
           <div className="flex justify-between items-center mb-4">
-            <h3 className="text-xl font-bold">Profile</h3>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
+            <h3 className="text-xl font-bold text-white">Profile</h3>
+            <button onClick={onClose} className="text-gray-400 hover:text-[#E8C848] transition-colors duration-300">
               <X className="w-6 h-6" />
             </button>
           </div>
 
           <div className="space-y-4">
-            {/* Basic Info */}
             <div className="flex items-center gap-4">
               <img 
                 src={profile.profile_picture || '/default-avatar.png'} 
                 alt={profile.name}
-                className="w-20 h-20 rounded-full object-cover"
+                className="w-20 h-20 rounded-full object-cover border-2 border-[#E8C848]/30"
                 onError={(e) => {
                   e.target.onerror = null;
                   e.target.src = '/default-avatar.png';
                 }}
               />
               <div>
-                <h4 className="text-xl font-medium">{profile.name || 'User'}</h4>
-                <p className="text-gray-600">
+                <h4 className="text-xl font-medium text-white">{profile.name || 'User'}</h4>
+                <p className="text-gray-400">
                   {profile.education?.institution || profile.education?.degree || 'No education info'}
                 </p>
               </div>
             </div>
 
-            {/* Skills */}
             <div>
-              <h4 className="font-medium text-gray-700">Skills</h4>
+              <h4 className="font-medium text-gray-300">Skills</h4>
               <div className="flex flex-wrap gap-2 mt-1">
                 {profile.skills?.length > 0 ? (
                   profile.skills.map((skill, index) => (
-                    <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 rounded-md text-sm">
+                    <span key={index} className="px-2 py-1 bg-[#E8C848]/10 text-[#E8C848] rounded-md text-sm">
                       {skill}
                     </span>
                   ))
                 ) : (
-                  <span className="text-gray-500">No skills listed</span>
+                  <span className="text-gray-400">No skills listed</span>
                 )}
               </div>
             </div>
 
-            {/* Bio */}
             {profile.bio && (
               <div>
-                <h4 className="font-medium text-gray-700">About</h4>
-                <p className="text-gray-600">{profile.bio}</p>
+                <h4 className="font-medium text-gray-300">About</h4>
+                <p className="text-gray-400">{profile.bio}</p>
               </div>
             )}
 
-            {/* Projects */}
             {profile.projects?.length > 0 && (
               <div>
-                <h4 className="font-medium text-gray-700">Projects</h4>
+                <h4 className="font-medium text-gray-300">Projects</h4>
                 <div className="space-y-2 mt-2">
                   {profile.projects.map((project, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                      <h5 className="font-medium">{project.name}</h5>
-                      <p className="text-sm text-gray-600">{project.description}</p>
+                    <div key={index} className="p-3 bg-[#121212] rounded-lg border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+                      <h5 className="font-medium text-white">{project.name}</h5>
+                      <p className="text-sm text-gray-400">{project.description}</p>
                     </div>
                   ))}
                 </div>
@@ -287,14 +271,14 @@ const Invitations = ({ limit }) => {
   if (loading) {
     return (
       <div className="flex items-center justify-center p-4">
-        <Loader2 className="w-6 h-6 animate-spin text-blue-500" />
+        <Loader2 className="w-6 h-6 animate-spin text-[#E8C848]" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="text-red-500 p-4 text-center">
+      <div className="text-red-400 p-4 text-center">
         {error}
       </div>
     );
@@ -302,7 +286,7 @@ const Invitations = ({ limit }) => {
 
   if (invitations.length === 0) {
     return (
-      <div className="text-gray-500 p-4 text-center">
+      <div className="text-gray-400 p-4 text-center">
         No pending team invitations
       </div>
     );
@@ -313,10 +297,10 @@ const Invitations = ({ limit }) => {
       {invitations.map((invitation) => (
         <div 
           key={invitation._id}
-          className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border border-gray-100"
+          className="flex items-center justify-between p-4 bg-[#1A1A1A] rounded-lg border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300"
         >
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full overflow-hidden">
+            <div className="w-10 h-10 rounded-full overflow-hidden border border-[#E8C848]/30">
               <img 
                 src={invitation.leader?.profile_picture || '/default-avatar.png'} 
                 alt={invitation.leader?.name || 'Team Leader'}
@@ -328,10 +312,10 @@ const Invitations = ({ limit }) => {
               />
             </div>
             <div>
-              <h4 className="font-medium text-gray-900">
+              <h4 className="font-medium text-white">
                 {invitation.teamName || 'Team'}
               </h4>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-gray-400">
                 Invited by {invitation.leader?.name || 'Team Leader'}
               </p>
             </div>
@@ -340,7 +324,7 @@ const Invitations = ({ limit }) => {
           <div className="flex items-center gap-2">
             <button
               onClick={() => handleViewTeam(invitation.teamId)}
-              className="p-1.5 rounded-full text-blue-600 hover:bg-blue-50 transition-colors"
+              className="p-1.5 rounded-full text-[#E8C848] hover:bg-[#E8C848]/10 transition-all duration-300"
               disabled={invitation.isResponding}
             >
               <Users className="w-5 h-5" />
@@ -348,26 +332,26 @@ const Invitations = ({ limit }) => {
             {invitation.leader && invitation.leader._id && (
               <button
                 onClick={() => handleViewProfile(invitation.leader._id)}
-                className="p-1.5 rounded-full text-blue-600 hover:bg-blue-50 transition-colors"
+                className="p-1.5 rounded-full text-[#E8C848] hover:bg-[#E8C848]/10 transition-all duration-300"
                 disabled={invitation.isResponding}
               >
                 <User className="w-5 h-5" />
               </button>
             )}
             {invitation.isResponding ? (
-              <Loader2 className="w-5 h-5 animate-spin text-blue-500" />
+              <Loader2 className="w-5 h-5 animate-spin text-[#E8C848]" />
             ) : (
               <>
                 <button
                   onClick={() => handleInvitation(invitation._id, invitation.teamId, 'accepted')}
-                  className="p-1.5 rounded-full text-green-600 hover:bg-green-50 transition-colors"
+                  className="p-1.5 rounded-full text-green-400 hover:bg-green-900/20 transition-all duration-300"
                   disabled={invitation.isResponding}
                 >
                   <CheckCircle className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => handleInvitation(invitation._id, invitation.teamId, 'rejected')}
-                  className="p-1.5 rounded-full text-red-600 hover:bg-red-50 transition-colors"
+                  className="p-1.5 rounded-full text-red-400 hover:bg-red-900/20 transition-all duration-300"
                   disabled={invitation.isResponding}
                 >
                   <XCircle className="w-5 h-5" />

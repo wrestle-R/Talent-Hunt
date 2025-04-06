@@ -2588,217 +2588,91 @@ const getHackathonRegistrationStatus = async (req, res) => {
     if (!student) {
       return res.status(404).json({
         success: false,
-        message: "Student not found",
+        message: "Student not found"
       });
     }
 
-    // Build the query for the hackathon
-    const hackathonQuery = Hackathon.findById(hackathonId)
+    // Find hackathon
+    const hackathon = await Hackathon.findById(hackathonId)
       .populate({
         path: 'teamApplicants.team',
         populate: {
           path: 'members.student',
-          select: 'name profile_picture firebaseUID',
-        },
-      })
-      .populate({
-        path: 'teamApplicants.members',
-        select: 'name profile_picture firebaseUID',
+          select: 'name profile_picture firebaseUID'
+        }
       })
       .populate('individualApplicants.student', 'name profile_picture firebaseUID')
       .populate('registeredTeams');
 
-    // Conditionally populate `registeredStudents` only if it exists in the schema
-    if (Hackathon.schema.paths.registeredStudents) {
-      hackathonQuery.populate('registeredStudents');
-    }
-
-    const hackathon = await hackathonQuery.exec();
-
     if (!hackathon) {
       return res.status(404).json({
         success: false,
-        message: "Hackathon not found",
+        message: "Hackathon not found"
       });
     }
 
-    // Check if student is in legacy applicants field
-    const legacyApplication = hackathon.applicants?.find(
-      (app) => app.user.toString() === student._id.toString()
-    );
-
-    // Check individual applications
-    const individualApplication = hackathon.individualApplicants?.find(
-      (app) => app.student._id.toString() === student._id.toString()
-    );
-
-    // Check team applications - first find teams the student is part of
-    const teams = await Team.find({
-      $or: [
-        { leader: student._id },
-        { 'members.student': student._id },
-      ],
-    });
-
-    const teamIds = teams.map((team) => team._id);
-
-    // Find if any of these teams have applied to the hackathon
-    const teamApplication = hackathon.teamApplicants?.find((app) =>
-      teamIds.some((teamId) => teamId.toString() === app.team._id.toString())
-    );
-
-    // Check if the student is in the team members list of any team application
-    const isInTeamMembers = hackathon.teamApplicants?.some((app) =>
-      app.members.some(
-        (member) =>
-          member.toString() === student._id.toString() ||
-          (member._id && member._id.toString() === student._id.toString())
-      )
-    );
-
-    // Check registered teams
-    const isInRegisteredTeam = hackathon.registeredTeams?.some((teamId) =>
-      teamIds.some((id) => id.toString() === teamId.toString())
-    );
-
-    // Check individual registrations
-    const isIndividuallyRegistered = hackathon.registeredStudents?.some(
-      (regStudent) => regStudent.toString() === student._id.toString()
-    );
-
-    // Check if student is in a temporary team
-    const temporaryTeam = hackathon.temporaryTeams?.find((team) =>
-      team.members.some((member) => member.toString() === student._id.toString())
-    );
-
-    // Determine overall status
+    // Initialize registration status
     let registrationStatus = {
       isRegistered: false,
       registrationType: null,
       status: 'Not Registered',
-      details: null,
+      details: null
     };
 
-    if (teamApplication) {
-      // Get the team the student is part of that applied to this hackathon
-      const applicantTeam = teams.find(
-        (team) => team._id.toString() === teamApplication.team._id.toString()
+    // Check team applications
+    const teams = await Team.find({
+      $or: [
+        { leader: student._id },
+        { 'members.student': student._id }
+      ]
+    });
+
+    const teamIds = teams.map(team => team._id);
+
+    // Check team applications
+    if (hackathon.teamApplicants && hackathon.teamApplicants.length > 0) {
+      const teamApplication = hackathon.teamApplicants.find(app => 
+        app.team && teamIds.includes(app.team._id.toString())
       );
 
-      registrationStatus = {
-        isRegistered: true,
-        registrationType: 'team',
-        status: teamApplication.status,
-        details: {
-          team: {
-            id: teamApplication.team._id,
-            name: teamApplication.team.name,
-            members: applicantTeam
-              ? applicantTeam.members.map((member) => ({
-                  id: member.student._id,
-                  name: member.student.name,
-                  profile_picture: member.student.profile_picture,
-                }))
-              : [],
-            registeredAt: teamApplication.registeredAt,
-          },
-          feedback: teamApplication.feedback || '',
-        },
-      };
-    } else if (isInTeamMembers) {
-      // If the student is listed explicitly in team members of any team application
-      const relevantApplication = hackathon.teamApplicants.find((app) =>
-        app.members.some(
-          (member) =>
-            member.toString() === student._id.toString() ||
-            (member._id && member._id.toString() === student._id.toString())
-        )
+      if (teamApplication) {
+        registrationStatus = {
+          isRegistered: true,
+          registrationType: 'team',
+          status: teamApplication.status,
+          details: {
+            team: {
+              id: teamApplication.team._id,
+              name: teamApplication.team.name,
+              members: teamApplication.team.members?.map(member => ({
+                id: member.student?._id,
+                name: member.student?.name,
+                profile_picture: member.student?.profile_picture
+              })).filter(Boolean) || [],
+              registeredAt: teamApplication.registeredAt
+            }
+          }
+        };
+      }
+    }
+
+    // Check individual applications if not registered as team
+    if (!registrationStatus.isRegistered && hackathon.individualApplicants) {
+      const individualApplication = hackathon.individualApplicants.find(
+        app => app.student && app.student._id.toString() === student._id.toString()
       );
 
-      registrationStatus = {
-        isRegistered: true,
-        registrationType: 'team',
-        status: relevantApplication.status,
-        details: {
-          team: {
-            id: relevantApplication.team._id,
-            name: relevantApplication.team.name,
-            registeredAt: relevantApplication.registeredAt,
-          },
-          feedback: relevantApplication.feedback || '',
-        },
-      };
-    } else if (individualApplication) {
-      registrationStatus = {
-        isRegistered: true,
-        registrationType: 'individual',
-        status: individualApplication.status,
-        details: {
-          registeredAt: individualApplication.registeredAt,
-          skills: individualApplication.skills,
-          feedback: individualApplication.feedback || '',
-          temporaryTeam: temporaryTeam
-            ? {
-                id: temporaryTeam.tempTeamId,
-                name: temporaryTeam.teamName,
-                members: temporaryTeam.members,
-                leader: temporaryTeam.leader,
-              }
-            : null,
-        },
-      };
-    } else if (legacyApplication) {
-      registrationStatus = {
-        isRegistered: true,
-        registrationType: 'legacy',
-        status: legacyApplication.status,
-        details: {
-          registeredAt: legacyApplication.appliedAt,
-          feedback: legacyApplication.feedback || '',
-        },
-      };
-    } else if (isInRegisteredTeam) {
-      // Find the specific registered team
-      const registeredTeamId = hackathon.registeredTeams.find((teamId) =>
-        teamIds.some((id) => id.toString() === teamId.toString())
-      );
-
-      const registeredTeam = await Team.findById(registeredTeamId).populate(
-        'members.student'
-      );
-
-      registrationStatus = {
-        isRegistered: true,
-        registrationType: 'team',
-        status: 'Approved', // If in registeredTeams, it's already approved
-        details: {
-          team: {
-            id: registeredTeam._id,
-            name: registeredTeam.name,
-            members: registeredTeam.members.map((member) => ({
-              id: member.student._id,
-              name: member.student.name,
-              profile_picture: member.student.profile_picture,
-            })),
-          },
-        },
-      };
-    } else if (isIndividuallyRegistered) {
-      registrationStatus = {
-        isRegistered: true,
-        registrationType: 'individual',
-        status: 'Approved', // If in registeredStudents, it's already approved
-        details: {
-          temporaryTeam: temporaryTeam
-            ? {
-                id: temporaryTeam.tempTeamId,
-                name: temporaryTeam.teamName,
-                members: temporaryTeam.members,
-                leader: temporaryTeam.leader,
-              }
-            : null,
-        },
-      };
+      if (individualApplication) {
+        registrationStatus = {
+          isRegistered: true,
+          registrationType: 'individual',
+          status: individualApplication.status,
+          details: {
+            registeredAt: individualApplication.registeredAt,
+            skills: individualApplication.skills || []
+          }
+        };
+      }
     }
 
     // Add registration deadline info
@@ -2807,9 +2681,8 @@ const getHackathonRegistrationStatus = async (req, res) => {
     const isRegistrationOpen = now <= registrationDeadline;
 
     // Add capacity info
-    const isCapacityAvailable =
-      hackathon.registration.currentlyRegistered <
-      hackathon.registration.totalCapacity;
+    const isCapacityAvailable = 
+      hackathon.registration?.currentlyRegistered < hackathon.registration?.totalCapacity;
 
     res.status(200).json({
       success: true,
@@ -2817,22 +2690,149 @@ const getHackathonRegistrationStatus = async (req, res) => {
       hackathonInfo: {
         isRegistrationOpen,
         isCapacityAvailable,
-        requiredTeamSize: hackathon.registration.requiredTeamSize,
-        remainingSpots:
-          hackathon.registration.totalCapacity -
-          hackathon.registration.currentlyRegistered,
-        registrationDeadline: hackathon.lastRegisterDate,
-      },
+        requiredTeamSize: hackathon.registration?.requiredTeamSize || 4,
+        remainingSpots: hackathon.registration ? 
+          (hackathon.registration.totalCapacity - hackathon.registration.currentlyRegistered) : 0,
+        registrationDeadline: hackathon.lastRegisterDate
+      }
     });
-  } catch (err) {
-    console.error("Error checking hackathon registration status:", err);
+
+  } catch (error) {
+    console.error("Error checking hackathon registration status:", error);
     res.status(500).json({
       success: false,
       message: "Failed to check registration status",
-      error: err.message,
+      error: error.message
     });
   }
 };
+
+const sendMentorRequest = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+    const { uid, message } = req.body;
+
+    // Find student by firebase UID
+    const student = await Student.findOne({ firebaseUID: uid });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    // Find mentor
+    const mentor = await Mentor.findById(mentorId);
+    if (!mentor) {
+      return res.status(404).json({
+        success: false,
+        message: "Mentor not found"
+      });
+    }
+
+    // Check if student has already sent a request
+    const existingApplication = mentor.applications.find(
+      app => app.student.toString() === student._id.toString()
+    );
+
+    if (existingApplication) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already sent a request to this mentor",
+        status: existingApplication.status
+      });
+    }
+
+    // Add new application to mentor's applications array
+    mentor.applications.push({
+      student: student._id,
+      message: message || "I would like to request your mentorship",
+      status: "pending",
+      application_date: new Date()
+    });
+
+    await mentor.save();
+
+    // Add activity log or notification here if needed
+
+    res.status(200).json({
+      success: true,
+      message: "Mentorship request sent successfully",
+      application: {
+        mentorId: mentor._id,
+        mentorName: mentor.name,
+        status: "pending",
+        applicationDate: new Date()
+      }
+    });
+
+  } catch (error) {
+    console.error("Error sending mentor request:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to send mentor request",
+      error: error.message
+    });
+  }
+};
+
+// Add this function to track request status
+const getMentorRequestStatus = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+    const { uid } = req.query;
+
+    // Find student by firebase UID
+    const student = await Student.findOne({ firebaseUID: uid });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    // Find mentor and check application status
+    const mentor = await Mentor.findById(mentorId);
+    if (!mentor) {
+      return res.status(404).json({
+        success: false,
+        message: "Mentor not found"
+      });
+    }
+
+    // Find application
+    const application = mentor.applications.find(
+      app => app.student.toString() === student._id.toString()
+    );
+
+    if (!application) {
+      return res.status(200).json({
+        success: true,
+        hasApplication: false,
+        message: "No request found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      hasApplication: true,
+      application: {
+        status: application.status,
+        applicationDate: application.application_date,
+        message: application.message
+      }
+    });
+
+  } catch (error) {
+    console.error("Error checking mentor request status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to check request status",
+      error: error.message
+    });
+  }
+};
+
 
 // Add these to your exports
 module.exports = {
@@ -2869,7 +2869,8 @@ module.exports = {
   handleRegisterIndividually,
   getTeamInvitations,
   respondToTeamInvitation,
-  getHackathonRegistrationStatus
-
+  getHackathonRegistrationStatus,
+  sendMentorRequest,
+  getMentorRequestStatus
 };
 

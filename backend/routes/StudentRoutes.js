@@ -32,7 +32,9 @@ const {
   getTeamMemberProfile,
   getTeamActivities,
   getTeamHackathonHistory,
-  getHackathonRegistrationStatus
+  getHackathonRegistrationStatus,
+  getMentorRequestStatus,
+  sendMentorRequest,
 } = require("../controllers/StudentController");
 
 // Authentication routes
@@ -81,5 +83,9 @@ router.get("/projects/:studentId", getStudentProjects);
 router.post("/projects/:studentId", addStudentProject);
 router.put("/projects/:studentId/:projectId", updateStudentProject);
 router.delete("/projects/:studentId/:projectId", deleteStudentProject);
+
+// Add these routes to your existing routes
+router.post('/mentor/:mentorId/request', sendMentorRequest);
+router.get('/mentor/:mentorId/request-status', getMentorRequestStatus);
 
 module.exports = router;
