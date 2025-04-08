@@ -41,6 +41,7 @@ import HackathonParticipantManager from './components/Admin/HackathonParticipant
 import ManageHackathons from './components/Admin/ManageHackathons'
 import ManageHackathonTeams from "./components/Admin/ManagehackathonTeams"
 import AllConversationsPageMentor from './components/Mentor/dashboard/AllConversationsPage';
+import TeamManagement from './components/Mentor/Team/TeamManagement';
 
 const role = localStorage.userRole
 console.log(role)
@@ -69,6 +70,8 @@ const App = () => {
               <Route path="/student/profile/:studentId" element={<TeamStudentProfile/>} /> 
               <Route path="/student/team/:teamId/projects" element={<TeamProjects />} />
               <Route path="/student/team/:teamId/mentors" element={<TeamMentorManager />} />
+              <Route path="/student/team/:teamId/settings" element={<TeamManage/>} />
+            
               {/* <Route path="/student/team/mentor/:mentorId" element={<TeamMentorProfile />} /> */}
 
               {/* Hackathon Routes */}
@@ -80,7 +83,7 @@ const App = () => {
               <Route path="/mentor/hero" element={<MentorHero />} />
               <Route path="/mentor/profile" element={<MentorProfile />} />
               <Route path="/mentor/conversations" element={<AllConversationsPageMentor />} />
-              
+              <Route path="/mentor/team/:teamId" element={<TeamManagement />} />
               {/* Admin Routes */}
               <Route path="/admin/hero" element={<AdminHero />} /> 
               <Route path="/admin/hackathons" element={<ManageHackathons />} />
@@ -137,6 +140,8 @@ const App = () => {
 
                 )
               }
+              <Route path="/" element={<Landing />} />
+
             </Routes>
           </div>
         </div>

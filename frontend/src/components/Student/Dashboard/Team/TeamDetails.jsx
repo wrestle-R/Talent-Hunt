@@ -20,9 +20,6 @@ const TeamDetails = () => {
   const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState('members');
   const [statusMessage, setStatusMessage] = useState({ message: '', type: '' });
-  const [inviteEmail, setInviteEmail] = useState('');
-  const [inviteRole, setInviteRole] = useState('Member');
-  const [inviteMessage, setInviteMessage] = useState('');
   
   // Add state for team chat modal
   const [isTeamChatOpen, setIsTeamChatOpen] = useState(false);
@@ -147,80 +144,6 @@ const TeamDetails = () => {
     }
   };
   
-  // Handle sending invitation
-  const handleSendInvitation = async (e) => {
-    e.preventDefault();
-    
-    if (!inviteEmail.trim()) {
-      setStatusMessage({
-        message: 'Please enter an email address',
-        type: 'error'
-      });
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      const inviterId = userData?._id;
-      
-      // First, find the student ID by email
-      const studentResponse = await axios.get(
-        `http://localhost:4000/api/students/by-email/${inviteEmail.trim()}`
-      );
-      
-      if (!studentResponse.data || !studentResponse.data.success) {
-        setStatusMessage({
-          message: 'Student not found with this email',
-          type: 'error'
-        });
-        setLoading(false);
-        return;
-      }
-      
-      const studentId = studentResponse.data.student._id;
-      
-      // Send the invitation
-      const response = await axios.post(
-        'http://localhost:4000/api/teams/invite',
-        {
-          teamId,
-          studentId,
-          role: inviteRole,
-          message: inviteMessage || `You are invited to join ${team.name} as a ${inviteRole}`,
-          inviterId // Include inviter ID in the request
-        }
-      );
-      
-      if (response.data && response.data.success) {
-        setStatusMessage({
-          message: response.data.message,
-          type: 'success'
-        });
-        
-        // Clear form
-        setInviteEmail('');
-        setInviteMessage('');
-        setInviteRole('Member');
-        
-        // Go back to members tab
-        setActiveTab('members');
-      } else {
-        setStatusMessage({
-          message: response.data?.message || 'Failed to send invitation',
-          type: 'error'
-        });
-      }
-    } catch (err) {
-      console.error('Error sending invitation:', err);
-      setStatusMessage({
-        message: err.response?.data?.message || 'Failed to send invitation',
-        type: 'error'
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  
   // Handle applying to join team
   const handleApplyToJoin = async () => {
     try {
@@ -308,11 +231,11 @@ const TeamDetails = () => {
           
           {team?.userStatus?.isLeader && (
             <button
-              onClick={() => setActiveTab('invitations')}
+              onClick={() => navigate('/student/teammates')}
               className="bg-[#E8C848] text-[#121212] px-4 py-2 rounded-lg hover:bg-[#E8C848]/80 transition-all duration-300 flex items-center gap-2"
             >
               <UserPlus size={16} />
-              Invite Member
+              Find Teammates
             </button>
           )}
         </div>
@@ -469,135 +392,6 @@ const TeamDetails = () => {
     );
   };
 
-  // Render invitations tab content
-  const renderInvitationsTab = () => {
-    return (
-      <div>
-        {team.userStatus.isLeader ? (
-          <div>
-            <div className="mb-6">
-              <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <Mail size={20} className="text-[#E8C848]" />
-                Invite New Members
-              </h3>
-              <p className="text-gray-400">Send invitations to students to join your team</p>
-            </div>
-            
-            <form onSubmit={handleSendInvitation} className="p-6 bg-[#242424] rounded-lg border border-gray-800">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label className="block text-gray-300 mb-2">Student Email</label>
-                  <input
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    className="w-full p-3 bg-[#333333] text-white border border-gray-700 rounded-lg focus:outline-none focus:border-[#E8C848] transition-all duration-300"
-                    placeholder="Enter student email"
-                    required
-                  />
-                </div>
-                
-                <div>
-                  <label className="block text-gray-300 mb-2">Role</label>
-                  <select
-                    value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value)}
-                    className="w-full p-3 bg-[#333333] text-white border border-gray-700 rounded-lg focus:outline-none focus:border-[#E8C848] transition-all duration-300"
-                  >
-                    <option value="Member">Member</option>
-                    <option value="Co-Leader">Co-Leader</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div className="mt-4">
-                <label className="block text-gray-300 mb-2">Invitation Message (Optional)</label>
-                <textarea
-                  value={inviteMessage}
-                  onChange={(e) => setInviteMessage(e.target.value)}
-                  className="w-full p-3 bg-[#333333] text-white border border-gray-700 rounded-lg focus:outline-none focus:border-[#E8C848] transition-all duration-300"
-                  rows="3"
-                  placeholder="Enter a personal message to include with the invitation"
-                ></textarea>
-              </div>
-              
-              <div className="mt-6">
-                <button
-                  type="submit"
-                  className="bg-[#E8C848] text-[#121212] px-6 py-3 rounded-lg hover:bg-[#E8C848]/80 transition-all duration-300 flex items-center gap-2 mx-auto"
-                  disabled={loading}
-                >
-                  <UserPlus size={18} />
-                  Send Invitation
-                </button>
-              </div>
-            </form>
-            
-            {/* Recruiting Status Toggle */}
-            <div className="mt-8 p-6 bg-[#242424] rounded-lg border border-gray-800">
-              <div className="flex justify-between items-center">
-                <div>
-                  <h4 className="text-lg font-bold text-white mb-1">Team Recruiting Status</h4>
-                  <p className="text-gray-400">
-                    Control whether your team appears in search results and allows applications
-                  </p>
-                </div>
-                <div className="flex items-center">
-                  <button
-                    onClick={() => handleToggleRecruiting(!team.isRecruiting)}
-                    className={`px-4 py-2 rounded-lg transition-all duration-300 ${
-                      team.isRecruiting
-                        ? 'bg-green-900/20 text-green-400 hover:bg-green-900/30'
-                        : 'bg-red-900/20 text-red-400 hover:bg-red-900/30'
-                    }`}
-                  >
-                    {team.isRecruiting ? 'Currently Recruiting' : 'Not Recruiting'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : team.userStatus.hasInvitation ? (
-          <div className="p-6 bg-[#242424] rounded-lg border border-[#E8C848]/30">
-            <h3 className="text-xl font-bold text-[#E8C848] mb-4">You're Invited!</h3>
-            <p className="text-white mb-6">
-              You've been invited to join {team.name} as a {team.userStatus.invitationRole}.
-            </p>
-            
-            {team.userStatus.invitationMessage && (
-              <div className="bg-[#333333] p-4 rounded-lg mb-6 border border-gray-700">
-                <p className="text-gray-300 italic">"{team.userStatus.invitationMessage}"</p>
-              </div>
-            )}
-            
-            <div className="flex gap-4 justify-center">
-              <button
-                onClick={() => handleRespondToInvitation(true)}
-                className="bg-green-900/20 text-green-400 px-6 py-3 rounded-lg hover:bg-green-900/30 transition-all duration-300 flex items-center gap-2"
-                disabled={loading}
-              >
-                <Check size={18} />
-                Accept Invitation
-              </button>
-              <button
-                onClick={() => handleRespondToInvitation(false)}
-                className="bg-red-900/20 text-red-400 px-6 py-3 rounded-lg hover:bg-red-900/30 transition-all duration-300 flex items-center gap-2"
-                disabled={loading}
-              >
-                <X size={18} />
-                Decline
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="text-center py-8 text-gray-400">
-            <p>You don't have access to this section.</p>
-          </div>
-        )}
-      </div>
-    );
-  };
-
   // Render projects tab content
   const renderProjectsTab = () => {
     return (
@@ -711,6 +505,44 @@ const TeamDetails = () => {
     );
   };
 
+  // Render recruiting options
+  const renderRecruitingOptions = () => {
+    return (
+      <div className="mt-8 p-6 bg-[#242424] rounded-lg border border-gray-800">
+        <div className="flex justify-between items-center">
+          <div>
+            <h4 className="text-lg font-bold text-white mb-1">Team Recruiting Status</h4>
+            <p className="text-gray-400">
+              Control whether your team appears in search results and allows applications
+            </p>
+          </div>
+          <div className="flex flex-col items-end gap-3">
+            <button
+              onClick={() => handleToggleRecruiting(!team.isRecruiting)}
+              className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                team.isRecruiting
+                  ? 'bg-green-900/20 text-green-400 hover:bg-green-900/30'
+                  : 'bg-red-900/20 text-red-400 hover:bg-red-900/30'
+              }`}
+            >
+              {team.isRecruiting ? 'Currently Recruiting' : 'Not Recruiting'}
+            </button>
+            
+            {team.isRecruiting && (
+              <button
+                onClick={() => navigate('/student/teammates')}
+                className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg hover:bg-[#E8C848]/20 transition-all duration-300 flex items-center gap-2"
+              >
+                <UserPlus size={16} />
+                Find Teammates
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (loading && !team) {
     return (
       <div className="min-h-screen w-full bg-[#121212] p-6">
@@ -820,7 +652,7 @@ const TeamDetails = () => {
 
         {/* Navigation Tabs */}
         <div className="flex space-x-1 mb-6 bg-[#1A1A1A] p-1 rounded-lg border border-gray-800">
-          {['members', 'applications', 'invitations', 'projects', 'mentors'].map((tab) => (
+          {['members', 'applications', 'projects', 'mentors'].map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -839,10 +671,12 @@ const TeamDetails = () => {
         <div className="bg-[#1A1A1A] rounded-lg border border-gray-800 p-6">
           {activeTab === 'members' && renderMembersTab()}
           {activeTab === 'applications' && renderApplicationsTab()}
-          {activeTab === 'invitations' && renderInvitationsTab()}
           {activeTab === 'projects' && renderProjectsTab()}
           {activeTab === 'mentors' && renderMentorsTab()}
         </div>
+
+        {/* Recruiting Options (only for team leader) */}
+        {team.userStatus.isLeader && renderRecruitingOptions()}
 
         {/* Team Chat Modal */}
         {isTeamChatOpen && (
@@ -852,6 +686,41 @@ const TeamDetails = () => {
             team={team}
             currentUser={userData}
           />
+        )}
+
+        {/* Show invitation response options if user has invitation */}
+        {team.userStatus.hasInvitation && (
+          <div className="mt-6 p-6 bg-[#242424] rounded-lg border border-[#E8C848]/30">
+            <h3 className="text-xl font-bold text-[#E8C848] mb-4">You're Invited!</h3>
+            <p className="text-white mb-6">
+              You've been invited to join {team.name} as a {team.userStatus.invitationRole}.
+            </p>
+            
+            {team.userStatus.invitationMessage && (
+              <div className="bg-[#333333] p-4 rounded-lg mb-6 border border-gray-700">
+                <p className="text-gray-300 italic">"{team.userStatus.invitationMessage}"</p>
+              </div>
+            )}
+            
+            <div className="flex gap-4 justify-center">
+              <button
+                onClick={() => handleRespondToInvitation(true)}
+                className="bg-green-900/20 text-green-400 px-6 py-3 rounded-lg hover:bg-green-900/30 transition-all duration-300 flex items-center gap-2"
+                disabled={loading}
+              >
+                <Check size={18} />
+                Accept Invitation
+              </button>
+              <button
+                onClick={() => handleRespondToInvitation(false)}
+                className="bg-red-900/20 text-red-400 px-6 py-3 rounded-lg hover:bg-red-900/30 transition-all duration-300 flex items-center gap-2"
+                disabled={loading}
+              >
+                <X size={18} />
+                Decline
+              </button>
+            </div>
+          </div>
         )}
       </div>
     </div>

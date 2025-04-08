@@ -27,19 +27,7 @@ const createTeam = async (req, res) => {
         });
       }
       
-      // Check if student is already a team leader
-      const existingTeamAsLeader = await Team.findOne({ 
-        leader: createdBy,
-        status: { $ne: 'disbanded' }
-      });
-      
-      if (existingTeamAsLeader) {
-        return res.status(400).json({
-          success: false,
-          message: "You are already a leader of another team"
-        });
-      }
-      
+   
       // Generate a unique join code
       const joinCode = crypto.randomBytes(4).toString('hex').toUpperCase();
       

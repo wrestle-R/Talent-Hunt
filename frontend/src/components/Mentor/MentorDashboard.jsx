@@ -68,7 +68,6 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
     fetchActiveMentorships();
     fetchTeamApplications();
     fetchConversations();
-    fetchHackathons();
   };
 
   // Fetch active mentorships
@@ -128,21 +127,6 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
       setConversations([]);
     } finally {
       setConversationsLoading(false);
-    }
-  };
-
-  // Fetch upcoming hackathons
-  const fetchHackathons = async () => {
-    try {
-      setHackathonLoading(true);
-      const response = await axios.get('http://localhost:4000/api/hackathons/upcoming');
-      console.log("Hackathons data:", response.data);
-      setHackathonData(response.data);
-    } catch (error) {
-      console.error("Error fetching hackathons:", error);
-      setHackathonData([]);
-    } finally {
-      setHackathonLoading(false);
     }
   };
 

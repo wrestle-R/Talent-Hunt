@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Crown, UserPlus, Plus, Clock, Bell, Shield } from 'lucide-react';
+import { Users, Crown, UserPlus, Plus, Clock, Bell, Shield, RefreshCw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { useUser } from '../../../../../context/UserContext';
@@ -10,38 +10,59 @@ const TeamOverview = () => {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [showEmptyState, setShowEmptyState] = useState(false);
+
+  const fetchTeams = async () => {
+    try {
+      if (!userData || !userData._id) {
+        setError('User data not available');
+        setLoading(false);
+        return;
+      }
+      
+      setLoading(true);
+      setShowEmptyState(false);
+      
+      const response = await axios.get(
+        `http://localhost:4000/api/teams/my-teams?studentId=${userData._id}`
+      );
+      
+      if (response.data && response.data.success) {
+        setTeams(response.data.teams);
+        
+        // Set a delay before showing the empty state
+        if (response.data.teams.length === 0) {
+          setTimeout(() => {
+            setShowEmptyState(true);
+          }, 2000);
+        } else {
+          setShowEmptyState(true);
+        }
+      } else {
+        setError('Failed to load teams data');
+        setShowEmptyState(true);
+      }
+    } catch (err) {
+      console.error('Error fetching teams:', err);
+      setError(err.response?.data?.message || err.message || 'Failed to load teams');
+      setShowEmptyState(true);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        if (!userData || !userData._id) {
-          setError('User data not available');
-          setLoading(false);
-          return;
-        }
-        
-        setLoading(true);
-        const response = await axios.get(
-          `http://localhost:4000/api/teams/my-teams?studentId=${userData._id}`
-        );
-        
-        if (response.data && response.data.success) {
-          setTeams(response.data.teams);
-        } else {
-          setError('Failed to load teams data');
-        }
-      } catch (err) {
-        console.error('Error fetching teams:', err);
-        setError(err.response?.data?.message || err.message || 'Failed to load teams');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
     if (userData) {
       fetchTeams();
     }
   }, [userData]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchTeams();
+  };
   
   if (loading) {
     return (
@@ -51,6 +72,13 @@ const TeamOverview = () => {
             <Users className="text-[#E8C848]" />
             My Teams
           </h3>
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="bg-[#E8C848]/10 text-[#E8C848] p-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/20 transition-all duration-300 disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
+          </button>
         </div>
         <div className="flex justify-center items-center h-40">
           <div className="animate-pulse flex flex-col items-center">
@@ -71,6 +99,13 @@ const TeamOverview = () => {
           My Teams
         </h3>
         <div className="flex gap-2">
+          <button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="bg-[#E8C848]/10 text-[#E8C848] p-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/20 transition-all duration-300 disabled:opacity-50"
+          >
+            <RefreshCw size={16} className={refreshing ? "animate-spin" : ""} />
+          </button>
           <button
             onClick={() => navigate('/student/team/join')}
             className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1.5 rounded-lg text-sm font-medium hover:bg-[#E8C848]/20 transition-all duration-300 flex items-center gap-1"
@@ -146,24 +181,36 @@ const TeamOverview = () => {
           ))}
         </div>
       ) : (
-        <div className="text-center py-8">
-          <Users size={40} className="mx-auto text-[#E8C848]/30 mb-2" />
-          <p className="text-gray-400 mb-4">You're not part of any teams yet</p>
-          <div className="flex justify-center gap-2">
-            <button
-              onClick={() => navigate('/student/team/join')}
-              className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/20 transition-all duration-300"
-            >
-              Join a Team
-            </button>
-            <button
-              onClick={() => navigate('/student/team/create')}
-              className="bg-[#E8C848] text-[#121212] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/80 transition-all duration-300 shadow-lg shadow-[#E8C848]/20"
-            >
-              Create a Team
-            </button>
-          </div>
-        </div>
+        <>
+          {showEmptyState ? (
+            <div className="text-center py-8">
+              <Users size={40} className="mx-auto text-[#E8C848]/30 mb-2" />
+              <p className="text-gray-400 mb-4">You're not part of any teams yet</p>
+              <div className="flex justify-center gap-2">
+                <button
+                  onClick={() => navigate('/student/team/join')}
+                  className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/20 transition-all duration-300"
+                >
+                  Join a Team
+                </button>
+                <button
+                  onClick={() => navigate('/student/team/create')}
+                  className="bg-[#E8C848] text-[#121212] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/80 transition-all duration-300 shadow-lg shadow-[#E8C848]/20"
+                >
+                  Create a Team
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-center items-center h-40">
+              <div className="animate-pulse flex flex-col items-center">
+                <div className="rounded-full bg-[#121212] h-12 w-12 mb-2"></div>
+                <div className="h-4 bg-[#121212] rounded w-24 mb-2"></div>
+                <div className="h-3 bg-[#121212] rounded w-32"></div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
