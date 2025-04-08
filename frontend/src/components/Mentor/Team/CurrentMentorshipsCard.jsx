@@ -95,7 +95,7 @@ const CurrentMentorshipsCard = ({ mentorData, onViewTeam }) => {
                     onClick={() => handleViewTeam(team)}
                     className="flex items-center space-x-1 text-[#E8C848] text-sm font-medium bg-[#E8C848]/10 px-2 py-1 rounded-md hover:bg-[#E8C848]/20"
                   >
-                    <span>View Profile</span>
+                    <span >View Profile</span>
                     <ChevronRight size={16} />
                   </button>
                 </div>

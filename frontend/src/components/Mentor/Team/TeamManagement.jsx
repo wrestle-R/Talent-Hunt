@@ -8,10 +8,9 @@ import {
 } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
-import MentorLayout from '../../components/Layouts/MentorLayout';
-import TeamMembersList from '../../components/Mentor/Team/TeamMembersList';
-import TeamProjectsCard from '../../components/Mentor/Team/TeamProjectsCard';
-import TeamChatModal from '../../components/Mentor/Team/TeamChatModal';
+import TeamMembersList from '../Team/TeamMembersList';
+import TeamProjectsCard from '../Team/TeamProjectsCard';
+import TeamChatModal from '../Team/TeamChatModal';
 import StudentPlaceholder from '../../../public/student_placeholder.png';
 import MentorPlaceholder from '../../../public/mentor_placeholder.png';
 
@@ -122,20 +121,20 @@ const TeamManagement = () => {
 
   if (loading) {
     return (
-      <MentorLayout>
-        <div className="p-8 bg-[#121212]">
+      <div className="min-h-screen bg-[#121212]">
+        <div className="p-8">
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E8C848]"></div>
           </div>
         </div>
-      </MentorLayout>
+      </div>
     );
   }
 
   if (error) {
     return (
-      <MentorLayout>
-        <div className="p-8 bg-[#121212]">
+      <div className="min-h-screen bg-[#121212]">
+        <div className="p-8">
           <div className="bg-[#1A1A1A] border border-gray-800 rounded-lg p-6 text-center">
             <AlertTriangle size={48} className="mx-auto text-[#E8C848] mb-4" />
             <h2 className="text-xl font-bold text-white mb-2">Error Loading Team</h2>
@@ -148,14 +147,14 @@ const TeamManagement = () => {
             </button>
           </div>
         </div>
-      </MentorLayout>
+      </div>
     );
   }
 
   if (!team) {
     return (
-      <MentorLayout>
-        <div className="p-8 bg-[#121212]">
+      <div className="min-h-screen bg-[#121212]">
+        <div className="p-8">
           <div className="bg-[#1A1A1A] border border-gray-800 rounded-lg p-6 text-center">
             <AlertTriangle size={48} className="mx-auto text-[#E8C848] mb-4" />
             <h2 className="text-xl font-bold text-white mb-2">Team Not Found</h2>
@@ -168,13 +167,13 @@ const TeamManagement = () => {
             </button>
           </div>
         </div>
-      </MentorLayout>
+      </div>
     );
   }
 
   return (
-    <MentorLayout>
-      <div className="p-6 bg-[#121212]">
+    <div className="min-h-screen bg-[#121212]">
+      <div className="p-6">
         {/* Top bar with team info and actions */}
         <div className="flex justify-between items-start mb-6">
           <div className="flex items-center">
@@ -529,7 +528,7 @@ const TeamManagement = () => {
         onConfirm={handleLeaveMentorship}
         teamName={team?.name}
       />
-    </MentorLayout>
+    </div>
   );
 };
 
