@@ -35,7 +35,7 @@ import TeamManage from './components/Student/Dashboard/Team/TeamManage';
 import TeamStudentProfile from './components/Student/Dashboard/Team/StudentProfile'
 import TeamProjects from './components/Student/Dashboard/Team/TeamProjects'
 import TeamMentorManager from './components/Student/Dashboard/Team/Mentor/TeamMentorManager';
-import TeamMentorProfile from './components/Student/Dashboard/Team/Mentor/MentorProfile';
+// import TeamMentorProfile from './components/Student/Dashboard/Team/Mentor/MentorProfile';
 import Landing from './components/Landing'
 import HackathonParticipantManager from './components/Admin/HackathonParticipantManager'
 import ManageHackathons from './components/Admin/ManageHackathons'
@@ -69,7 +69,7 @@ const App = () => {
               <Route path="/student/profile/:studentId" element={<TeamStudentProfile/>} /> 
               <Route path="/student/team/:teamId/projects" element={<TeamProjects />} />
               <Route path="/student/team/:teamId/mentors" element={<TeamMentorManager />} />
-              <Route path="/student/team/mentor/:mentorId" element={<TeamMentorProfile />} />
+              {/* <Route path="/student/team/mentor/:mentorId" element={<TeamMentorProfile />} /> */}
 
               {/* Hackathon Routes */}
               <Route path="/student/hackathons" element={<HackathonPage />} />

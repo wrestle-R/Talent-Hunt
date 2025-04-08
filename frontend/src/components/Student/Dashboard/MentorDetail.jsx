@@ -29,6 +29,11 @@ const MentorDetail = () => {
   
   // Chat modal state
   const [isChatOpen, setIsChatOpen] = useState(false);
+
+  const [showTeamModal, setShowTeamModal] = useState(false);
+  const [userTeams, setUserTeams] = useState([]);
+  const [selectedTeamId, setSelectedTeamId] = useState(null);
+  const [loadingTeams, setLoadingTeams] = useState(false);
   
   useEffect(() => {
     const fetchMentorDetails = async () => {
@@ -98,25 +103,49 @@ const MentorDetail = () => {
     }
   }, [mentorId]);
 
-useEffect(() => {
-  const checkRequestStatus = async () => {
+  useEffect(() => {
+    const checkRequestStatus = async () => {
+      try {
+        if (!mentorId || !userData?.firebaseUID) return;
+
+        const response = await axios.get(
+          `http://localhost:4000/api/student/mentor/${mentorId}/request-status?uid=${userData.firebaseUID}`
+        );
+
+        if (response.data.hasApplication) {
+          setRequestStatus(response.data.application.status);
+        }
+      } catch (error) {
+        console.error("Error checking request status:", error);
+      }
+    };
+
+    checkRequestStatus();
+  }, [mentorId, userData]);
+
+  useEffect(() => {
+    if (userData?.firebaseUID) {
+      fetchUserTeams();
+    }
+  }, [userData]);
+
+  const fetchUserTeams = async () => {
     try {
-      if (!mentorId || !userData?.firebaseUID) return;
-
+      setLoadingTeams(true);
       const response = await axios.get(
-        `http://localhost:4000/api/student/mentor/${mentorId}/request-status?uid=${userData.firebaseUID}`
+        `http://localhost:4000/api/student/teams/led/${userData.firebaseUID}`
       );
-
-      if (response.data.hasApplication) {
-        setRequestStatus(response.data.application.status);
+      
+      if (response.data?.success) {
+        setUserTeams(response.data.teams);
       }
     } catch (error) {
-      console.error("Error checking request status:", error);
+      console.error('Error fetching user teams:', error);
+    } finally {
+      setLoadingTeams(false);
     }
   };
 
-  checkRequestStatus();
-}, [mentorId, userData]);
   const handleOpenChat = () => {
     if (mentor) {
       setIsChatOpen(true);
@@ -131,41 +160,88 @@ useEffect(() => {
     try {
       setRequestStatus('loading');
       setError({ message: null, type: null });
-      
+
       if (!userData?.firebaseUID) {
         throw new Error('You must be logged in to request mentorship');
       }
-      
+
+      // Open team selection modal if user has teams
+      if (userTeams.length > 0) {
+        setShowTeamModal(true);
+        return;
+      }
+
+      // If no teams, proceed with individual request
+      await sendMentorshipRequest();
+
+    } catch (error) {
+      console.error('Error in mentorship request:', error);
+      setError({
+        message: error.response?.data?.message || error.message,
+        type: 'request'
+      });
+      setRequestStatus('error');
+    }
+  };
+
+  const sendMentorshipRequest = async (teamId = null) => {
+    try {
       const response = await axios.post(
         `http://localhost:4000/api/student/mentor/${mentorId}/request`,
         {
           uid: userData.firebaseUID,
-          message: `Hello, I would like to request your mentorship.`
+          teamId: teamId,
+          message: "Hello, I would like to request your mentorship."
         }
       );
-  
-      if (response.data.success) {
+
+      if (response.data?.success) {
         setRequestStatus('success');
         toast.success('Mentorship request sent successfully!');
       } else {
-        setRequestStatus('error');
-        setError({
-          type: 'request',
-          message: response.data.message || 'Failed to send request'
-        });
-        toast.error(response.data.message || 'Failed to send request');
+        throw new Error(response.data?.message || 'Failed to send request');
       }
     } catch (error) {
-      console.error("Error requesting mentorship:", error);
-      setRequestStatus('error');
-      setError({
-        type: 'request',
-        message: error.response?.data?.message || 'Failed to send mentorship request'
-      });
-      toast.error(error.response?.data?.message || 'Failed to send mentorship request');
+      console.error('Error sending mentorship request:', error);
+      throw error;
+    } finally {
+      setShowTeamModal(false);
     }
   };
-  
+
+  const TeamSelectionModal = () => (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+      <div className="bg-[#1A1A1A] rounded-lg p-6 w-full max-w-md mx-4">
+        <h3 className="text-lg font-semibold text-white mb-4">
+          Request Mentorship
+        </h3>
+        
+        <p className="text-gray-400 mb-4">
+          Would you like to request mentorship for yourself or for a team?
+        </p>
+
+        <div className="space-y-3">
+                    {userTeams.map(team => (
+            <button
+              key={team._id}
+              onClick={() => sendMentorshipRequest(team._id)}
+              className="w-full p-3 bg-[#E8C848]/10 text-[#E8C848] rounded-lg hover:bg-[#E8C848]/20 transition-colors"
+            >
+              Request for {team.name}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setShowTeamModal(false)}
+          className="mt-4 w-full p-3 bg-gray-800 text-gray-300 rounded-lg hover:bg-gray-700 transition-colors"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+
   const ErrorBanner = ({ message, type, onDismiss }) => (
     <div className="fixed top-4 right-4 max-w-md w-full bg-red-900/20 border border-red-800 rounded-lg p-4 z-50">
       <div className="flex items-start">
@@ -876,6 +952,9 @@ useEffect(() => {
         user={mentor} 
         currentUser={userData}
       />
+
+      {/* Team Selection Modal */}
+      {showTeamModal && <TeamSelectionModal />}
     </>
   );
 };

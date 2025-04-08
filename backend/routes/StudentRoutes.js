@@ -1,4 +1,11 @@
 const express = require("express");
+const Student = require("../models/Student");
+const Mentor = require("../models/Mentor");
+const Admin = require("../models/Admin"); // Add this import
+const Hackathon = require("../models/Hackathon"); // Add this line
+const Message = require('../models/Message');
+const mongoose = require('mongoose')
+const Team = require('../models/Team')
 const router = express.Router();
 const { 
   registerOrLoginStudent,
@@ -53,7 +60,40 @@ router.get("/recommended-mentors/:uid", getRecommendedMentors);
 router.get("/teammates/:uid", getPotentialTeammates);
 router.get("/teammate/:teammateId", getTeammateById);
 router.get("/mentor/:mentorId", getMentorById);
+// Add this route with your other routes
+router.get('/teams/led/:uid', async (req, res) => {
+  try {
+    const { uid } = req.params;
+    
+    // Find student by firebase UID
+    const student = await Student.findOne({ firebaseUID: uid });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
 
+    // Find teams where student is leader
+    const teams = await Team.find({
+      leader: student._id,
+      status: 'active'
+    }).select('name description members');
+
+    return res.status(200).json({
+      success: true,
+      teams
+    });
+
+  } catch (error) {
+    console.error("Error fetching user teams:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch teams",
+      error: error.message
+    });
+  }
+});
 // Hackathon routes
 router.get("/hackathons/upcoming", getUpcomingHackathons);
 router.get("/hackathons/past", getPastHackathons);

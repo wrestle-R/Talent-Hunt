@@ -21,28 +21,15 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
       setLoading(true);
       const response = await axios.get(`http://localhost:4000/api/mentor/team-applications/${mentorData._id}`);
       
-      if (Array.isArray(response.data)) {
-        const processedData = response.data.map(app => ({
-          applicationId: app._id,
-          teamId: app.teamId,
-          teamName: app.teamName || "Unnamed Team",
-          description: app.description || "",
-          memberCount: app.memberCount || 0,
-          techStack: Array.isArray(app.techStack) ? app.techStack : [],
-          message: app.message || "",
-          applicationDate: app.applicationDate || new Date(),
-          status: app.status || "pending",
-          team: app.team || null // Keep the full team object if available
-        }));
-        
-        console.log("Processed applications:", processedData);
-        setApplications(processedData);
+      if (response.data?.success && Array.isArray(response.data.applications)) {
+        console.log("Applications data:", response.data);
+        setApplications(response.data.applications);
       } else {
-        console.warn("Unexpected applications response format:", response.data);
+        console.warn("Unexpected response format:", response.data);
         setApplications([]);
       }
     } catch (error) {
-      console.error("Error fetching pending applications:", error);
+      console.error("Error fetching applications:", error);
       toast.error("Failed to load applications");
       setApplications([]);
     } finally {
@@ -107,6 +94,8 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
   const toggleExpand = (appId) => {
     setExpandedApp(expandedApp === appId ? null : appId);
   };
+
+  
 
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";

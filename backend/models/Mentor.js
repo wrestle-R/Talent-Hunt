@@ -50,6 +50,7 @@ const mentorSchema = new mongoose.Schema(
           enum: ["pending", "accepted", "rejected", "waitlisted"], 
           default: "pending" 
         },
+        teamId: { type: mongoose.Schema.Types.ObjectId, ref: "Team" }, // Reference to the team applying
         application_date: { type: Date, default: Date.now },
         message: { type: String }, // Student's application message
         

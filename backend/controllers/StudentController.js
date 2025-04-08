@@ -2710,7 +2710,7 @@ const getHackathonRegistrationStatus = async (req, res) => {
 const sendMentorRequest = async (req, res) => {
   try {
     const { mentorId } = req.params;
-    const { uid, message } = req.body;
+    const { uid, message, teamId } = req.body;
 
     // Find student by firebase UID
     const student = await Student.findOne({ firebaseUID: uid });
@@ -2730,9 +2730,30 @@ const sendMentorRequest = async (req, res) => {
       });
     }
 
-    // Check if student has already sent a request
-    const existingApplication = mentor.applications.find(
-      app => app.student.toString() === student._id.toString()
+    // Find team if teamId is provided
+    let team = null;
+    if (teamId) {
+      team = await Team.findById(teamId);
+      if (!team) {
+        return res.status(404).json({
+          success: false,
+          message: "Team not found"
+        });
+      }
+
+      // Verify student is team leader
+      if (team.leader.toString() !== student._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: "Only team leaders can request mentorship for the team"
+        });
+      }
+    }
+
+    // Check if student/team has already sent a request
+    const existingApplication = mentor.applications.find(app => 
+      (team && app.teamId?.toString() === teamId) || 
+      (!team && app.student?.toString() === student._id.toString())
     );
 
     if (existingApplication) {
@@ -2745,15 +2766,14 @@ const sendMentorRequest = async (req, res) => {
 
     // Add new application to mentor's applications array
     mentor.applications.push({
-      student: student._id,
+      student: team ? team._id : student._id,
+      teamId: team ? team._id : null,
       message: message || "I would like to request your mentorship",
       status: "pending",
       application_date: new Date()
     });
 
     await mentor.save();
-
-    // Add activity log or notification here if needed
 
     res.status(200).json({
       success: true,
@@ -2762,7 +2782,8 @@ const sendMentorRequest = async (req, res) => {
         mentorId: mentor._id,
         mentorName: mentor.name,
         status: "pending",
-        applicationDate: new Date()
+        applicationDate: new Date(),
+        teamId: team ? team._id : null
       }
     });
 
@@ -2776,11 +2797,10 @@ const sendMentorRequest = async (req, res) => {
   }
 };
 
-// Add this function to track request status
 const getMentorRequestStatus = async (req, res) => {
   try {
     const { mentorId } = req.params;
-    const { uid } = req.query;
+    const { uid, teamId } = req.query;
 
     // Find student by firebase UID
     const student = await Student.findOne({ firebaseUID: uid });
@@ -2791,7 +2811,7 @@ const getMentorRequestStatus = async (req, res) => {
       });
     }
 
-    // Find mentor and check application status
+    // Find mentor
     const mentor = await Mentor.findById(mentorId);
     if (!mentor) {
       return res.status(404).json({
@@ -2800,9 +2820,10 @@ const getMentorRequestStatus = async (req, res) => {
       });
     }
 
-    // Find application
-    const application = mentor.applications.find(
-      app => app.student.toString() === student._id.toString()
+    // Find application based on team or individual request
+    const application = mentor.applications.find(app => 
+      (teamId && app.teamId?.toString() === teamId) || 
+      (!teamId && app.student?.toString() === student._id.toString())
     );
 
     if (!application) {
@@ -2819,7 +2840,8 @@ const getMentorRequestStatus = async (req, res) => {
       application: {
         status: application.status,
         applicationDate: application.application_date,
-        message: application.message
+        message: application.message,
+        teamId: application.teamId
       }
     });
 

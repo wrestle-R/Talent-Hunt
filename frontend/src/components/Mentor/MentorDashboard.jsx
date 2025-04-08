@@ -276,11 +276,13 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
                 <Users className="text-[#E8C848]" size={24} />
                 <h3 className="text-xl font-semibold text-white">Team Management</h3>
               </div>
-              
+              {userData._id}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <TeamApplicationsCard 
                   applications={teamApplications}
                   mentorData={userData}
+                  mentorId={userData._id}
+                  onViewTeam={handleViewTeam}   
                   onRefresh={refreshDashboard}
                   isLoading={applicationsLoading}
                   key={`applications-${dashboardRefreshTrigger}`}

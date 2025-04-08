@@ -26,8 +26,8 @@ const MentorsPage = () => {
             Connect with experienced mentors who can guide you in your learning journey
           </p>
         </div>
-        
-        <DisplayMentors userData={userData} isFullPage={true} />
+{        console.log(userData)
+}        <DisplayMentors userData={userData} isFullPage={true} />
       </div>
     </>
   );
