@@ -1,25 +1,29 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, useNavigate, useLocation } from "react-router-dom"
 import { auth } from "../firebaseConfig"
 
 const Navbar = () => {
   const navigate = useNavigate()
+  const location = useLocation()
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userRole, setUserRole] = useState("")
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [activeLink, setActiveLink] = useState("")
+
+  useEffect(() => {
+    setActiveLink(location.pathname)
+  }, [location])
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       setIsLoggedIn(!!user)
-      // Determine user role from localStorage or other source
       if (user) {
         const storedUser = localStorage.getItem("user")
         if (storedUser) {
           try {
-            // You might want to store role in localStorage when user logs in
             const role = localStorage.getItem("userRole") || "student"
             setUserRole(role)
           } catch (error) {
@@ -58,44 +62,51 @@ const Navbar = () => {
       })
   }
 
+  const NavLink = ({ to, children }) => (
+    <Link
+      to={to}
+      className={`relative text-white/80 hover:text-white transition-colors duration-300 ${
+        activeLink === to ? "text-white" : ""
+      }`}
+      onClick={() => setIsMenuOpen(false)}
+    >
+      {children}
+      {activeLink === to && (
+        <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-white transform scale-x-100 origin-left transition-transform duration-300" />
+      )}
+    </Link>
+  )
+
   return (
     <>
       <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-          scrolled ? "bg-[#121212]/90 backdrop-blur-md shadow-lg" : "bg-[#121212]"
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          scrolled ? "bg-[#111111]/90 backdrop-blur-md shadow-lg" : "bg-[#111111] bg-blur"
         }`}
       >
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-[#E8C848] to-[#E8C848]/70 rounded-lg flex items-center justify-center text-[#121212] font-bold text-xl">
+            <Link to="/" className="flex items-center space-x-2 group">
+              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center text-gray-900 font-bold text-xl transform transition-transform duration-300 group-hover:scale-110">
                 TS
               </div>
-              <span className="text-xl font-bold text-white">
-                Team<span className="text-[#E8C848]">Sync</span>
+              <span className="text-xl font-bold text-white group-hover:text-white/90 transition-colors duration-300">
+                Team<span className="text-white/90">Sync</span>
               </span>
             </Link>
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <Link to="/" className="text-white hover:text-[#E8C848] transition-colors">
-                Home
-              </Link>
-              <Link to="/features" className="text-white hover:text-[#E8C848] transition-colors">
-                Features
-              </Link>
-              <Link to="/about" className="text-white hover:text-[#E8C848] transition-colors">
-                About
-              </Link>
+              <NavLink to="/">Home</NavLink>
+              <NavLink to="/features">Features</NavLink>
+              <NavLink to="/about">About</NavLink>
               {isLoggedIn ? (
                 <>
-                  <Link to={`/${userRole}/hero`} className="text-white hover:text-[#E8C848] transition-colors">
-                    Profile
-                  </Link>
+                  <NavLink to={`/${userRole}/hero`}>Profile</NavLink>
                   <button
                     onClick={handleLogout}
-                    className="px-4 py-2 bg-[#E8C848] text-[#121212] rounded-md hover:bg-[#E8C848]/80 transition-colors font-medium"
+                    className="px-4 py-2 bg-white text-gray-900 rounded-md hover:bg-gray-100 transition-all duration-300 font-medium transform hover:scale-105 active:scale-95"
                   >
                     Logout
                   </button>
@@ -103,7 +114,7 @@ const Navbar = () => {
               ) : (
                 <Link
                   to="/register"
-                  className="px-4 py-2 bg-[#E8C848] text-[#121212] rounded-md hover:bg-[#E8C848]/80 transition-colors font-medium"
+                  className="px-4 py-2 bg-white text-gray-900 rounded-md hover:bg-gray-100 transition-all duration-300 font-medium transform hover:scale-105 active:scale-95"
                 >
                   Sign Up
                 </Link>
@@ -112,7 +123,10 @@ const Navbar = () => {
 
             {/* Mobile Menu Button */}
             <div className="md:hidden">
-              <button onClick={() => setIsMenuOpen(!isMenuOpen)} className="text-white focus:outline-none">
+              <button
+                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                className="text-white/90 hover:text-white focus:outline-none transition-transform duration-300 transform hover:scale-110"
+              >
                 {isMenuOpen ? (
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
@@ -128,61 +142,39 @@ const Navbar = () => {
         </div>
 
         {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden bg-[#121212] border-t border-gray-800">
-            <div className="container mx-auto px-4 py-4 space-y-4">
-              <Link
-                to="/"
-                className="block text-white hover:text-[#E8C848] transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Home
-              </Link>
-              <Link
-                to="/features"
-                className="block text-white hover:text-[#E8C848] transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Features
-              </Link>
-              <Link
-                to="/about"
-                className="block text-white hover:text-[#E8C848] transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                About
-              </Link>
-              {isLoggedIn ? (
-                <>
-                  <Link
-                    to={`/${userRole}/hero`}
-                    className="block text-white hover:text-[#E8C848] transition-colors"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Profile
-                  </Link>
-                  <button
-                    onClick={() => {
-                      handleLogout()
-                      setIsMenuOpen(false)
-                    }}
-                    className="w-full px-4 py-2 bg-[#E8C848] text-[#121212] rounded-md hover:bg-[#E8C848]/80 transition-colors font-medium"
-                  >
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <Link
-                  to="/register"
-                  className="block w-full px-4 py-2 bg-[#E8C848] text-[#121212] rounded-md hover:bg-[#E8C848]/80 transition-colors font-medium text-center"
-                  onClick={() => setIsMenuOpen(false)}
+        <div
+          className={`md:hidden bg-[#111111] border-t border-white/10 transition-all duration-500 ease-in-out ${
+            isMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0 overflow-hidden"
+          }`}
+        >
+          <div className="container mx-auto px-4 py-4 space-y-4">
+            <NavLink to="/">Home</NavLink>
+            <NavLink to="/features">Features</NavLink>
+            <NavLink to="/about">About</NavLink>
+            {isLoggedIn ? (
+              <>
+                <NavLink to={`/${userRole}/hero`}>Profile</NavLink>
+                <button
+                  onClick={() => {
+                    handleLogout()
+                    setIsMenuOpen(false)
+                  }}
+                  className="w-full px-4 py-2 bg-white text-gray-900 rounded-md hover:bg-gray-100 transition-all duration-300 font-medium transform hover:scale-105 active:scale-95"
                 >
-                  Sign Up
-                </Link>
-              )}
-            </div>
+                  Logout
+                </button>
+              </>
+            ) : (
+              <Link
+                to="/register"
+                className="block w-full px-4 py-2 bg-white text-gray-900 rounded-md hover:bg-gray-100 transition-all duration-300 font-medium text-center transform hover:scale-105 active:scale-95"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Sign Up
+              </Link>
+            )}
           </div>
-        )}
+        </div>
       </nav>
       {/* This div adds spacing below the navbar */}
       <div className="h-16"></div>
