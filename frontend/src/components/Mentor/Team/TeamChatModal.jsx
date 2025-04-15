@@ -32,7 +32,7 @@ const TeamChatModal = ({ isOpen, onClose, team, currentUser }) => {
   // Initialize socket connection once
   useEffect(() => {
     if (!socket) {
-      socket = io('http://localhost:4000', {
+      socket = io(import.meta.env.VITE_APP_BASE_URL, {
         transports: ['websocket', 'polling'],
         reconnection: true,
         reconnectionAttempts: 10,
@@ -154,7 +154,7 @@ const TeamChatModal = ({ isOpen, onClose, team, currentUser }) => {
       
       if (mentorId && teamId) {
         // Mark messages as read via API
-        axios.put(`http://localhost:4000/api/chat/messages/read/${mentorId}/${teamId}`)
+        axios.put(`${import.meta.env.VITE_APP_BASE_URL}/api/chat/messages/read/${mentorId}/${teamId}`)
           .then(response => {
             console.log("Messages marked as read:", response.data);
           })
@@ -209,7 +209,7 @@ const TeamChatModal = ({ isOpen, onClose, team, currentUser }) => {
         
         // If we're receiving a message and the chat is open, mark it as read
         if (newMsg.senderId === teamId && isOpen) {
-          axios.put(`http://localhost:4000/api/chat/messages/read/${mentorId}/${teamId}`)
+          axios.put(`${import.meta.env.VITE_APP_BASE_URL}/api/chat/messages/read/${mentorId}/${teamId}`)
             .catch(error => {
               console.error("Error marking messages as read:", error);
             });
@@ -238,7 +238,7 @@ const TeamChatModal = ({ isOpen, onClose, team, currentUser }) => {
     // Fetch message history
     const fetchMessages = async () => {
       try {
-        const response = await axios.get(`http://localhost:4000/api/chat/messages/${mentorId}/${teamId}`);
+        const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/chat/messages/${mentorId}/${teamId}`);
         console.log("Fetched messages:", response.data);
         
         if (Array.isArray(response.data)) {
@@ -403,7 +403,7 @@ const TeamChatModal = ({ isOpen, onClose, team, currentUser }) => {
     try {
       setIsSubmittingReport(true);
       
-      const response = await axios.post('http://localhost:4000/api/chat/messages/report', {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/chat/messages/report`, {
         messageId: messageToReport._id,
         reportedBy: getUserId(currentUser),
         reportedByType: 'mentor',
@@ -433,9 +433,9 @@ const TeamChatModal = ({ isOpen, onClose, team, currentUser }) => {
   if (!isOpen || !team) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-[#1A1A1A] shadow-xl z-50 flex flex-col animate-slide-in-right border-l border-gray-800">
+    <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-[#111111] shadow-lg border-l border-gray-800 z-50 flex flex-col animate-slide-in-right">
       {/* Chat Header */}
-      <div className="px-4 py-3 bg-[#121212] text-white flex items-center justify-between border-b border-gray-800">
+      <div className="px-4 py-3 bg-[#1A1A1A] border-b border-gray-800">
         <div className="flex items-center">
           <button onClick={onClose} className="p-1 mr-2 rounded-full hover:bg-[#E8C848]/10 text-[#E8C848]">
             <ChevronLeft size={20} />
@@ -449,8 +449,8 @@ const TeamChatModal = ({ isOpen, onClose, team, currentUser }) => {
               )}
             </div>
             <div>
-              <h3 className="font-medium text-white">{team.name}</h3>
-              <p className="text-xs text-gray-400">
+              <h3 className="font-medium text-white font-montserrat">{team.name}</h3>
+              <p className="text-xs text-gray-400 font-inter">
                 {team.members?.length || 0} team members
               </p>
             </div>
@@ -462,7 +462,7 @@ const TeamChatModal = ({ isOpen, onClose, team, currentUser }) => {
       </div>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-[#121212]">
+      <div className="flex-1 overflow-y-auto p-4 bg-[#111111]">
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
             <div className="animate-pulse flex flex-col items-center">
@@ -559,7 +559,7 @@ const TeamChatModal = ({ isOpen, onClose, team, currentUser }) => {
       )}
       
       {/* Chat Input */}
-      <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-800 bg-[#1A1A1A] flex gap-2">
+      <form onSubmit={handleSendMessage} className="p-3 bg-[#1A1A1A] border-t border-gray-800">
         <button 
           type="button"
           className="p-2 text-gray-400 rounded-full hover:bg-[#121212] transition-colors"
@@ -571,7 +571,7 @@ const TeamChatModal = ({ isOpen, onClose, team, currentUser }) => {
           value={message}
           onChange={handleInputChange}
           placeholder="Send a message to the team..."
-          className="flex-1 py-2 px-3 bg-[#121212] border border-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50 text-white placeholder-gray-500"
+          className="flex-1 py-2 px-3 bg-[#111111] border border-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50 text-white placeholder-gray-500 font-inter"
         />
         <button 
           type="submit"
@@ -588,10 +588,10 @@ const TeamChatModal = ({ isOpen, onClose, team, currentUser }) => {
       
       {/* Report Modal */}
       {isReportModalOpen && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#1A1A1A] rounded-lg shadow-xl p-6 w-full max-w-md mx-4 border border-gray-800">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#1A1A1A] rounded-lg shadow-lg p-6 w-full max-w-md mx-4 border border-gray-800">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-[#E8C848] flex items-center">
+              <h3 className="text-lg font-medium text-white font-montserrat">
                 <AlertCircle size={20} className="text-[#E8C848] mr-2" />
                 Report Message
               </h3>

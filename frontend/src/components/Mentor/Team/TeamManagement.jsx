@@ -47,7 +47,7 @@ const TeamManagement = () => {
     const fetchTeamData = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`http://localhost:4000/api/mentor/team/${teamId}`, {
+        const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team/${teamId}`, {
           params: { mentorId: mentorData._id }
         });
         
@@ -55,7 +55,7 @@ const TeamManagement = () => {
           setTeam(response.data.team);
           
           // Also fetch team performance metrics
-          const metricsResponse = await axios.get(`http://localhost:4000/api/mentor/team-metrics/${teamId}`, {
+          const metricsResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team-metrics/${teamId}`, {
             params: { mentorId: mentorData._id }
           });
           
@@ -81,7 +81,7 @@ const TeamManagement = () => {
   // Handle leaving mentorship
   const handleLeaveMentorship = async (reason) => {
     try {
-      const response = await axios.post(`http://localhost:4000/api/mentor/leave-team/${teamId}`, {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/leave-team/${teamId}`, {
         mentorId: mentorData._id,
         reason
       });
@@ -101,7 +101,7 @@ const TeamManagement = () => {
   // Handle adding feedback notes
   const handleAddFeedback = async (notes) => {
     try {
-      const response = await axios.post(`http://localhost:4000/api/mentor/team-feedback/${teamId}`, {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team-feedback/${teamId}`, {
         mentorId: mentorData._id,
         feedback: notes
       });
@@ -172,7 +172,7 @@ const TeamManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#121212]">
+    <div className="min-h-screen bg-[#111111]">
       <div className="p-6">
         {/* Top bar with team info and actions */}
         <div className="flex justify-between items-start mb-6">
@@ -194,8 +194,8 @@ const TeamManagement = () => {
               </div>
               
               <div>
-                <h1 className="text-2xl font-bold text-white">{team.name}</h1>
-                <p className="text-gray-400">
+                <h1 className="text-2xl font-bold text-white font-montserrat">{team.name}</h1>
+                <p className="text-gray-400 font-inter">
                   {team.members.length} members • Mentoring since {new Date(team.mentor.joinedAt).toLocaleDateString()}
                 </p>
               </div>

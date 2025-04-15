@@ -16,3 +16,10 @@ h1, h2, h3, h4, h5, h6 {
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
 }
+
+.dark-theme {
+  --primary-bg: #111111;
+  --secondary-bg: #1A1A1A;
+  --accent-color: #E8C848;
+  --border-color: #1f1f1f;
+}

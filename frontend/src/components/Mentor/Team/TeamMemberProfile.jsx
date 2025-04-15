@@ -23,7 +23,7 @@ const TeamMemberProfile = ({ isOpen, onClose, member, mentorId, onDataChange }) 
   const fetchMemberProfile = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:4000/api/mentor/student-profile/${member.student._id}`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/student-profile/${member.student._id}`);
       
       if (response.data.success) {
         setMemberData(response.data.student);
@@ -48,7 +48,7 @@ const TeamMemberProfile = ({ isOpen, onClose, member, mentorId, onDataChange }) 
     try {
       setIsSubmittingFeedback(true);
       
-      const response = await axios.post(`http://localhost:4000/api/mentor/member-feedback/${member.student._id}`, {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/member-feedback/${member.student._id}`, {
         mentorId,
         feedback: feedback.trim()
       });
@@ -73,7 +73,7 @@ const TeamMemberProfile = ({ isOpen, onClose, member, mentorId, onDataChange }) 
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-black/50 backdrop-blur-sm flex items-center justify-center">
-      <div className="bg-[#1A1A1A] rounded-xl shadow-xl w-full max-w-4xl max-h-[90vh] overflow-hidden border border-gray-800">
+      <div className="bg-[#1A1A1A] rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-hidden border border-gray-800 transition-all duration-300">
         {/* Header */}
         <div className="px-6 py-4 border-b border-gray-800 flex justify-between items-center bg-[#121212]">
           <div className="flex items-center">
@@ -83,7 +83,7 @@ const TeamMemberProfile = ({ isOpen, onClose, member, mentorId, onDataChange }) 
             >
               <ChevronLeft size={20} />
             </button>
-            <h2 className="text-lg font-semibold text-white flex items-center">
+            <h2 className="text-lg font-semibold text-white flex items-center font-montserrat">
               <User size={20} className="mr-2 text-[#E8C848]" />
               Member Profile
             </h2>
@@ -123,7 +123,7 @@ const TeamMemberProfile = ({ isOpen, onClose, member, mentorId, onDataChange }) 
         </div>
 
         {/* Content */}
-        <div className="overflow-y-auto" style={{ maxHeight: 'calc(90vh - 120px)' }}>
+        <div className="overflow-y-auto font-inter" style={{ maxHeight: 'calc(90vh - 120px)' }}>
           {activeTab === 'profile' && (
             <div className="p-6">
               {loading ? (

@@ -43,7 +43,7 @@ const TeamMembersList = ({ team, mentorId, onDataChange, onViewProfile }) => {
     try {
       setIsSubmittingFeedback(true);
       
-      const response = await axios.post(`http://localhost:4000/api/mentor/member-feedback/${team._id}/${memberId}`, {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/member-feedback/${team._id}/${memberId}`, {
         mentorId,
         feedback: memberFeedback
       });
@@ -71,13 +71,13 @@ const TeamMembersList = ({ team, mentorId, onDataChange, onViewProfile }) => {
   };
   
   return (
-    <div className="bg-[#1A1A1A] rounded-xl shadow-sm border border-gray-800">
+    <div className="bg-[#1A1A1A] rounded-xl shadow-lg border border-gray-800 transition-all duration-300">
       <div className="p-6 border-b border-gray-800">
-        <h2 className="text-lg font-semibold flex items-center text-white">
+        <h2 className="text-lg font-semibold flex items-center text-white font-montserrat">
           <User size={20} className="mr-2 text-[#E8C848]" />
           Team Members ({team.members.length})
         </h2>
-        <p className="text-sm text-gray-400 mt-1">Click on a member to see more details</p>
+        <p className="text-sm text-gray-400 mt-1 font-inter">Click on a member to see more details</p>
       </div>
       
       <div className="divide-y divide-gray-800">
@@ -89,8 +89,8 @@ const TeamMembersList = ({ team, mentorId, onDataChange, onViewProfile }) => {
           return (
             <div key={memberId} className="p-0">
               <div 
-                className={`px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-[#121212] ${
-                  expandedMember === memberId ? 'bg-[#121212]' : ''
+                className={`px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-[#111111] transition-all duration-300 ${
+                  expandedMember === memberId ? 'bg-[#111111]' : ''
                 }`}
                 onClick={() => handleMemberClick(memberId)}
               >
@@ -148,7 +148,7 @@ const TeamMembersList = ({ team, mentorId, onDataChange, onViewProfile }) => {
               </div>
               
               {expandedMember === memberId && (
-                <div className="px-6 py-4 bg-[#121212] border-t border-gray-800">
+                <div className="px-6 py-4 bg-[#111111] border-t border-gray-800">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <h4 className="text-sm font-medium text-gray-400 mb-3">Member Information</h4>
@@ -253,7 +253,7 @@ const TeamMembersList = ({ team, mentorId, onDataChange, onViewProfile }) => {
                         value={memberFeedback}
                         onChange={(e) => setMemberFeedback(e.target.value)}
                         placeholder="Write your feedback for this team member..."
-                        className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50 focus:border-[#E8C848] text-white placeholder-gray-500"
+                        className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50 focus:border-[#E8C848] text-white placeholder-gray-500 font-inter"
                         rows="5"
                       />
                       <div className="mt-3 flex justify-end">

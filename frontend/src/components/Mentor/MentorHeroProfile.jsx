@@ -71,8 +71,8 @@ const MentorHeroProfile = ({
               </button>
             </div>
             
-            <h2 className="text-xl font-bold text-white mb-1 text-center">{userData.name || 'Complete Your Profile'}</h2>
-            <p className="text-gray-400 mb-2 text-center text-sm">{userData.email}</p>
+            <h2 className="text-xl font-bold text-white mb-1 text-center font-montserrat">{userData.name || 'Complete Your Profile'}</h2>
+            <p className="text-gray-400 mb-2 text-center text-sm font-inter">{userData.email}</p>
             
             {/* Mentor Rating */}
             <div className="flex justify-center mb-4">

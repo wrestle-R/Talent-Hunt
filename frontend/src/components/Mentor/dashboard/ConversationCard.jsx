@@ -9,9 +9,9 @@ const ConversationsCard = ({ conversations, onOpenChat, formatTimeAgo, isLoading
 
   if (isLoading) {
     return (
-      <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-sm border border-gray-800">
+      <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-lg border border-gray-800">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+          <h3 className="font-bold text-lg flex items-center gap-2 text-white font-montserrat">
             <MessageCircle size={20} className="text-[#E8C848]" />
             Recent Conversations
           </h3>
@@ -41,9 +41,9 @@ const ConversationsCard = ({ conversations, onOpenChat, formatTimeAgo, isLoading
   }
 
   return (
-    <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-sm border border-gray-800">
+    <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-lg border border-gray-800 hover:border-[#E8C848]/20 transition-all duration-300">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+        <h3 className="font-bold text-lg flex items-center gap-2 text-white font-montserrat">
           <MessageCircle size={20} className="text-[#E8C848]" />
           Recent Conversations
         </h3>
@@ -105,7 +105,7 @@ const ConversationsCard = ({ conversations, onOpenChat, formatTimeAgo, isLoading
       {conversations.length > 0 && (
         <button 
           onClick={() => navigate('/mentor/conversations')}
-          className="text-[#E8C848] text-sm font-medium mt-4 hover:text-[#E8C848]/80 flex items-center group"
+          className="text-[#E8C848] text-sm font-medium mt-4 hover:text-[#E8C848]/80 flex items-center group font-inter"
         >
           View All Messages 
           <ChevronRight size={16} className="ml-1 transition-transform group-hover:translate-x-1" />

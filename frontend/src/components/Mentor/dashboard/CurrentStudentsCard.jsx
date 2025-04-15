@@ -5,9 +5,9 @@ import MentorPlaceholder from '../../../public/mentor_placeholder.png';
 
 const CurrentStudentsCard = ({ students, onOpenChat }) => {
   return (
-    <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-sm border border-gray-800">
+    <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-lg border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+        <h3 className="font-bold text-lg flex items-center gap-2 text-white font-montserrat">
           <Users size={20} className="text-[#E8C848]" />
           Current Students
         </h3>
@@ -17,7 +17,7 @@ const CurrentStudentsCard = ({ students, onOpenChat }) => {
       </div>
       <div className="space-y-4">
         {students.map(student => (
-          <div key={student._id} className="flex items-center justify-between border-b border-gray-800 pb-3">
+          <div key={student._id} className="flex items-center justify-between border-b border-gray-800 pb-3 hover:bg-[#111111]/50 transition-all duration-300 rounded-lg p-2">
             <div className="flex items-center">
               <img 
                 src={student.profile_picture || StudentPlaceholder} 
@@ -37,7 +37,7 @@ const CurrentStudentsCard = ({ students, onOpenChat }) => {
             </div>
             <div className="flex gap-2">
               <button 
-                className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm hover:bg-[#E8C848]/20 transition-colors"
+                className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm hover:bg-[#E8C848]/20 transition-all duration-300 font-inter"
                 onClick={() => onOpenChat(student)}
               >
                 Message
@@ -46,13 +46,14 @@ const CurrentStudentsCard = ({ students, onOpenChat }) => {
           </div>
         ))}
         {students.length === 0 && (
-          <div className="text-center text-gray-400 py-4">
+          <div className="text-center text-gray-400 py-4 font-inter">
             No students assigned yet
           </div>
         )}
       </div>
-      <button className="text-[#E8C848] text-sm font-medium mt-4 hover:text-[#E8C848]/80 flex items-center transition-colors">
-        View Student Progress <ChevronRight size={16} />
+      <button className="text-[#E8C848] text-sm font-medium mt-4 hover:text-[#E8C848]/80 flex items-center group transition-all duration-300 font-inter">
+        View Student Progress 
+        <ChevronRight size={16} className="ml-1 transition-transform group-hover:translate-x-1" />
       </button>
     </div>
   );

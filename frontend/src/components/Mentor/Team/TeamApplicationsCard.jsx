@@ -19,7 +19,7 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:4000/api/mentor/team-applications/${mentorData._id}`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team-applications/${mentorData._id}`);
       
       if (response.data?.success && Array.isArray(response.data.applications)) {
         console.log("Applications data:", response.data);
@@ -46,7 +46,7 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
       
       setProcessingId(applicationId);
       const response = await axios.post(
-        `http://localhost:4000/api/mentor/team-applications/${mentorData._id}/${applicationId}/accept`
+        `${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team-applications/${mentorData._id}/${applicationId}/accept`
       );
       
       if (response.data?.success) {
@@ -73,7 +73,7 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
       
       setProcessingId(applicationId);
       const response = await axios.post(
-        `http://localhost:4000/api/mentor/team-applications/${mentorData._id}/${applicationId}/reject`
+        `${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team-applications/${mentorData._id}/${applicationId}/reject`
       );
       
       if (response.data?.success) {
@@ -123,8 +123,8 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
 
   if (loading) {
     return (
-      <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-sm border border-gray-800">
-        <h3 className="font-bold text-lg flex items-center gap-2 mb-4 text-white">
+      <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-lg border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+        <h3 className="font-bold text-lg flex items-center gap-2 mb-4 text-white font-montserrat">
           <Users size={20} className="text-[#E8C848]" />
           Pending Applications
         </h3>
@@ -136,21 +136,21 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
   }
 
   return (
-    <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-sm border border-gray-800">
-      <h3 className="font-bold text-lg flex items-center gap-2 mb-4 text-white">
+    <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-lg border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+      <h3 className="font-bold text-lg flex items-center gap-2 mb-4 text-white font-montserrat">
         <Users size={20} className="text-[#E8C848]" />
         Pending Applications ({applications.length})
       </h3>
       
       {applications.length === 0 ? (
-        <div className="text-center py-8 text-gray-400">
+        <div className="text-center py-8 text-gray-400 font-inter">
           <AlertCircle className="mx-auto mb-2 h-8 w-8 text-gray-600" />
           <p>No pending applications</p>
         </div>
       ) : (
         <div className="space-y-4">
           {applications.map((app) => (
-            <div key={app.applicationId} className="border border-gray-800 rounded-lg overflow-hidden bg-[#121212]">
+            <div key={app.applicationId} className="border border-gray-800 rounded-lg overflow-hidden bg-[#111111] hover:border-[#E8C848]/30 transition-all duration-300">
               <div 
                 className="p-4 hover:bg-[#1A1A1A] cursor-pointer transition-colors"
                 onClick={() => toggleExpand(app.applicationId)}

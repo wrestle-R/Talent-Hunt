@@ -22,7 +22,7 @@ const CurrentMentorshipsCard = ({ mentorData, onViewTeam }) => {
   const fetchMentorships = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`http://localhost:4000/api/mentor/active-mentorships/${mentorData._id}`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/active-mentorships/${mentorData._id}`);
       setMentorships(response.data || []);
     } catch (error) {
       console.error("Error fetching active mentorships:", error);
@@ -46,8 +46,8 @@ const CurrentMentorshipsCard = ({ mentorData, onViewTeam }) => {
 
   if (loading) {
     return (
-      <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-sm border border-gray-800">
-        <h3 className="font-bold text-lg flex items-center gap-2 mb-4 text-white">
+      <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-lg border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+        <h3 className="font-bold text-lg flex items-center gap-2 mb-4 text-white font-montserrat">
           <BarChart size={20} className="text-[#E8C848]" />
           Current Mentorships
         </h3>
@@ -59,25 +59,25 @@ const CurrentMentorshipsCard = ({ mentorData, onViewTeam }) => {
   }
 
   return (
-    <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-sm border border-gray-800">
-      <h3 className="font-bold text-lg flex items-center gap-2 mb-4 text-white">
+    <div className="bg-[#1A1A1A] p-6 rounded-xl shadow-lg border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+      <h3 className="font-bold text-lg flex items-center gap-2 mb-4 text-white font-montserrat">
         <BarChart size={20} className="text-[#E8C848]" />
         Current Mentorships
       </h3>
       
       {mentorships.length === 0 ? (
-        <div className="text-center py-8 text-gray-400">
+        <div className="text-center py-8 text-gray-400 font-inter">
           <Users className="mx-auto mb-2 h-8 w-8 text-gray-600" />
           <p>No active mentorships</p>
         </div>
       ) : (
         <div className="space-y-3">
           {mentorships.map((team) => (
-            <div key={team._id} className="border border-gray-800 rounded-lg p-4 hover:bg-[#121212] transition-colors">
+            <div key={team._id} className="border border-gray-800 rounded-lg p-4 hover:bg-[#111111] hover:border-[#E8C848]/30 transition-all duration-300">
               <div className="flex justify-between items-center">
                 <div>
-                  <h4 className="font-medium text-white">{team.name}</h4>
-                  <p className="text-sm text-gray-400">
+                  <h4 className="font-medium text-white font-montserrat">{team.name}</h4>
+                  <p className="text-sm text-gray-400 font-inter">
                     {team.members.length} members • Since {new Date(team.mentorJoinedDate).toLocaleDateString()}
                   </p>
                 </div>

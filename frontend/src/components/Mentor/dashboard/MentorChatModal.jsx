@@ -31,7 +31,7 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
   // Initialize socket connection once
   useEffect(() => {
     if (!socket) {
-      socket = io('http://localhost:4000');
+      socket = io(import.meta.env.VITE_APP_BASE_URL);
       
       socket.on('connect', () => {
         console.log('Connected to socket server');
@@ -95,7 +95,7 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
       
       if (studentId && mentorId) {
         // Mark messages as read via API
-        axios.put(`http://localhost:4000/api/mentor/messages/read/${mentorId}/${studentId}`)
+        axios.put(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/messages/read/${mentorId}/${studentId}`)
           .then(response => {
             console.log("Messages marked as read:", response.data);
           })
@@ -189,7 +189,7 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
         
         // If we're receiving a message and the chat is open, mark it as read
         if (newMsg.senderId === studentId && isOpen) {
-          axios.put(`http://localhost:4000/api/mentor/messages/read/${mentorId}/${studentId}`)
+          axios.put(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/messages/read/${mentorId}/${studentId}`)
             .catch(error => {
               console.error("Error marking message as read:", error);
             });
@@ -218,7 +218,7 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
     const fetchMessages = async () => {
       try {
         // Use proper IDs for API call
-        const response = await axios.get(`http://localhost:4000/api/chat/messages/${mentorId}/${studentId}`);
+        const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/chat/messages/${mentorId}/${studentId}`);
         console.log("Fetched messages:", response.data);
         
         // Add all fetched messages to processed set to avoid duplicates
@@ -375,7 +375,7 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
     try {
       setIsSubmittingReport(true);
       
-      const response = await axios.post('http://localhost:4000/api/chat/messages/report', {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/chat/messages/report`, {
         messageId: messageToReport._id,
         reportedBy: getUserId(mentorData),
         reason: reportReason,
@@ -403,9 +403,9 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
   if (!isOpen || !student) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-[#121212] shadow-xl z-50 flex flex-col animate-slide-in-right border-l border-gray-800">
+    <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-[#111111] shadow-lg border-l border-gray-800 z-50 flex flex-col animate-slide-in-right">
       {/* Chat Header */}
-      <div className="px-4 py-3 bg-[#1A1A1A] text-white flex items-center justify-between border-b border-gray-800">
+      <div className="px-4 py-3 bg-[#1A1A1A] border-b border-gray-800">
         <div className="flex items-center">
           <button onClick={onClose} className="p-1 mr-2 rounded-full hover:bg-[#E8C848]/10 text-[#E8C848]">
             <ChevronLeft size={20} />
@@ -421,9 +421,9 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
               }}
             />
             <div>
-              <h3 className="font-medium text-white">{student.name}</h3>
+              <h3 className="font-medium text-white font-montserrat">{student.name}</h3>
               {student.email && (
-                <p className="text-xs text-gray-400">
+                <p className="text-xs text-gray-400 font-inter">
                   {student.email}
                 </p>
               )}
@@ -443,7 +443,7 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
       )}
       
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-[#121212]">
+      <div className="flex-1 overflow-y-auto p-4 bg-[#111111]">
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
             <div className="animate-pulse flex flex-col items-center">
@@ -532,7 +532,7 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
       )}
       
       {/* Chat Input */}
-      <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-800 bg-[#1A1A1A] flex gap-2">
+      <form onSubmit={handleSendMessage} className="p-3 bg-[#1A1A1A] border-t border-gray-800">
         <button 
           type="button"
           className="p-2 text-gray-400 rounded-full hover:bg-[#121212]"
@@ -545,7 +545,7 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
           value={message}
           onChange={handleInputChange}
           placeholder={socketConnected ? "Type a message..." : "Connecting..."}
-          className="flex-1 py-2 px-3 bg-[#121212] border border-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50 text-white placeholder-gray-500"
+          className="flex-1 py-2 px-3 bg-[#111111] border border-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50 text-white placeholder-gray-500 font-inter"
           disabled={!socketConnected}
         />
         <button 
@@ -563,10 +563,10 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
       
       {/* Report Modal */}
       {isReportModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#1A1A1A] rounded-lg shadow-xl p-6 w-full max-w-md mx-4 border border-gray-800">
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#1A1A1A] rounded-lg shadow-lg p-6 w-full max-w-md mx-4 border border-gray-800">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-white flex items-center">
+              <h3 className="text-lg font-medium text-white font-montserrat flex items-center">
                 <AlertCircle size={20} className="text-[#E8C848] mr-2" />
                 Report Message
               </h3>
