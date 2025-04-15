@@ -1,9 +1,10 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { motion } from "framer-motion"
+import { motion, useInView } from "framer-motion"
 import { FaUser, FaCode, FaLaptopCode, FaChartLine, FaQuoteLeft } from "react-icons/fa"
 import Navbar from "./Navbar"
+import Spline from '@splinetool/react-spline'
 
 // Animated Testimonials Component
 function AnimatedTestimonials({ testimonials }) {
@@ -93,154 +94,383 @@ function AnimatedTestimonials({ testimonials }) {
   );
 }
 
-function Landing() {
+// Add these custom components before the main Landing component
+const FadeInWhenVisible = ({ children, delay = 0 }) => {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { 
+    margin: "-100% -100px",
+    once: true
+  })
+  
   return (
-    <div className="relative min-h-screen bg-[#121212] text-white overflow-hidden">
-      {/* Interactive Grid Background */}
-      <InteractiveGridBackground />
+    <motion.div
+      ref={ref}
+      initial={{ opacity: 0, y: 50 }}
+      animate={isInView && { opacity: 1, y: 0 }}
+      transition={{ 
+        duration: 0.8, 
+        delay
+      }}
+    >
+      {children}
+    </motion.div>
+  )
+}
 
-      {/* Navbar */}
-      <Navbar />
+const StaggerChildren = ({ children }) => {
+  const ref = useRef(null)
+  const isInView = useInView(ref, { 
+    margin: "-100% -100px",
+    once: true
+  })
+  
+  return (
+    <motion.div
+      ref={ref}
+      initial="hidden"
+      animate={isInView ? "visible" : "hidden"}
+      variants={{
+        hidden: { 
+          opacity: 0
+        },
+        visible: {
+          opacity: 1,
+          transition: {
+            staggerChildren: 0.2,
+            delayChildren: 0.1
+          }
+        }
+      }}
+    >
+      {children}
+    </motion.div>
+  )
+}
 
-      {/* Hero Section with Typewriter */}
-      <section className="relative min-h-screen flex items-center overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#121212]/50 to-[#121212]"></div>
+const StaggerItem = ({ children }) => {
+  return (
+    <motion.div
+      variants={{
+        hidden: { 
+          opacity: 0, 
+          y: 50
+        },
+        visible: { 
+          opacity: 1, 
+          y: 0,
+          transition: {
+            duration: 0.5,
+            ease: "easeOut"
+          }
+        }
+      }}
+    >
+      {children}
+    </motion.div>
+  )
+}
 
-        {/* Animated particles in background */}
-        <div className="absolute inset-0 overflow-hidden">
-          {[...Array(20)].map((_, i) => (
-            <FloatingParticle key={i} delay={i * 200} />
-          ))}
+function Landing() {
+  const splineRef = useRef();
+  const heroRef = useRef();
+  const isHeroInView = useInView(heroRef, { 
+    margin: "-100% -100px",
+    once: true
+  });
+
+  const onLoad = (spline) => {
+    if (!spline) return;
+    splineRef.current = spline;
+  };
+
+  return (
+    <div className="relative min-h-screen bg-[#111111] text-white overflow-hidden">
+      {/* Main Spline Scene */}
+      <div className="fixed inset-0 w-full h-full z-0">
+        <Spline
+          scene="https://prod.spline.design/2Set-V-9Fslee20l/scene.splinecode"
+          onLoad={onLoad}
+          style={{ width: '100%', height: '100%' }}
+        />
+      </div>
+
+      {/* Content Overlay */}
+      <div className="relative z-10 pointer-events-none">
+        <div className="pointer-events-auto">
+          <Navbar />
         </div>
 
-        <div className="container mx-auto px-4 pb-16 relative z-10">
+        {/* Hero Section */}
+        <motion.section 
+          ref={heroRef}
+          className="h-[70vh] flex items-center justify-center px-4 mt-32"
+          initial={{ opacity: 0, y: 100 }}
+          animate={isHeroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 100 }}
+          transition={{
+            type: "spring",
+            stiffness: 100,
+            damping: 20,
+            mass: 1
+          }}
+        >
+          <div className="max-w-7xl mx-auto text-center pointer-events-auto">
+            <motion.div 
+              className="space-y-12"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={isHeroInView ? { opacity: 1, scale: 1 } : { opacity: 0, scale: 0.8 }}
+              transition={{ 
+                duration: 0.8,
+                ease: [0.6, -0.05, 0.01, 0.99]
+              }}
+            >
+              <motion.div 
+                className="flex flex-col sm:flex-row gap-20 justify-center pt-80"
+                initial={{ opacity: 0, y: 50 }}
+                animate={isHeroInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
+                transition={{ 
+                  delay: 0.3,
+                  duration: 0.8,
+                  type: "spring",
+                  stiffness: 100
+                }}
+              >
+                <motion.button 
+                  whileHover={{ 
+                    scale: 1.1,
+                    rotate: 2,
+                    boxShadow: "0 0 20px rgba(255, 255, 255, 0.5)"
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-10 py-5 bg-white text-gray-900 rounded-full font-medium hover:bg-gray-100 transition-all duration-300 text-lg shadow-lg"
+                >
+                  Get Started
+                </motion.button>
+                <motion.button 
+                  whileHover={{ 
+                    scale: 1.1,
+                    rotate: -2,
+                    boxShadow: "0 0 20px rgba(255, 255, 255, 0.5)"
+                  }}
+                  whileTap={{ scale: 0.95 }}
+                  className="px-10 py-5 border-2 border-white/80 rounded-full font-medium text-white hover:bg-white hover:text-gray-900 transition-all duration-300 text-lg"
+                >
+                  Learn More
+                </motion.button>
+              </motion.div>
+            </motion.div>
+          </div>
+        </motion.section>
+
+        {/* Stats Section */}
+        <motion.section 
+          className="py-10 px-4 -mt-5"
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ 
+            duration: 0.8,
+            type: "spring",
+            stiffness: 100
+          }}
+        >
           <div className="max-w-7xl mx-auto">
-            <TypewriterHero />
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-5xl mx-auto">
-              {[
-                { icon: <FaUser className="w-6 h-6" />, label: "Active Users", value: "5,000+" },
-                { icon: <FaCode className="w-6 h-6" />, label: "Projects Completed", value: "1,000+" },
-                { icon: <FaLaptopCode className="w-6 h-6" />, label: "Teams Formed", value: "2,500+" },
-                { icon: <FaChartLine className="w-6 h-6" />, label: "Success Rate", value: "95%" },
-              ].map((stat) => (
-                <div key={stat.label} className="text-center">
-                  <div className="bg-[#121212]/40 backdrop-blur-lg rounded-xl p-4 md:p-6 border border-white/10 transition-all duration-300 hover:border-[#E8C848]/30 hover:transform hover:scale-105 h-full">
-                    <div className="mb-2 text-[#E8C848] flex justify-center">{stat.icon}</div>
-                    <div className="text-2xl md:text-3xl font-bold mb-1">{stat.value}</div>
-                    <div className="text-xs md:text-sm text-zinc-400">{stat.label}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="relative z-10 py-20 bg-[#121212]/80">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">Key Features</h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Our platform streamlines the entire process from team formation to competition success.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {features.map((feature, index) => (
-              <FeatureCard key={index} {...feature} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section className="relative z-10 py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">How It Works</h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Get started with TeamSync in just a few simple steps
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {steps.map((step, index) => (
-              <div key={index} className="relative">
-                <div className="flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-full bg-[#E8C848] text-[#121212] flex items-center justify-center text-2xl font-bold mb-4">
-                    {index + 1}
-                  </div>
-                  <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                  <p className="text-gray-400 text-center">{step.description}</p>
-                </div>
-                {index < steps.length - 1 && (
-                  <div className="hidden md:block absolute top-8 left-full w-full h-0.5 bg-gradient-to-r from-[#E8C848] to-transparent transform -translate-x-8"></div>
-                )}
+            <StaggerChildren>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                {[
+                  { icon: <FaUser className="w-8 h-8" />, label: "Active Users", value: "5,000+" },
+                  { icon: <FaCode className="w-8 h-8" />, label: "Projects Completed", value: "1,000+" },
+                  { icon: <FaLaptopCode className="w-8 h-8" />, label: "Teams Formed", value: "2,500+" },
+                  { icon: <FaChartLine className="w-8 h-8" />, label: "Success Rate", value: "95%" },
+                ].map((stat, index) => (
+                  <StaggerItem key={stat.label}>
+                    <motion.div 
+                      className="text-center p-6 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 hover:border-white/20 transition-all duration-300"
+                      whileHover={{ 
+                        scale: 1.1,
+                        rotate: 2,
+                        backgroundColor: "rgba(255, 255, 255, 0.15)",
+                        boxShadow: "0 0 30px rgba(255, 255, 255, 0.2)",
+                        transition: { 
+                          duration: 0.3,
+                          type: "spring",
+                          stiffness: 300
+                        }
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <motion.div 
+                        className="text-white/90 mb-4 flex justify-center"
+                        whileHover={{ rotate: 360 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        {stat.icon}
+                      </motion.div>
+                      <motion.div 
+                        className="text-3xl font-bold mb-2 text-white"
+                        whileHover={{ scale: 1.2 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {stat.value}
+                      </motion.div>
+                      <div className="text-gray-300">{stat.label}</div>
+                    </motion.div>
+                  </StaggerItem>
+                ))}
               </div>
-            ))}
+            </StaggerChildren>
           </div>
-        </div>
-      </section>
+        </motion.section>
 
-      {/* Enhanced Testimonials Section */}
-      <section className="relative z-10 py-20 bg-[#121212]/80">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold mb-4">What Our Users Say</h2>
-            <p className="text-xl text-gray-400 max-w-3xl mx-auto">
-              Hear from students and mentors who have experienced success with TeamSync
-            </p>
-          </div>
-          
-          <AnimatedTestimonials testimonials={enhancedTestimonials} />
-        </div>
-      </section>
+        {/* Features Section */}
+        <motion.section 
+          className="py-20 px-4"
+          initial={{ opacity: 0, y: 100 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-100px" }}
+          transition={{ 
+            duration: 0.8,
+            type: "spring",
+            stiffness: 100
+          }}
+        >
+          <div className="max-w-7xl mx-auto">
+            <FadeInWhenVisible>
+              <div className="text-center mb-16">
+                <motion.h2 
+                  className="text-4xl font-bold mb-4 text-white"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ 
+                    delay: 0.2,
+                    type: "spring",
+                    stiffness: 100
+                  }}
+                >
+                  Key Features
+                </motion.h2>
+                <motion.p 
+                  className="text-xl text-gray-300 max-w-3xl mx-auto"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ 
+                    delay: 0.3,
+                    type: "spring",
+                    stiffness: 100
+                  }}
+                >
+                  Everything you need to build and manage successful teams
+                </motion.p>
+              </div>
+            </FadeInWhenVisible>
 
-      {/* Footer */}
-      <footer className="relative z-10 py-12 border-t border-gray-800">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="mb-4 md:mb-0">
-              <h2 className="text-xl font-bold flex items-center">
-                <span className="text-[#E8C848] mr-2">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
-                </span>
-                TeamSync
-              </h2>
-            </div>
-            <div className="flex space-x-6">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">
-                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
-                </svg>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">
-                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
-                </svg>
-              </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors duration-300">
-                <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
-                </svg>
-              </a>
-            </div>
+            <StaggerChildren>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                {features.map((feature, index) => (
+                  <StaggerItem key={index}>
+                    <motion.div 
+                      className="p-8 rounded-2xl bg-white/5 backdrop-blur-lg border border-white/10 hover:border-white/20 transition-all duration-300"
+                      whileHover={{ 
+                        scale: 1.1,
+                        rotate: 2,
+                        backgroundColor: "rgba(255, 255, 255, 0.15)",
+                        boxShadow: "0 0 30px rgba(255, 255, 255, 0.2)",
+                        transition: { 
+                          duration: 0.3,
+                          type: "spring",
+                          stiffness: 300
+                        }
+                      }}
+                      whileTap={{ scale: 0.95 }}
+                    >
+                      <motion.div 
+                        className="text-white/90 mb-4"
+                        whileHover={{ rotate: 360 }}
+                        transition={{ duration: 0.5 }}
+                      >
+                        {feature.icon}
+                      </motion.div>
+                      <motion.h3 
+                        className="text-xl font-semibold mb-2 text-white"
+                        whileHover={{ scale: 1.1 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        {feature.title}
+                      </motion.h3>
+                      <p className="text-gray-300">{feature.description}</p>
+                    </motion.div>
+                  </StaggerItem>
+                ))}
+              </div>
+            </StaggerChildren>
           </div>
-          <div className="border-t border-gray-800 mt-8 pt-8 text-center">
-            <p className="text-gray-500 text-sm">&copy; {new Date().getFullYear()} TeamSync. All rights reserved.</p>
+        </motion.section>
+
+        {/* Testimonials Section */}
+        <section className="py-20 px-4">
+          <div className="max-w-7xl mx-auto">
+            <FadeInWhenVisible>
+              <div className="text-center mb-16">
+                <h2 className="text-4xl font-bold mb-4 text-white">What Our Users Say</h2>
+                <p className="text-xl text-gray-300 max-w-3xl mx-auto">
+                  Hear from students and mentors who have experienced success with our platform
+                </p>
+              </div>
+            </FadeInWhenVisible>
+            
+            <FadeInWhenVisible delay={0.2}>
+              <AnimatedTestimonials testimonials={enhancedTestimonials} />
+            </FadeInWhenVisible>
           </div>
-        </div>
-      </footer>
+        </section>
+
+        {/* Footer */}
+        <footer className="py-12 px-4 border-t border-white/10">
+          <div className="max-w-7xl mx-auto">
+            <FadeInWhenVisible>
+              <div className="flex flex-col md:flex-row justify-between items-center">
+                <div className="mb-4 md:mb-0">
+                  <h2 className="text-xl font-bold flex items-center text-white">
+                    <span className="text-white/90 mr-2">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-6 w-6"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </span>
+                    TeamSync
+                  </h2>
+                </div>
+                <div className="flex space-x-6">
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-300">
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
+                    </svg>
+                  </a>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-300">
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                    </svg>
+                  </a>
+                  <a href="#" className="text-white/80 hover:text-white transition-colors duration-300">
+                    <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                    </svg>
+                  </a>
+                </div>
+              </div>
+              <div className="border-t border-white/10 mt-8 pt-8 text-center">
+                <p className="text-gray-400 text-sm">&copy; {new Date().getFullYear()} TeamSync. All rights reserved.</p>
+              </div>
+            </FadeInWhenVisible>
+          </div>
+        </footer>
+      </div>
     </div>
   )
 }
@@ -278,146 +508,6 @@ const enhancedTestimonials = [
     image: null,
   },
 ];
-
-// Improved Interactive Grid Background
-function InteractiveGridBackground() {
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
-  const containerRef = useRef(null)
-
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect()
-        const x = ((e.clientX - rect.left) / rect.width) * 100
-        const y = ((e.clientY - rect.top) / rect.height) * 100
-        setMousePosition({ x, y })
-      }
-    }
-
-    window.addEventListener("mousemove", handleMouseMove)
-    return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [])
-
-  return (
-    <div ref={containerRef} className="absolute inset-0 overflow-hidden bg-[#121212]">
-      <div
-        className="absolute inset-x-0 inset-y-[-30%] h-[200%] skew-y-12"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, rgba(232, 200, 72, 0.1) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(232, 200, 72, 0.1) 1px, transparent 1px)
-          `,
-          backgroundSize: "40px 40px",
-          maskImage: `radial-gradient(400px circle at ${mousePosition.x}% ${mousePosition.y}%, white, transparent)`,
-          WebkitMaskImage: `radial-gradient(400px circle at ${mousePosition.x}% ${mousePosition.y}%, white, transparent)`,
-        }}
-      />
-    </div>
-  )
-}
-
-// Floating Particle Component
-function FloatingParticle({ delay }) {
-  const style = {
-    left: `${Math.random() * 100}%`,
-    top: `${Math.random() * 100}%`,
-    animationDelay: `${delay}ms`,
-    opacity: Math.random() * 0.5 + 0.1,
-    width: `${Math.random() * 4 + 1}px`,
-    height: `${Math.random() * 4 + 1}px`,
-  }
-
-  return (
-    <div
-      className="absolute rounded-full bg-[#E8C848] animate-pulse"
-      style={{
-        ...style,
-        animationDuration: `${Math.random() * 3000 + 2000}ms`,
-      }}
-    />
-  )
-}
-
-// Typewriter Hero Component
-function TypewriterHero() {
-  const [currentWordIndex, setCurrentWordIndex] = useState(0)
-  const [currentCharIndex, setCurrentCharIndex] = useState(0)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [text, setText] = useState("")
-  const [typingSpeed, setTypingSpeed] = useState(150)
-
-  const words = ["awesome", "innovative", "powerful", "seamless", "intelligent"]
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      // Current word being typed
-      const currentWord = words[currentWordIndex]
-
-      // If deleting
-      if (isDeleting) {
-        setText(currentWord.substring(0, currentCharIndex - 1))
-        setCurrentCharIndex((prev) => prev - 1)
-        setTypingSpeed(50) // Faster when deleting
-      }
-      // If typing
-      else {
-        setText(currentWord.substring(0, currentCharIndex + 1))
-        setCurrentCharIndex((prev) => prev + 1)
-        setTypingSpeed(150) // Normal typing speed
-      }
-
-      // If word is complete
-      if (!isDeleting && currentCharIndex === currentWord.length) {
-        setTypingSpeed(2000) // Pause at the end of the word
-        setIsDeleting(true)
-      }
-      // If word is deleted
-      else if (isDeleting && currentCharIndex === 0) {
-        setIsDeleting(false)
-        setCurrentWordIndex((prev) => (prev + 1) % words.length)
-        setTypingSpeed(500) // Pause before typing the next word
-      }
-    }, typingSpeed)
-
-    return () => clearTimeout(timeout)
-  }, [currentWordIndex, currentCharIndex, isDeleting, words, typingSpeed])
-
-  return (
-    <div className="flex flex-col items-center justify-center text-center py-20">
-      <div className="inline-block bg-gradient-to-r from-[#E8C848] to-[#E8C848]/70 text-transparent bg-clip-text text-sm sm:text-base mb-4 font-medium">
-        THE ROAD TO SUCCESS STARTS HERE
-      </div>
-      <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
-        Build{" "}
-        <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#E8C848] to-[#E8C848]/70">{text}</span>{" "}
-        teams
-      </h1>
-      <p className="text-xl text-gray-300 max-w-2xl mb-10 leading-relaxed">
-        Our AI-powered platform helps you form the perfect teams for technical competitions with complementary skills
-        and expert mentorship.
-      </p>
-      <div className="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-6">
-        <button className="px-8 py-4 bg-gradient-to-r from-[#E8C848] to-[#E8C848]/80 rounded-full hover:from-[#E8C848]/80 hover:to-[#E8C848]/60 transition-all duration-300 shadow-lg shadow-[#E8C848]/30 font-medium text-lg text-[#121212]">
-          Get Started
-        </button>
-        <button className="px-8 py-4 bg-transparent border border-[#E8C848] rounded-full hover:bg-[#E8C848]/10 transition-all duration-300 font-medium text-lg">
-          Learn More
-        </button>
-      </div>
-    </div>
-  )
-}
-
-// Feature Card Component
-function FeatureCard({ icon, title, description }) {
-  return (
-    <div className="bg-[#1A1A1A] p-8 rounded-lg shadow-lg border border-gray-800 hover:border-[#E8C848]/50 transition-all duration-300 hover:shadow-[#E8C848]/10 hover:shadow-xl">
-      <div className="text-[#E8C848] mb-4">{icon}</div>
-      <h3 className="text-xl font-semibold text-white mb-2">{title}</h3>
-      <p className="text-gray-400">{description}</p>
-    </div>
-  )
-}
 
 // Features data
 const features = [
@@ -502,44 +592,5 @@ const features = [
     description: "Monitor milestones, deadlines, and team performance throughout the competition.",
   },
 ];
-
-// ...existing code...
-
-// Steps data
-const steps = [
-  {
-    title: "Create Your Profile",
-    description: "Sign up and add your skills, experience, and competition interests to your profile.",
-  },
-  {
-    title: "Find Your Team",
-    description: "Use our AI matching system to find teammates with complementary skills or search manually.",
-  },
-  {
-    title: "Compete and Succeed",
-    description: "Get matched with a mentor, receive guidance, and track your team's progress to competition success.",
-  },
-];
-
-// Gradient configurations for consistent styling
-const gradients = {
-  primary: "bg-gradient-to-r from-[#E8C848] to-[#E8C848]/80",
-  secondary: "bg-gradient-to-r from-[#E8C848]/20 to-transparent",
-  text: "bg-gradient-to-r from-[#E8C848] to-[#E8C848]/70 text-transparent bg-clip-text"
-};
-
-// Animation variants for consistent motion
-const motionVariants = {
-  fadeIn: {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.5 }
-  },
-  scale: {
-    initial: { scale: 0.95 },
-    animate: { scale: 1 },
-    transition: { duration: 0.3 }
-  }
-};
 
 export default Landing;
