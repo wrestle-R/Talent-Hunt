@@ -75,15 +75,6 @@ const ModeratorDashboard = ({ userData }) => {
       bgColor: 'bg-emerald-50',
       textColor: 'text-emerald-700'
     },
-    {
-      title: 'Verification Requests',
-      description: 'Review and approve verification requests',
-      icon: <UserCheck size={24} className="text-blue-600" />,
-      path: '/moderator/verifications',
-      bgColor: 'bg-blue-50',
-      textColor: 'text-blue-700',
-      stats: { count: 8, label: 'Pending' }
-    }
   ];
 
   return (

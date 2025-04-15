@@ -50,23 +50,6 @@ const AdminDashboard = ({ userData }) => {
       stats: { count: 42, label: 'Pending' }
     },
     {
-      title: 'Manage Events',
-      description: 'Create and manage workshops and events',
-      icon: <Bell size={24} className="text-pink-600" />,
-      path: '/admin/events',
-      bgColor: 'bg-pink-50',
-      textColor: 'text-pink-700',
-      stats: { count: 5, label: 'Upcoming' }
-    },
-    {
-      title: 'Analytics Dashboard',
-      description: 'Platform metrics and user statistics',
-      icon: <Database size={24} className="text-amber-600" />,
-      path: '/admin/analytics',
-      bgColor: 'bg-amber-50',
-      textColor: 'text-amber-700'
-    },
-    {
       title: 'Generate Hacakthon Reports',
       description: 'Create comprehensive student reports',
       icon: <FileBarChart size={24} className="text-emerald-600" />,
