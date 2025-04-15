@@ -16,7 +16,10 @@ const {
   getStudentProfile,
   submitMemberFeedback,
   getTeamDetails,
-  submitProjectFeedback
+  submitProjectFeedback,
+  getAllConversations,
+  fetchTeamApplications,
+  handleStudentApplications
 } = require("../controllers/MentorController");
 
 // Public routes with no authentication
@@ -33,9 +36,13 @@ router.get("/dashboard/:mentorId", getDashboardData);
 // Chat routes
 router.get("/conversations/:mentorId", getRecentConversations);
 router.put("/messages/read/:mentorId/:senderId", markMessagesAsRead);
+router.get('/conversations/all/:mentorId', getAllConversations);
 
 // Team applications routes
 router.get('/team-applications/:mentorId', getTeamApplications);
+router.get('/applications/:mentorId', fetchTeamApplications);
+// Add this route
+router.get('/student-applications/:mentorId', handleStudentApplications);
 // Changed from teamId to applicationId to match frontend expectations
 router.post('/team-applications/:mentorId/:applicationId/:action', handleTeamApplication);
 router.get('/active-mentorships/:mentorId', getActiveMentorships);

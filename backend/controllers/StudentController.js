@@ -4,6 +4,7 @@ const Admin = require("../models/Admin"); // Add this import
 const Hackathon = require("../models/Hackathon"); // Add this line
 const Message = require('../models/Message');
 const mongoose = require('mongoose')
+const Team = require('../models/Team')
 
 
 const registerOrLoginStudent = async (req, res) => {
@@ -441,9 +442,6 @@ const getAllStudents = async (req, res) => {
 }; 
 
 
-// Add these new functions to your StudentController.js file
-
-// Get recommended teammates for a student
 // Updated getRecommendedTeammates function with isRejected and profile completion checks
 const getRecommendedTeammates = async (req, res) => {
   try {
@@ -599,7 +597,6 @@ const getRecommendedTeammates = async (req, res) => {
   }
 };
 
-// Get recommended mentors for a student
 // Updated getRecommendedMentors function with isRejected and profile completion checks
 const getRecommendedMentors = async (req, res) => {
   try {
@@ -820,10 +817,41 @@ const getRegisteredHackathons = async (req, res) => {
         message: "Student not found"
       });
     }
+
+    // Find teams the student is part of
+    const teams = await Team.find({
+      $or: [
+        { leader: student._id },
+        { 'members.student': student._id }
+      ]
+    }).select('_id');
     
-    // Find hackathons where this student is an applicant
+    const teamIds = teams.map(team => team._id);
+    
+    // Find hackathons where:
+    // 1. Student is in individualApplicants (new field)
+    // 2. Student is in applicants (legacy field)
+    // 3. Student's team is in teamApplicants
+    // 4. Student is directly in teamApplicants.members
+    // 5. Student is in registeredStudents
+    // 6. Student's team is in registeredTeams
     const hackathons = await Hackathon.find({
-      "applicants.user": student._id
+      $or: [
+        // Old applicants (legacy field)
+        { "applicants.user": student._id },
+        // Individual applicants
+        { "individualApplicants.student": student._id },
+        // Team applicants via team
+        { "teamApplicants.team": { $in: teamIds } },
+        // Team applicants via direct members list
+        { "teamApplicants.members": student._id },
+        // Registered individually
+        { "registeredStudents": student._id },
+        // Registered via team
+        { "registeredTeams": { $in: teamIds } },
+        // Temporary team member
+        { "temporaryTeams.members": student._id }
+      ]
     })
     .sort({ startDate: 1 })
     .populate("postedByAdmin", "name organization");
@@ -867,90 +895,6 @@ const getHackathonById = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to retrieve hackathon",
-      error: error.message
-    });
-  }
-};
-
-// Register for a hackathon
-const registerForHackathon = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { uid } = req.body;
-    
-    // Find student by firebase UID
-    const student = await Student.findOne({ firebaseUID: uid });
-    
-    if (!student) {
-      return res.status(404).json({
-        success: false,
-        message: "Student not found"
-      });
-    }
-    
-    // Find the hackathon
-    const hackathon = await Hackathon.findById(id);
-    
-    if (!hackathon) {
-      return res.status(404).json({
-        success: false,
-        message: "Hackathon not found"
-      });
-    }
-    
-    // Check if registration is still open
-    const today = new Date();
-    const registerDate = new Date(hackathon.lastRegisterDate);
-    
-    if (today > registerDate) {
-      return res.status(400).json({
-        success: false,
-        message: "Registration period has ended for this hackathon"
-      });
-    }
-    
-    // Check if already registered
-    const alreadyRegistered = hackathon.applicants.some(
-      app => app.user.toString() === student._id.toString()
-    );
-    
-    if (alreadyRegistered) {
-      return res.status(400).json({
-        success: false,
-        message: "You are already registered for this hackathon"
-      });
-    }
-    
-    // Check capacity
-    if (hackathon.registration.currentlyRegistered >= hackathon.registration.totalCapacity) {
-      return res.status(400).json({
-        success: false,
-        message: "This hackathon has reached maximum capacity"
-      });
-    }
-    
-    // Register the student
-    hackathon.applicants.push({
-      user: student._id,
-      status: "Pending",
-      appliedAt: new Date()
-    });
-    
-    // Increment currently registered count
-    hackathon.registration.currentlyRegistered += 1;
-    
-    await hackathon.save();
-    
-    res.status(200).json({
-      success: true,
-      message: "Successfully registered for the hackathon",
-      hackathon
-    });
-  } catch (error) {
-    console.error("Error registering for hackathon:", error);
-    res.status(500).json({
-      success: false,
-      message: "Failed to register for hackathon",
       error: error.message
     });
   }
@@ -1914,9 +1858,1010 @@ const getMentorById = async (req, res) => {
   }
 };
 
+const registerForHackathon = async (req, res) => {
+  try {
+    const { id: hackathonId } = req.params;
+    const { uid, registrationType, teamId } = req.body;
+
+    // Find student
+    const student = await Student.findOne({ firebaseUID: uid });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    // Find hackathon and populate necessary fields
+    const hackathonQuery = Hackathon.findById(hackathonId)
+      .populate({
+        path: 'teamApplicants.team',
+        populate: {
+          path: 'members',
+          model: 'Student',
+        },
+      })
+      .populate('individualApplicants.student')
+      .populate('registeredTeams');
+
+    // Conditionally populate `registeredStudents` only if it exists
+    if (Hackathon.schema.paths.registeredStudents) {
+      hackathonQuery.populate('registeredStudents');
+    }
+
+    const hackathon = await hackathonQuery.exec();
+
+    if (!hackathon) {
+      return res.status(404).json({
+        success: false,
+        message: "Hackathon not found",
+      });
+    }
+
+    // Check registration deadline
+    const today = new Date();
+    if (today > new Date(hackathon.lastRegisterDate)) {
+      return res.status(400).json({
+        success: false,
+        message: "Registration is closed for this hackathon",
+      });
+    }
+
+    // Check hackathon capacity
+    if (hackathon.registration.currentlyRegistered >= hackathon.registration.totalCapacity) {
+      return res.status(400).json({
+        success: false,
+        message: "This hackathon has reached its maximum capacity",
+      });
+    }
+
+    // Helper function to check if a student is already registered
+    const isStudentRegistered = (studentId) => {
+      return (
+        hackathon.individualApplicants.some(
+          (app) => app.student._id.toString() === studentId.toString()
+        ) ||
+        hackathon.teamApplicants.some((app) =>
+          app.members.some((member) => member.toString() === studentId.toString())
+        ) ||
+        (hackathon.registeredStudents &&
+          hackathon.registeredStudents.some(
+            (regStudent) => regStudent.toString() === studentId.toString()
+          ))
+      );
+    };
+
+    // Check current student's registration status
+    if (isStudentRegistered(student._id)) {
+      return res.status(400).json({
+        success: false,
+        message: "You are already registered for this hackathon",
+      });
+    }
+
+    // Handle team registration
+    if (registrationType === "team") {
+      const team = await Team.findById(teamId).populate("members");
+      if (!team) {
+        return res.status(404).json({
+          success: false,
+          message: "Team not found",
+        });
+      }
+
+      // Verify team leader
+      if (team.leader.toString() !== student._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: "Only the team leader can register the team",
+        });
+      }
+
+      // Verify team size
+      if (team.members.length !== hackathon.registration.requiredTeamSize) {
+        return res.status(400).json({
+          success: false,
+          message: `Team must have exactly ${hackathon.registration.requiredTeamSize} members`,
+        });
+      }
+
+      // Check if any team member is already registered
+      const registeredMember = team.members.find((member) =>
+        isStudentRegistered(member._id)
+      );
+
+      if (registeredMember) {
+        return res.status(400).json({
+          success: false,
+          message: `Team member ${registeredMember.name} is already registered for this hackathon`,
+        });
+      }
+
+      // Add team to applicants
+      hackathon.teamApplicants.push({
+        team: team._id,
+        members: team.members.map((m) => m._id),
+        status: "Pending",
+        registeredAt: new Date(),
+      });
+    }
+    // Handle individual registration
+    else {
+      hackathon.individualApplicants.push({
+        student: student._id,
+        skills: student.skills || [],
+        status: "Pending",
+        registeredAt: new Date(),
+      });
+    }
+
+    await hackathon.save();
+
+    res.status(200).json({
+      success: true,
+      message:
+        registrationType === "team"
+          ? "Team application submitted successfully. Waiting for admin approval."
+          : "Individual application submitted successfully. Waiting for admin approval.",
+      hackathon,
+    });
+  } catch (err) {
+    console.error("Error in hackathon registration:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to register for hackathon",
+      error: err.message,
+    });
+  }
+};
+
+const handleRegisterWithTeam = async () => {
+  try {
+    setRegistering(true);
+    setRegistrationError(null);
+    setSuccessMessage(null);
+    
+    if (registered) {
+      setRegistrationError("You are already registered for this hackathon");
+      return;
+    }
+
+    if (currentTeam.members.length !== hackathon.registration.requiredTeamSize) {
+      setRegistrationError(`Team must have exactly ${hackathon.registration.requiredTeamSize} members to register`);
+      return;
+    }
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
+    
+    const response = await axios.post(
+      `http://localhost:4000/api/student/hackathons/${id}/register`,
+      { 
+        uid: user.uid,
+        registrationType: 'team',
+        teamId: currentTeam._id
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    
+    if (response.data.success) {
+      setRegistered(true);
+      setHackathon(response.data.hackathon);
+      setSuccessMessage("Successfully registered with your team!");
+      setTimeout(() => {
+        setShowTeamModal(false);
+        setShowRegistrationModal(false);
+      }, 2000);
+    }
+  } catch (err) {
+    console.error("Error registering team:", err);
+    setRegistrationError(err.response?.data?.message || "Failed to register team");
+  } finally {
+    setRegistering(false);
+  }
+};
+
+const handleRegisterIndividually = async () => {
+  try {
+    setRegistering(true);
+    setRegistrationError(null);
+    setSuccessMessage(null);
+    
+    if (registered) {
+      setRegistrationError("You are already registered for this hackathon");
+      return;
+    }
+
+    const user = JSON.parse(localStorage.getItem('user'));
+    const token = localStorage.getItem('token');
+    
+    const response = await axios.post(
+      `http://localhost:4000/api/student/hackathons/${id}/register`,
+      { 
+        uid: user.uid,
+        registrationType: 'individual'
+      },
+      {
+        headers: { Authorization: `Bearer ${token}` }
+      }
+    );
+    
+    if (response.data.success) {
+      setRegistered(true);
+      setHackathon(response.data.hackathon);
+      setSuccessMessage("Successfully registered! An admin will assign you to a team.");
+      setTimeout(() => {
+        setShowRegistrationModal(false);
+      }, 2000);
+    }
+  } catch (err) {
+    console.error("Error registering individually:", err);
+    setRegistrationError(err.response?.data?.message || "Failed to register");
+  } finally {
+    setRegistering(false);
+  }
+};
+
+const getTeamInfo = async (req, res) => {
+  try {
+    const { uid } = req.params;
+
+    // First find student by firebase UID
+    const student = await Student.findOne({ firebaseUID: uid });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    // Find team where student is either leader or member
+    const team = await Team.findOne({
+      $or: [
+        { leader: student._id },
+        { 'members.student': student._id }
+      ],
+      status: { $ne: 'disbanded' }
+    }).populate('members.student leader', 'name email profile_picture');
+
+    if (!team) {
+      return res.status(200).json({
+        success: true,
+        team: null,
+        message: "No active team found"
+      });
+    }
+
+    // Check if student is team leader by comparing ObjectIds
+    const isLeader = team.leader._id.toString() === student._id.toString();
+
+    // Format team data
+    const formattedTeam = {
+      _id: team._id,
+      name: team.name,
+      description: team.description,
+      leader: team.leader,
+      members: team.members,
+      isLeader: isLeader,
+      maxTeamSize: team.maxTeamSize || 7,
+      currentSize: team.members.length
+    };
+
+    res.status(200).json({
+      success: true,
+      team: formattedTeam
+    });
+
+  } catch (err) {
+    console.error("Error in getTeamInfo:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch team information",
+      error: err.message
+    });
+  }
+};
+
+// Get team invitations for a student
+const getTeamInvitations = async (req, res) => {
+  try {
+    const { uid } = req.params;
+
+    const student = await Student.findOne({ firebaseUID: uid });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found",
+      });
+    }
+
+    const teams = await Team.find({
+      isTempTeam: false, // Exclude temporary teams
+      invitations: {
+        $elemMatch: {
+          recipientId: student._id,
+          status: 'pending',
+        },
+      },
+    }).populate('leader', 'name profile_picture');
+
+    const invitations = teams.map((team) => {
+      const invitation = team.invitations.find(
+        (inv) => inv.recipientId.toString() === student._id.toString()
+      );
+
+      return {
+        _id: invitation._id,
+        teamId: team._id,
+        teamName: team.name,
+        leader: team.leader,
+        description: team.description,
+        techStack: team.techStack,
+        sentAt: invitation.sentAt,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      invitations,
+    });
+  } catch (err) {
+    console.error("Error fetching team invitations:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch team invitations",
+      error: err.message,
+    });
+  }
+};
+
+// Respond to team invitation
+const respondToTeamInvitation = async (req, res) => {
+  try {
+    const { invitationId } = req.params;
+    const { uid, status, teamId } = req.body;
+
+    // Validate status
+    if (!['accepted', 'rejected'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status. Must be either 'accepted' or 'rejected'"
+      });
+    }
+
+    // Find student
+    const student = await Student.findOne({ firebaseUID: uid });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    // Find team and check if it exists
+    const team = await Team.findById(teamId)
+      .populate('members.student', 'name email')
+      .populate('leader', 'name email');
+
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found"
+      });
+    }
+
+    // Find the invitation
+    const invitation = team.invitations.find(
+      inv => inv._id.toString() === invitationId &&
+            inv.recipientId.toString() === student._id.toString()
+    );
+
+    if (!invitation) {
+      return res.status(404).json({
+        success: false,
+        message: "Invitation not found"
+      });
+    }
+
+    // Check if invitation is still pending
+    if (invitation.status !== 'pending') {
+      return res.status(400).json({
+        success: false,
+        message: `Invitation has already been ${invitation.status}`
+      });
+    }
+
+    // Check if student is already in another team
+    const existingTeam = await Team.findOne({
+      _id: { $ne: teamId },
+      $or: [
+        { leader: student._id },
+        { 'members.student': student._id }
+      ],
+      status: { $ne: 'disbanded' }
+    });
+
+    if (existingTeam) {
+      return res.status(400).json({
+        success: false,
+        message: "You are already a member of another team"
+      });
+    }
+
+    // If accepting the invitation
+    if (status === 'accepted') {
+      // Check team capacity
+      if (team.members.length >= team.maxTeamSize) {
+        invitation.status = 'rejected';
+        await team.save();
+        return res.status(400).json({
+          success: false,
+          message: "Team is already full"
+        });
+      }
+
+      // Add student to team members
+      team.members.push({
+        student: student._id,
+        role: invitation.role || 'Member',
+        joinedAt: new Date(),
+        status: 'active',
+        invitationStatus: 'accepted'
+      });
+
+      // Add to activity log
+      team.activityLog.push({
+        action: 'member_joined',
+        description: `${student.name} joined the team`,
+        userId: student._id,
+        userType: 'Student',
+        timestamp: new Date()
+      });
+
+      // Update student's teammate search status if they were looking
+      if (student.teammate_search?.looking_for_teammates) {
+        await Student.updateOne(
+          { _id: student._id },
+          { 
+            'teammate_search.looking_for_teammates': false,
+            $push: {
+              teammates: {
+                id: team.leader._id,
+                name: team.leader.name,
+                email: team.leader.email,
+                role: 'Leader'
+              }
+            }
+          }
+        );
+      }
+    }
+
+    // Update invitation status
+    invitation.status = status;
+    await team.save();
+
+    // Remove other pending invitations if accepted
+    if (status === 'accepted') {
+      await Team.updateMany(
+        {
+          _id: { $ne: teamId },
+          'invitations': {
+            $elemMatch: {
+              recipientId: student._id,
+              status: 'pending'
+            }
+          }
+        },
+        {
+          $set: {
+            'invitations.$.status': 'expired'
+          }
+        }
+      );
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Invitation ${status} successfully`,
+      team: {
+        _id: team._id,
+        name: team.name,
+        members: team.members,
+        leader: team.leader
+      }
+    });
+
+  } catch (err) {
+    console.error("Error responding to invitation:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to respond to invitation",
+      error: err.message
+    });
+  }
+};
+// View team details including members and activities
+const getTeamDetails = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+
+    // Fetch the team and exclude temporary teams
+    const team = await Team.findOne({ _id: teamId, isTempTeam: false })
+      .populate('leader', 'name email profile_picture bio skills')
+      .populate('members.student', 'name email profile_picture bio skills')
+      .populate('invitations.recipientId', 'name email profile_picture');
+
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found or is a temporary team",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      team,
+    });
+  } catch (err) {
+    console.error("Error fetching team details:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch team details",
+      error: err.message,
+    });
+  }
+};
+
+// View team member profile with their contributions
+const getTeamMemberProfile = async (req, res) => {
+  try {
+    const { teamId, memberId } = req.params;
+
+    // Fetch the team and exclude temporary teams
+    const team = await Team.findOne({ _id: teamId, isTempTeam: false });
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found or is a temporary team",
+      });
+    }
+
+    const member = await Student.findById(memberId)
+      .select('name email profile_picture bio skills interests education location projects achievements');
+
+    if (!member) {
+      return res.status(404).json({
+        success: false,
+        message: "Team member not found",
+      });
+    }
+
+    // Get member's team contributions
+    const memberContributions = team.activityLog.filter(
+      activity => activity.userId.toString() === memberId
+    );
+
+    // Get member's role in the team
+    const memberRole = team.members.find(
+      m => m.student.toString() === memberId
+    )?.role || 'Member';
+
+    const memberProfile = {
+      _id: member._id,
+      name: member.name,
+      email: member.email,
+      profile_picture: member.profile_picture,
+      bio: member.bio,
+      skills: member.skills,
+      interests: member.interests,
+      education: member.education,
+      location: member.location,
+      role: memberRole,
+      joinDate: team.members.find(m => m.student.toString() === memberId)?.joinedAt,
+      isLeader: team.leader.toString() === memberId,
+      contributions: memberContributions,
+      projects: member.projects.filter(p => p.status === 'Approved'),
+      achievements: member.achievements,
+    };
+
+    res.status(200).json({
+      success: true,
+      member: memberProfile,
+    });
+  } catch (err) {
+    console.error("Error fetching team member profile:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch team member profile",
+      error: err.message,
+    });
+  }
+};
+
+// View team activities and updates
+const getTeamActivities = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+    const { limit = 10, page = 1 } = req.query;
+
+    const team = await Team.findById(teamId)
+      .populate('activityLog.userId', 'name profile_picture');
+
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found"
+      });
+    }
+
+    // Paginate activities
+    const startIndex = (page - 1) * limit;
+    const endIndex = page * limit;
+
+    const activities = team.activityLog
+      .sort((a, b) => b.timestamp - a.timestamp)
+      .slice(startIndex, endIndex)
+      .map(activity => ({
+        _id: activity._id,
+        action: activity.action,
+        description: activity.description,
+        user: activity.userId ? {
+          _id: activity.userId._id,
+          name: activity.userId.name,
+          profile_picture: activity.userId.profile_picture
+        } : null,
+        timestamp: activity.timestamp
+      }));
+
+    res.status(200).json({
+      success: true,
+      activities,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(team.activityLog.length / limit),
+        totalActivities: team.activityLog.length
+      }
+    });
+
+  } catch (err) {
+    console.error("Error fetching team activities:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch team activities",
+      error: err.message
+    });
+  }
+};
+
+// View team hackathon participations
+const getTeamHackathonHistory = async (req, res) => {
+  try {
+    const { teamId } = req.params;
+
+    // Fetch the team and exclude temporary teams
+    const team = await Team.findOne({ _id: teamId, isTempTeam: false });
+    if (!team) {
+      return res.status(404).json({
+        success: false,
+        message: "Team not found or is a temporary team",
+      });
+    }
+
+    const hackathons = await Hackathon.find({
+      $or: [
+        { 'teamApplicants.team': teamId },
+        { registeredTeams: teamId },
+      ],
+    }).select('hackathonName description startDate endDate status prizePool');
+
+    res.status(200).json({
+      success: true,
+      participations: hackathons.map((hackathon) => ({
+        hackathonId: hackathon._id,
+        name: hackathon.hackathonName,
+        description: hackathon.description,
+        startDate: hackathon.startDate,
+        endDate: hackathon.endDate,
+        status: hackathon.status,
+        prizePool: hackathon.prizePool,
+      })),
+    });
+  } catch (err) {
+    console.error("Error fetching team hackathon history:", err);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch team hackathon history",
+      error: err.message,
+    });
+  }
+};
+
+const getHackathonRegistrationStatus = async (req, res) => {
+  try {
+    const { hackathonId, uid } = req.params;
+
+    // Find student
+    const student = await Student.findOne({ firebaseUID: uid });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    // Find hackathon
+    const hackathon = await Hackathon.findById(hackathonId)
+      .populate({
+        path: 'teamApplicants.team',
+        populate: {
+          path: 'members.student',
+          select: 'name profile_picture firebaseUID'
+        }
+      })
+      .populate('individualApplicants.student', 'name profile_picture firebaseUID')
+      .populate('registeredTeams');
+
+    if (!hackathon) {
+      return res.status(404).json({
+        success: false,
+        message: "Hackathon not found"
+      });
+    }
+
+    // Initialize registration status
+    let registrationStatus = {
+      isRegistered: false,
+      registrationType: null,
+      status: 'Not Registered',
+      details: null
+    };
+
+    // Check team applications
+    const teams = await Team.find({
+      $or: [
+        { leader: student._id },
+        { 'members.student': student._id }
+      ]
+    });
+
+    const teamIds = teams.map(team => team._id);
+
+    // Check team applications
+    if (hackathon.teamApplicants && hackathon.teamApplicants.length > 0) {
+      const teamApplication = hackathon.teamApplicants.find(app => 
+        app.team && teamIds.includes(app.team._id.toString())
+      );
+
+      if (teamApplication) {
+        registrationStatus = {
+          isRegistered: true,
+          registrationType: 'team',
+          status: teamApplication.status,
+          details: {
+            team: {
+              id: teamApplication.team._id,
+              name: teamApplication.team.name,
+              members: teamApplication.team.members?.map(member => ({
+                id: member.student?._id,
+                name: member.student?.name,
+                profile_picture: member.student?.profile_picture
+              })).filter(Boolean) || [],
+              registeredAt: teamApplication.registeredAt
+            }
+          }
+        };
+      }
+    }
+
+    // Check individual applications if not registered as team
+    if (!registrationStatus.isRegistered && hackathon.individualApplicants) {
+      const individualApplication = hackathon.individualApplicants.find(
+        app => app.student && app.student._id.toString() === student._id.toString()
+      );
+
+      if (individualApplication) {
+        registrationStatus = {
+          isRegistered: true,
+          registrationType: 'individual',
+          status: individualApplication.status,
+          details: {
+            registeredAt: individualApplication.registeredAt,
+            skills: individualApplication.skills || []
+          }
+        };
+      }
+    }
+
+    // Add registration deadline info
+    const now = new Date();
+    const registrationDeadline = new Date(hackathon.lastRegisterDate);
+    const isRegistrationOpen = now <= registrationDeadline;
+
+    // Add capacity info
+    const isCapacityAvailable = 
+      hackathon.registration?.currentlyRegistered < hackathon.registration?.totalCapacity;
+
+    res.status(200).json({
+      success: true,
+      registrationStatus,
+      hackathonInfo: {
+        isRegistrationOpen,
+        isCapacityAvailable,
+        requiredTeamSize: hackathon.registration?.requiredTeamSize || 4,
+        remainingSpots: hackathon.registration ? 
+          (hackathon.registration.totalCapacity - hackathon.registration.currentlyRegistered) : 0,
+        registrationDeadline: hackathon.lastRegisterDate
+      }
+    });
+
+  } catch (error) {
+    console.error("Error checking hackathon registration status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to check registration status",
+      error: error.message
+    });
+  }
+};
+
+const sendMentorRequest = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+    const { uid, message, teamId } = req.body;
+
+    // Find student by firebase UID
+    const student = await Student.findOne({ firebaseUID: uid });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    // Find mentor
+    const mentor = await Mentor.findById(mentorId);
+    if (!mentor) {
+      return res.status(404).json({
+        success: false,
+        message: "Mentor not found"
+      });
+    }
+
+    // Find team if teamId is provided
+    let team = null;
+    if (teamId) {
+      team = await Team.findById(teamId);
+      if (!team) {
+        return res.status(404).json({
+          success: false,
+          message: "Team not found"
+        });
+      }
+
+      // Verify student is team leader
+      if (team.leader.toString() !== student._id.toString()) {
+        return res.status(403).json({
+          success: false,
+          message: "Only team leaders can request mentorship for the team"
+        });
+      }
+    }
+
+    // Check if student/team has already sent a request
+    const existingApplication = mentor.applications.find(app => 
+      (team && app.teamId?.toString() === teamId) || 
+      (!team && app.student?.toString() === student._id.toString())
+    );
+
+    if (existingApplication) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already sent a request to this mentor",
+        status: existingApplication.status
+      });
+    }
+
+    // Add new application to mentor's applications array
+    mentor.applications.push({
+      student: team ? team._id : student._id,
+      teamId: team ? team._id : null,
+      message: message || "I would like to request your mentorship",
+      status: "pending",
+      application_date: new Date()
+    });
+
+    await mentor.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Mentorship request sent successfully",
+      application: {
+        mentorId: mentor._id,
+        mentorName: mentor.name,
+        status: "pending",
+        applicationDate: new Date(),
+        teamId: team ? team._id : null
+      }
+    });
+
+  } catch (error) {
+    console.error("Error sending mentor request:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to send mentor request",
+      error: error.message
+    });
+  }
+};
+
+const getMentorRequestStatus = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+    const { uid, teamId } = req.query;
+
+    // Find student by firebase UID
+    const student = await Student.findOne({ firebaseUID: uid });
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        message: "Student not found"
+      });
+    }
+
+    // Find mentor
+    const mentor = await Mentor.findById(mentorId);
+    if (!mentor) {
+      return res.status(404).json({
+        success: false,
+        message: "Mentor not found"
+      });
+    }
+
+    // Find application based on team or individual request
+    const application = mentor.applications.find(app => 
+      (teamId && app.teamId?.toString() === teamId) || 
+      (!teamId && app.student?.toString() === student._id.toString())
+    );
+
+    if (!application) {
+      return res.status(200).json({
+        success: true,
+        hasApplication: false,
+        message: "No request found"
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      hasApplication: true,
+      application: {
+        status: application.status,
+        applicationDate: application.application_date,
+        message: application.message,
+        teamId: application.teamId
+      }
+    });
+
+  } catch (error) {
+    console.error("Error checking mentor request status:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to check request status",
+      error: error.message
+    });
+  }
+};
+
+
 // Add these to your exports
 module.exports = {
-  // ...existing exports
+  getTeamDetails,
+  getTeamMemberProfile,
+  getTeamHackathonHistory,
+  getTeamActivities,
   registerOrLoginStudent,
   getStudentProfile, 
   updateStudentProfile,
@@ -1934,7 +2879,6 @@ module.exports = {
   getStudentConversations,
   markStudentMessagesAsRead,
   getMentorConversations,
-  // New project endpoints
   getStudentProjects,
   addStudentProject,
   updateStudentProject,
@@ -1942,5 +2886,13 @@ module.exports = {
   getTeammateById,
   getPotentialTeammates,
   getMentorById,
+  handleRegisterWithTeam,
+  getTeamInfo,
+  handleRegisterIndividually,
+  getTeamInvitations,
+  respondToTeamInvitation,
+  getHackathonRegistrationStatus,
+  sendMentorRequest,
+  getMentorRequestStatus
 };
 

@@ -394,69 +394,117 @@ const markMessagesAsRead = async (req, res) => {
   }
 };
 
-
-// Improved getTeamApplications function that fetches from Mentor schema
 const getTeamApplications = async (req, res) => {
   try {
     const { mentorId } = req.params;
     
-    if (!mentorId) {
-      return res.status(400).json({ error: 'Mentor ID is required' });
+    // Validate mentorId
+    if (!mentorId || !mongoose.Types.ObjectId.isValid(mentorId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Valid Mentor ID is required'
+      });
     }
-    
-    console.log(`Fetching applications for mentor ID: ${mentorId}`);
-    
-    // Find the mentor with their applications
-    const mentor = await Mentor.findById(mentorId).populate({
-      path: 'applications.student',
-      select: 'name description members techStack leader'
-    });
-    
+
+    // Find mentor and populate team details with proper nesting
+    const mentor = await Mentor.findById(mentorId)
+      .populate({
+        path: 'applications.student',  // First level population
+        model: 'Team',                 // Specify the model explicitly
+        populate: [                    // Nested population
+          {
+            path: 'members',           // Populate team members
+            model: 'Student',
+            select: 'name email profile_picture'
+          },
+          {
+            path: 'leader',            // Populate team leader
+            model: 'Student',
+            select: 'name email profile_picture'
+          }
+        ]
+      });
+
     if (!mentor) {
-      return res.status(404).json({ error: 'Mentor not found' });
+      return res.status(404).json({
+        success: false,
+        error: 'Mentor not found'
+      });
     }
-    
-    // Filter to get only pending applications
+
+    // Get pending applications
     const pendingApplications = mentor.applications.filter(app => app.status === 'pending');
-    
-    console.log(`Found ${pendingApplications.length} pending applications for mentor ${mentor.name}`);
-    
-    // Format the applications for the response
-    const formattedApplications = await Promise.all(pendingApplications.map(async (app) => {
-      // If team is not populated or doesn't exist, return minimal info
-      if (!app.student) {
+
+    // Format applications with proper data mapping
+    const formattedApplications = pendingApplications.map(app => {
+      // Get the populated team data
+      const team = app.student;
+
+      // Basic application info
+      const baseApplication = {
+        applicationId: app._id,
+        status: app.status,
+        applicationDate: app.application_date || app.createdAt,
+        message: app.message || ''
+      };
+
+      // If we have team data, include it
+      if (team && team._id) {
         return {
-          applicationId: app._id,
-          teamId: app.student,
-          teamName: "Unknown Team",
-          message: app.message || '',
-          applicationDate: app.application_date,
-          status: app.status
+          ...baseApplication,
+          teamId: team._id,
+          teamName: team.name || 'Untitled Team',
+          description: team.description || '',
+          memberCount: team.members?.length || 0,
+          techStack: Array.isArray(team.techStack) ? team.techStack : [],
+          members: team.members?.map(member => ({
+            id: member._id,
+            name: member.name,
+            email: member.email,
+            profilePicture: member.profile_picture
+          })) || [],
+          leader: team.leader ? {
+            id: team.leader._id,
+            name: team.leader.name,
+            email: team.leader.email,
+            profilePicture: team.leader.profile_picture
+          } : null
         };
       }
-      
-      // Return full team details
+
+      // Return minimal info if no team data
       return {
-        applicationId: app._id,
-        teamId: app.student._id,
-        teamName: app.student.name,
-        description: app.student.description,
-        memberCount: app.student.members?.length || 0,
-        techStack: app.student.techStack || [],
-        message: app.message || '',
-        applicationDate: app.application_date,
-        leader: app.student.leader,
-        status: app.status
+        ...baseApplication,
+        teamId: null,
+        teamName: 'Unknown Team',
+        description: '',
+        memberCount: 0,
+        techStack: [],
+        members: [],
+        leader: null
       };
-    }));
-    
-    return res.status(200).json(formattedApplications);
+    });
+
+    // Log for debugging
+    console.log(`Found ${formattedApplications.length} pending applications`);
+    // Add this inside getTeamApplications before the mapping
+console.log('Raw applications:', pendingApplications.map(app => ({
+  id: app._id,
+  teamId: app.student?._id,
+  teamName: app.student?.name,
+  hasTeam: !!app.student
+})));
+    return res.status(200).json({
+      success: true,
+      applications: formattedApplications
+    });
+
   } catch (error) {
-    console.error('Error fetching team applications:', error);
-    return res.status(500).json({ 
-      error: 'Server error', 
-      message: error.message,
-      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    console.error('Error in getTeamApplications:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Server error',
+      message: error.message
     });
   }
 };
@@ -941,7 +989,345 @@ function calculateOverallRating(team) {
   // Calculate overall score (0-10)
   return Math.min(10, Math.max(1, Math.round((activityScore + projectScore + 5) / 3 * 10) / 10));
 }
+const getAllConversations = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+    
+    if (!mentorId) {
+      return res.status(400).json({ error: 'Mentor ID is required' });
+    }
+    
+    // Find all messages between mentor and other users
+    const conversations = await Message.aggregate([
+      // Match messages involving this mentor
+      { 
+        $match: { 
+          $or: [
+            { senderId: mentorId },
+            { receiverId: mentorId }
+          ] 
+        } 
+      },
+      // Sort by time descending
+      { $sort: { createdAt: -1 } },
+      // Group by conversation partner
+      {
+        $group: {
+          _id: {
+            $cond: [
+              { $eq: ["$senderId", mentorId] },
+              "$receiverId",
+              "$senderId"
+            ]
+          },
+          lastMessage: { $first: "$message" },
+          lastMessageTime: { $first: "$createdAt" },
+          unreadCount: { 
+            $sum: { 
+              $cond: [
+                { $and: [
+                  { $eq: ["$receiverId", mentorId] },
+                  { $eq: ["$isRead", false] }
+                ]},
+                1,
+                0
+              ] 
+            }
+          }
+        }
+      },
+      // Sort conversations by most recent message
+      { $sort: { lastMessageTime: -1 } }
+    ]);
 
+    // Fetch user details for each conversation
+    const conversationsWithDetails = await Promise.all(
+      conversations.map(async (conv) => {
+        // First try to find user in Student collection
+        let user = await Student.findById(conv._id, 'name email profile_picture');
+        
+        // If not found in students, check Mentors
+        if (!user) {
+          user = await Mentor.findById(conv._id, 'name email profile_picture');
+        }
+        
+        if (!user) {
+          return {
+            userId: conv._id,
+            name: "Unknown User",
+            profilePicture: null,
+            lastMessage: conv.lastMessage,
+            lastMessageTime: conv.lastMessageTime,
+            unreadCount: conv.unreadCount
+          };
+        }
+        
+        return {
+          userId: conv._id,
+          name: user.name,
+          email: user.email,
+          profilePicture: user.profile_picture,
+          lastMessage: conv.lastMessage,
+          lastMessageTime: conv.lastMessageTime,
+          unreadCount: conv.unreadCount
+        };
+      })
+    );
+    
+    return res.status(200).json(conversationsWithDetails);
+    
+  } catch (error) {
+    console.error('Error fetching all conversations:', error);
+    return res.status(500).json({ error: 'Server error', message: error.message });
+  }
+};
+
+const fetchTeamApplications = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(mentorId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid mentor ID format'
+      });
+    }
+
+    // Find mentor and populate the applications with Team data
+    const mentor = await Mentor.findById(mentorId)
+      .populate({
+        path: 'applications.student',
+        model: 'Team',
+        populate: [
+          {
+            path: 'members.student',
+            model: 'Student',
+            select: 'name email profile_picture education skills'
+          },
+          {
+            path: 'leader',
+            model: 'Student',
+            select: 'name email profile_picture education skills'
+          }
+        ]
+      })
+      .lean();
+
+    if (!mentor) {
+      return res.status(404).json({
+        success: false,
+        message: 'Mentor not found'
+      });
+    }
+
+    console.log('Debug - Applications:', JSON.stringify(mentor.applications, null, 2));
+
+    // Format and group applications
+    const formattedApplications = mentor.applications.map(app => {
+      const team = app.student;
+      
+      // Basic application info that's always included
+      const baseData = {
+        applicationId: app._id,
+        status: app.status || 'pending',
+        applicationDate: app.application_date || app.createdAt,
+        message: app.message || ''
+      };
+
+      // If no team data is available
+      if (!team) {
+        console.log(`No team data found for application ${app._id}`);
+        return {
+          ...baseData,
+          team: {
+            id: null,
+            name: 'Unknown Team',
+            description: '',
+            techStack: [],
+            memberCount: 0,
+            members: [],
+            leader: null,
+            projects: []
+          }
+        };
+      }
+
+      // Format team data when available
+      return {
+        ...baseData,
+        team: {
+          id: team._id,
+          name: team.name,
+          description: team.description || '',
+          techStack: team.techStack || [],
+          memberCount: team.members?.length || 0,
+          members: (team.members || []).map(member => ({
+            id: member.student?._id,
+            name: member.student?.name || 'Unknown Member',
+            email: member.student?.email,
+            profilePicture: member.student?.profile_picture,
+            role: member.role || 'Member',
+            skills: member.student?.skills || [],
+            education: member.student?.education || {}
+          })),
+          leader: team.leader ? {
+            id: team.leader._id,
+            name: team.leader.name,
+            email: team.leader.email,
+            profilePicture: team.leader.profile_picture,
+            skills: team.leader.skills || [],
+            education: team.leader.education || {}
+          } : null
+        }
+      };
+    });
+
+    // Group applications by status
+    const groupedApplications = {
+      pending: formattedApplications.filter(app => app.status === 'pending'),
+      accepted: formattedApplications.filter(app => app.status === 'accepted'),
+      rejected: formattedApplications.filter(app => app.status === 'rejected'),
+      total: formattedApplications.length
+    };
+
+    // Debug logging
+    console.log('Application stats:', {
+      total: formattedApplications.length,
+      pending: groupedApplications.pending.length,
+      accepted: groupedApplications.accepted.length,
+      rejected: groupedApplications.rejected.length
+    });
+
+    return res.status(200).json({
+      success: true,
+      applications: groupedApplications
+    });
+
+  } catch (error) {
+    console.error('Error in fetchTeamApplications:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch applications',
+      error: error.message
+    });
+  }
+};
+
+const handleStudentApplications = async (req, res) => {
+  try {
+    const { mentorId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(mentorId)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid mentor ID format'
+      });
+    }
+
+    // First find the mentor with applications
+    const mentor = await Mentor.findById(mentorId);
+    if (!mentor) {
+      return res.status(404).json({
+        success: false,
+        message: 'Mentor not found'
+      });
+    }
+
+    console.log(`Found mentor ${mentor.name} with ${mentor.applications.length} applications`);
+
+    // For each application where student is null, we need to find the student's team
+    const enrichedApplications = await Promise.all(mentor.applications.map(async (app) => {
+      // Start with the basic application data
+      const baseData = {
+        applicationId: app._id,
+        status: app.status || 'pending',
+        applicationDate: app.application_date || app.createdAt,
+        message: app.message || ''
+      };
+
+      // If there's already a team reference, use it
+      if (app.student && mongoose.Types.ObjectId.isValid(app.student)) {
+        const team = await Team.findById(app.student)
+          .populate('members.student', 'name email profile_picture education skills')
+          .populate('leader', 'name email profile_picture education skills');
+
+        if (team) {
+          return {
+            ...baseData,
+            team: {
+              id: team._id,
+              name: team.name,
+              description: team.description || '',
+              techStack: team.techStack || [],
+              memberCount: team.members?.length || 0,
+              members: (team.members || []).map(member => ({
+                id: member.student?._id,
+                name: member.student?.name || 'Unknown Member',
+                email: member.student?.email,
+                profilePicture: member.student?.profile_picture,
+                role: member.role || 'Member',
+                skills: member.student?.skills || [],
+                education: member.student?.education || {}
+              })),
+              leader: team.leader ? {
+                id: team.leader._id,
+                name: team.leader.name,
+                email: team.leader.email,
+                profilePicture: team.leader.profile_picture,
+                skills: team.leader.skills || [],
+                education: team.leader.education || {}
+              } : null
+            }
+          };
+        }
+      }
+
+      // If we're here, we need to handle a direct student application
+      // For this app, we'll show it as a "Personal Mentorship Request"
+      return {
+        ...baseData,
+        team: {
+          id: null,
+          name: 'Personal Mentorship Request',
+          description: 'This is a direct mentorship request from a student.',
+          techStack: [],
+          memberCount: 1,
+          members: [],
+          leader: null,
+        }
+      };
+    }));
+
+    // Group applications by status
+    const groupedApplications = {
+      pending: enrichedApplications.filter(app => app.status === 'pending'),
+      accepted: enrichedApplications.filter(app => app.status === 'accepted'),
+      rejected: enrichedApplications.filter(app => app.status === 'rejected'),
+      total: enrichedApplications.length
+    };
+
+    // Debug logging
+    console.log('Application stats:', {
+      total: enrichedApplications.length,
+      pending: groupedApplications.pending.length,
+      accepted: groupedApplications.accepted.length,
+      rejected: groupedApplications.rejected.length
+    });
+
+    return res.status(200).json({
+      success: true,
+      applications: groupedApplications
+    });
+
+  } catch (error) {
+    console.error('Error processing applications:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to fetch applications',
+      error: error.message
+    });
+  }
+};
 
 // Update module exports to include the new functions
 module.exports = { 
@@ -961,7 +1347,11 @@ module.exports = {
   submitMemberFeedback,
   submitProjectFeedback,
   getActiveMentorships,
-  getTeamDetails
+  getTeamDetails,
+  getAllConversations,
+  fetchTeamApplications,
+  handleStudentApplications
+
 };
 
 

@@ -471,6 +471,11 @@ const teamSchema = new mongoose.Schema(
     },
     dissolutionDate: {
       type: Date
+    },
+    isTempTeam: {
+      type: Boolean,
+      default: false,
+      // required: true
     }
   },
   { timestamps: true }

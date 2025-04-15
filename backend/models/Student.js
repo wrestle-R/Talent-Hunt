@@ -152,7 +152,10 @@ teammate_search: {
 
     isRejected: { type: Boolean, required: true, default: false },
     rejectionReason: { type: String },
+    isTempTeam: {type: Boolean, required: false, default:false},
+    
   },
+
   { timestamps: true }
 );
 
