@@ -260,51 +260,18 @@ const JoinTeam = () => {
   // Show loading skeleton during buffer period or when loading data
   if (isBuffering || (loading && !error)) {
     return (
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-md p-6">
+      <div className="max-w-6xl mx-auto bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800">
         <div className="flex items-center mb-6">
-          <div className="w-10 h-10 bg-gray-200 rounded-full animate-pulse mr-4"></div>
-          <div className="h-8 bg-gray-200 rounded w-48 animate-pulse"></div>
+          <div className="w-10 h-10 bg-[#121212] rounded-full animate-pulse mr-4"></div>
+          <div className="h-8 bg-[#121212] rounded w-48 animate-pulse"></div>
         </div>
 
-        <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-          <div className="h-6 bg-gray-200 rounded w-36 mb-3 animate-pulse"></div>
-          <div className="h-4 bg-gray-200 rounded w-full mb-3 animate-pulse"></div>
+        <div className="mb-6 p-4 border border-gray-800 rounded-lg">
+          <div className="h-6 bg-[#121212] rounded w-36 mb-3 animate-pulse"></div>
+          <div className="h-4 bg-[#121212] rounded w-full mb-3 animate-pulse"></div>
           <div className="flex">
-            <div className="flex-1 h-10 bg-gray-200 rounded-l-lg animate-pulse"></div>
-            <div className="w-28 h-10 bg-gray-300 rounded-r-lg animate-pulse"></div>
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <div className="h-6 bg-gray-200 rounded w-40 mb-3 animate-pulse"></div>
-          
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            <div className="flex-1 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
-            <div className="w-full md:w-64 h-10 bg-gray-200 rounded-lg animate-pulse"></div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map(item => (
-              <div key={item} className="border border-gray-200 rounded-lg p-4">
-                <div className="flex justify-between items-start mb-2">
-                  <div className="h-5 bg-gray-200 rounded w-32 animate-pulse"></div>
-                  <div className="h-4 bg-gray-200 rounded w-16 animate-pulse"></div>
-                </div>
-                <div className="h-4 bg-gray-200 rounded w-full mb-3 animate-pulse"></div>
-                <div className="h-4 bg-gray-200 rounded w-4/5 mb-3 animate-pulse"></div>
-                
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {[1, 2, 3].map(tag => (
-                    <div key={tag} className="h-5 bg-gray-200 rounded-full w-16 animate-pulse"></div>
-                  ))}
-                </div>
-                
-                <div className="flex gap-2 mt-3">
-                  <div className="flex-1 h-8 bg-gray-200 rounded-lg animate-pulse"></div>
-                  <div className="flex-1 h-8 bg-gray-300 rounded-lg animate-pulse"></div>
-                </div>
-              </div>
-            ))}
+            <div className="flex-1 h-10 bg-[#121212] rounded-l-lg animate-pulse"></div>
+            <div className="w-28 h-10 bg-[#121212] rounded-r-lg animate-pulse"></div>
           </div>
         </div>
       </div>
@@ -314,16 +281,16 @@ const JoinTeam = () => {
   // If buffer period is complete and userData is still not available, show login prompt
   if (!isBuffering && (!userData || !userData._id)) {
     return (
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-md p-6">
+      <div className="max-w-6xl mx-auto bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800">
         <div className="text-center py-10">
-          <LogIn size={40} className="mx-auto text-red-400 mb-2" />
-          <h2 className="text-xl font-medium text-gray-800 mb-2">Login Required</h2>
-          <p className="text-gray-600 mb-6">
+          <LogIn size={40} className="mx-auto text-[#E8C848] mb-2" />
+          <h2 className="text-xl font-medium text-white mb-2">Login Required</h2>
+          <p className="text-gray-400 mb-6">
             You need to be logged in to view and join teams.
           </p>
           <button 
             onClick={redirectToLogin} 
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+            className="bg-[#E8C848] text-[#121212] px-4 py-2 rounded-lg hover:bg-[#E8C848]/80 transition-all duration-300 shadow-lg shadow-[#E8C848]/30"
           >
             Log In
           </button>
@@ -333,16 +300,16 @@ const JoinTeam = () => {
   }
 
   return (
-    <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-md p-6">
+    <div className="max-w-6xl mx-auto bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate(-1)}
-          className="mr-4 p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+          className="mr-4 p-2 rounded-full bg-[#121212] text-[#E8C848] hover:bg-[#E8C848]/10 transition-all duration-300"
         >
           <ChevronLeft size={20} />
         </button>
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <Users className="text-indigo-600" />
+        <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+          <Users className="text-[#E8C848]" />
           Join a Team
         </h2>
       </div>
@@ -350,16 +317,16 @@ const JoinTeam = () => {
       {joinStatus.message && (
         <div className={`mb-4 p-3 rounded-lg ${
           joinStatus.type === 'success' 
-            ? 'bg-green-50 text-green-700' 
-            : 'bg-red-50 text-red-700'
+            ? 'bg-[#E8C848]/10 border border-[#E8C848]/30 text-[#E8C848]' 
+            : 'bg-red-900/20 border border-red-800 text-red-400'
         }`}>
           {joinStatus.message}
         </div>
       )}
 
-      <div className="mb-6 p-4 border border-gray-200 rounded-lg">
-        <h3 className="font-medium text-lg mb-3">Join with Code</h3>
-        <p className="text-sm text-gray-600 mb-3">
+      <div className="mb-6 p-4 border border-gray-800 rounded-lg bg-[#121212] hover:border-[#E8C848]/30 transition-all duration-300">
+        <h3 className="font-medium text-lg mb-3 text-white">Join with Code</h3>
+        <p className="text-sm text-gray-400 mb-3">
           If you have a team code, enter it below to join directly.
         </p>
         <div className="flex">
@@ -368,12 +335,12 @@ const JoinTeam = () => {
             value={joinCode}
             onChange={(e) => setJoinCode(e.target.value)}
             placeholder="Enter team code"
-            className="flex-1 p-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+            className="flex-1 p-2 bg-[#1A1A1A] border border-gray-800 text-white rounded-l-lg focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] placeholder-gray-500 transition-all duration-300"
           />
           <button
             onClick={handleJoinWithCode}
             disabled={loading}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700 disabled:opacity-70 flex items-center"
+            className="bg-[#E8C848] text-[#121212] px-4 py-2 rounded-r-lg hover:bg-[#E8C848]/80 disabled:opacity-70 flex items-center transition-all duration-300 shadow-lg shadow-[#E8C848]/30"
           >
             {loading ? 'Joining...' : 'Join Team'}
           </button>
@@ -381,76 +348,49 @@ const JoinTeam = () => {
       </div>
 
       <div className="mb-6">
-        <h3 className="font-medium text-lg mb-3">Find Teams to Join</h3>
+        <h3 className="font-medium text-lg mb-3 text-white">Find Teams to Join</h3>
         
         <div className="flex flex-col md:flex-row gap-4 mb-4">
           <div className="relative flex-1">
-            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#E8C848]" />
             <input
               type="text"
               placeholder="Search by team name or description..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-2 bg-[#121212] border border-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] placeholder-gray-500 transition-all duration-300"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <div className="relative w-full md:w-64">
-            <Filter size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            <Filter size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#E8C848]" />
             <input
               type="text"
               placeholder="Filter by tech stack..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-2 bg-[#121212] border border-gray-800 text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] placeholder-gray-500 transition-all duration-300"
               value={techFilter}
               onChange={(e) => setTechFilter(e.target.value)}
             />
           </div>
         </div>
         
-        {loading ? (
-          <div className="flex justify-center items-center h-40">
-            <div className="animate-pulse flex flex-col items-center">
-              <div className="rounded-full bg-gray-200 h-12 w-12 mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-              <div className="h-3 bg-gray-200 rounded w-32"></div>
-            </div>
-          </div>
-        ) : error ? (
-          <div className="text-center py-10">
-            <p className="text-red-500">{error}</p>
-            {error.includes('log in') ? (
-              <button 
-                onClick={redirectToLogin} 
-                className="mt-3 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
-              >
-                Log In
-              </button>
-            ) : (
-              <button 
-                onClick={retryFetchTeams} 
-                className="mt-3 bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200"
-              >
-                Try Again
-              </button>
-            )}
-          </div>
-        ) : filteredTeams.length > 0 ? (
+        {filteredTeams.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {filteredTeams.map(team => (
-              <div key={team._id} className="border border-gray-200 rounded-lg p-4">
+              <div key={team._id} className="bg-[#121212] border border-gray-800 hover:border-[#E8C848]/30 rounded-lg p-4 transition-all duration-300">
                 <div className="flex justify-between items-start mb-2">
-                  <h4 className="font-semibold text-gray-800">{team.name}</h4>
-                  <span className="text-xs text-gray-500">
+                  <h4 className="font-semibold text-white">{team.name}</h4>
+                  <span className="text-xs text-gray-400">
                     {team.memberCount}/{team.maxTeamSize} members
                   </span>
                 </div>
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                <p className="text-sm text-gray-400 mb-3 line-clamp-2">
                   {team.description || "No description provided."}
                 </p>
                 
                 {team.techStack && team.techStack.length > 0 && (
                   <div className="flex flex-wrap gap-1 mb-3">
                     {team.techStack.map((tech, idx) => (
-                      <span key={idx} className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0.5 rounded-full">
+                      <span key={idx} className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
                         {tech}
                       </span>
                     ))}
@@ -460,7 +400,7 @@ const JoinTeam = () => {
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => navigate(`/student/team/${team._id}`)}
-                    className="flex-1 bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg text-sm hover:bg-gray-200 flex items-center justify-center"
+                    className="flex-1 bg-[#1A1A1A] text-[#E8C848] px-3 py-1.5 rounded-lg text-sm hover:bg-[#E8C848]/10 transition-all duration-300 flex items-center justify-center border border-gray-800 hover:border-[#E8C848]/30"
                   >
                     <ExternalLink size={14} className="mr-1" />
                     View
@@ -469,7 +409,7 @@ const JoinTeam = () => {
                   {team.hasApplied ? (
                     <button
                       disabled
-                      className="flex-1 bg-green-50 text-green-700 px-3 py-1.5 rounded-lg text-sm"
+                      className="flex-1 bg-[#E8C848]/10 text-[#E8C848] px-3 py-1.5 rounded-lg text-sm border border-[#E8C848]/30"
                     >
                       Applied
                     </button>
@@ -477,7 +417,7 @@ const JoinTeam = () => {
                     <button
                       onClick={() => handleApplyToTeam(team._id)}
                       disabled={loading}
-                      className="flex-1 bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-sm hover:bg-indigo-700 flex items-center justify-center"
+                      className="flex-1 bg-[#E8C848] text-[#121212] px-3 py-1.5 rounded-lg text-sm hover:bg-[#E8C848]/80 transition-all duration-300 flex items-center justify-center shadow-lg shadow-[#E8C848]/30"
                     >
                       <Send size={14} className="mr-1" />
                       Apply
@@ -489,8 +429,8 @@ const JoinTeam = () => {
           </div>
         ) : (
           <div className="text-center py-10">
-            <Users size={40} className="mx-auto text-gray-300 mb-2" />
-            <p className="text-gray-500">No teams found matching your criteria</p>
+            <Users size={40} className="mx-auto text-[#E8C848]/30 mb-2" />
+            <p className="text-gray-400">No teams found matching your criteria</p>
           </div>
         )}
       </div>

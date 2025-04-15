@@ -5,19 +5,6 @@ const HackathonList = ({ hackathons, onEdit, onDelete }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [expandedHackathon, setExpandedHackathon] = useState(null);
   
-  // Sample applicant data (replace with API call in actual implementation)
-  const [applicantsByHackathon] = useState({
-    'hackathon1': [
-      { _id: 'app1', name: 'John Doe', email: 'john@example.com', skills: ['React', 'Node.js'], status: 'Pending' },
-      { _id: 'app2', name: 'Jane Smith', email: 'jane@example.com', skills: ['Python', 'Machine Learning'], status: 'Accepted' },
-      { _id: 'app3', name: 'Alice Johnson', email: 'alice@example.com', skills: ['UI/UX', 'Figma'], status: 'Pending' }
-    ],
-    'hackathon2': [
-      { _id: 'app4', name: 'Bob Brown', email: 'bob@example.com', skills: ['Java', 'Spring Boot'], status: 'Pending' },
-      { _id: 'app5', name: 'Charlie Davis', email: 'charlie@example.com', skills: ['AWS', 'DevOps'], status: 'Rejected' }
-    ]
-  });
-  
   // Filter hackathons based on search term
   const filteredHackathons = hackathons.filter(hackathon => 
     hackathon.hackathonName.toLowerCase().includes(searchTerm.toLowerCase()) ||

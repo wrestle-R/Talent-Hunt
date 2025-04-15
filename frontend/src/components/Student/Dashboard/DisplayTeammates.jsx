@@ -395,11 +395,11 @@ const DisplayTeammates = ({
 
   // Team Invitation Modal component
   const InviteToTeamModal = () => (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md">
+    <div className="fixed inset-0 bg-[#121212]/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-[#1A1A1A] rounded-lg shadow-lg p-6 w-full max-w-md border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-semibold text-lg flex items-center">
-            <UserPlus className="text-emerald-600 mr-2" size={20} />
+          <h3 className="font-semibold text-lg flex items-center text-white">
+            <UserPlus className="text-[#E8C848] mr-2" size={20} />
             Invite to Team
           </h3>
           <button
@@ -407,19 +407,26 @@ const DisplayTeammates = ({
               setIsInviteModalOpen(false);
               setInviteStatus({ type: "", message: "" });
             }}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-400 hover:text-[#E8C848] transition-all duration-300"
           >
             <X size={20} />
           </button>
         </div>
 
         {selectedTeammateToInvite && (
+<<<<<<< HEAD
           <div className="flex items-center mb-4 p-3 bg-gray-50 rounded-lg">
             <img
               src={
                 selectedTeammateToInvite.profile_picture || StudentPlaceholder
               }
               alt={selectedTeammateToInvite.name}
+=======
+          <div className="flex items-center mb-4 p-3 bg-[#121212] rounded-lg">
+            <img 
+              src={selectedTeammateToInvite.profile_picture || StudentPlaceholder} 
+              alt={selectedTeammateToInvite.name} 
+>>>>>>> rdp
               className="w-10 h-10 rounded-full mr-3"
               onError={(e) => {
                 e.target.onerror = null;
@@ -427,14 +434,20 @@ const DisplayTeammates = ({
               }}
             />
             <div>
+<<<<<<< HEAD
               <p className="font-medium">{selectedTeammateToInvite.name}</p>
               <p className="text-sm text-gray-500">
                 {selectedTeammateToInvite.education?.institution || "Student"}
+=======
+              <p className="font-medium text-white">{selectedTeammateToInvite.name}</p>
+              <p className="text-sm text-gray-400">
+                {selectedTeammateToInvite.education?.institution || 'Student'}
+>>>>>>> rdp
               </p>
 
               {/* Show if already invited */}
               {hasAnyInvitation(selectedTeammateToInvite._id) && (
-                <div className="text-xs text-amber-600 flex items-center mt-1">
+                <div className="text-xs text-[#E8C848] flex items-center mt-1">
                   <Clock size={12} className="mr-1" />
                   <span>
                     Already invited to:{" "}
@@ -447,6 +460,7 @@ const DisplayTeammates = ({
         )}
 
         {inviteStatus.message && (
+<<<<<<< HEAD
           <div
             className={`mb-4 p-3 rounded-lg ${
               inviteStatus.type === "success"
@@ -456,20 +470,29 @@ const DisplayTeammates = ({
                 : "bg-blue-50 text-blue-700"
             }`}
           >
+=======
+          <div className={`mb-4 p-3 rounded-lg ${
+            inviteStatus.type === 'success' 
+              ? 'bg-[#E8C848]/10 text-[#E8C848]' 
+              : inviteStatus.type === 'error'
+                ? 'bg-red-400/10 text-red-400'
+                : 'bg-blue-400/10 text-blue-400'
+          }`}>
+>>>>>>> rdp
             {inviteStatus.message}
           </div>
         )}
 
         <form onSubmit={handleSendInvite}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Team
             </label>
             {teamsList.length > 0 ? (
               <select
                 value={selectedTeamId}
                 onChange={(e) => setSelectedTeamId(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                className="w-full p-2 border border-gray-800 rounded-lg focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] bg-[#121212] text-white"
                 required
               >
                 {teamsList.map((team) => {
@@ -491,20 +514,24 @@ const DisplayTeammates = ({
                 })}
               </select>
             ) : (
+<<<<<<< HEAD
               <p className="text-red-500 text-sm">
                 You must be a team leader to invite members
               </p>
+=======
+              <p className="text-red-400 text-sm">You must be a team leader to invite members</p>
+>>>>>>> rdp
             )}
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Role
             </label>
             <select
               value={inviteRole}
               onChange={(e) => setInviteRole(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full p-2 border border-gray-800 rounded-lg focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] bg-[#121212] text-white"
             >
               <option value="Member">Team Member</option>
               <option value="Developer">Developer</option>
@@ -516,13 +543,13 @@ const DisplayTeammates = ({
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-400 mb-1">
               Message
             </label>
             <textarea
               value={inviteMessage}
               onChange={(e) => setInviteMessage(e.target.value)}
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              className="w-full p-2 border border-gray-800 rounded-lg focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] bg-[#121212] text-white"
               rows={3}
               required
             />
@@ -532,13 +559,13 @@ const DisplayTeammates = ({
             <button
               type="button"
               onClick={() => setIsInviteModalOpen(false)}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+              className="px-4 py-2 bg-gray-800 text-gray-400 rounded-lg hover:bg-gray-700 hover:text-white transition-all duration-300"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-70 flex items-center"
+              className="px-4 py-2 bg-[#E8C848] text-black rounded-lg hover:bg-[#E8C848]/90 disabled:opacity-70 flex items-center transition-all duration-300"
               disabled={
                 inviteStatus.type === "loading" ||
                 teamsList.length === 0 ||
@@ -568,6 +595,7 @@ const DisplayTeammates = ({
   // Handle loading state
   if (loading) {
     return (
+<<<<<<< HEAD
       <div
         className={`bg-white rounded-xl shadow-md p-6 ${
           isFullPage ? "min-h-[600px]" : ""
@@ -577,13 +605,20 @@ const DisplayTeammates = ({
           <h3 className="font-bold text-lg flex items-center gap-2">
             <Users className="text-emerald-600" />
             {isRecommendations ? "Team Suggestions" : "Available Teammates"}
+=======
+      <div className={`bg-[#1A1A1A] rounded-xl shadow-lg p-6 ${isFullPage ? 'min-h-[600px]' : ''} border border-gray-800`}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+            <Users className="text-[#E8C848]" />
+            {isRecommendations ? 'Team Suggestions' : 'Available Teammates'}
+>>>>>>> rdp
           </h3>
         </div>
         <div className="flex justify-center items-center h-40">
           <div className="animate-pulse flex flex-col items-center">
-            <div className="rounded-full bg-gray-200 h-12 w-12 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-            <div className="h-3 bg-gray-200 rounded w-32"></div>
+            <div className="rounded-full bg-[#121212] h-12 w-12 mb-2"></div>
+            <div className="h-4 bg-[#121212] rounded w-24 mb-2"></div>
+            <div className="h-3 bg-[#121212] rounded w-32"></div>
           </div>
         </div>
       </div>
@@ -592,6 +627,7 @@ const DisplayTeammates = ({
 
   if (error && teammates.length === 0) {
     return (
+<<<<<<< HEAD
       <div
         className={`bg-white rounded-xl shadow-md p-6 ${
           isFullPage ? "min-h-[600px]" : ""
@@ -610,6 +646,22 @@ const DisplayTeammates = ({
             <button
               onClick={() => window.location.reload()}
               className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-sm"
+=======
+      <div className={`bg-[#1A1A1A] rounded-xl shadow-lg p-6 ${isFullPage ? 'min-h-[600px]' : ''} border border-gray-800`}>
+        <div className="flex justify-between items-center mb-4">
+          <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+            <Users className="text-[#E8C848]" />
+            {isRecommendations ? 'Team Suggestions' : 'Available Teammates'}
+          </h3>
+        </div>
+        <div className="flex justify-center items-center h-40">
+          <div className="text-center">
+            <p className="mb-2 text-gray-400">Failed to load teammate suggestions.</p>
+            <p className="text-xs mb-3 text-red-400">{error}</p>
+            <button 
+              onClick={() => window.location.reload()} 
+              className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm hover:bg-[#E8C848]/20 transition-all duration-300"
+>>>>>>> rdp
             >
               Try Again
             </button>
@@ -620,18 +672,22 @@ const DisplayTeammates = ({
   }
 
   return (
+<<<<<<< HEAD
     <div
       className={`${
         isFullPage ? "bg-white rounded-xl shadow-md p-6 min-h-[600px]" : ""
       } relative`}
     >
+=======
+    <div className={`${isFullPage ? 'bg-[#1A1A1A] rounded-xl shadow-lg p-6 min-h-[600px] border border-gray-800' : ''} relative`}>
+>>>>>>> rdp
       {/* Invite modal */}
       {isInviteModalOpen && <InviteToTeamModal />}
 
       {isFullPage && (
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <Users className="text-emerald-600" />
+          <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+            <Users className="text-[#E8C848]" />
             Available Teammates
           </h3>
         </div>
@@ -649,7 +705,7 @@ const DisplayTeammates = ({
               <input
                 type="text"
                 placeholder="Search by name or institution..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -662,7 +718,7 @@ const DisplayTeammates = ({
               <input
                 type="text"
                 placeholder="Filter by skills..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                className="w-full pl-10 pr-4 py-2 border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#121212] text-white"
                 value={skillFilter}
                 onChange={(e) => setSkillFilter(e.target.value)}
               />
@@ -674,20 +730,34 @@ const DisplayTeammates = ({
             <button
               onClick={() => setPurposeFilter("all")}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
+<<<<<<< HEAD
                 purposeFilter === "all"
                   ? "bg-emerald-100 text-emerald-700"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
+=======
+                purposeFilter === 'all' 
+                  ? 'bg-[#E8C848]/10 text-[#E8C848]' 
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              } transition-all duration-300`}
+>>>>>>> rdp
             >
               All
             </button>
             <button
               onClick={() => setPurposeFilter("Project")}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center ${
+<<<<<<< HEAD
                 purposeFilter === "Project"
                   ? "bg-indigo-100 text-indigo-700"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
+=======
+                purposeFilter === 'Project' 
+                  ? 'bg-indigo-500/10 text-indigo-500' 
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              } transition-all duration-300`}
+>>>>>>> rdp
             >
               <Code size={14} className="mr-1" />
               Projects
@@ -695,10 +765,17 @@ const DisplayTeammates = ({
             <button
               onClick={() => setPurposeFilter("Hackathon")}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center ${
+<<<<<<< HEAD
                 purposeFilter === "Hackathon"
                   ? "bg-purple-100 text-purple-700"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
+=======
+                purposeFilter === 'Hackathon' 
+                  ? 'bg-purple-500/10 text-purple-500' 
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              } transition-all duration-300`}
+>>>>>>> rdp
             >
               <Calendar size={14} className="mr-1" />
               Hackathons
@@ -706,10 +783,17 @@ const DisplayTeammates = ({
             <button
               onClick={() => setPurposeFilter("Both")}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center ${
+<<<<<<< HEAD
                 purposeFilter === "Both"
                   ? "bg-emerald-100 text-emerald-700"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
               }`}
+=======
+                purposeFilter === 'Both' 
+                  ? 'bg-[#E8C848]/10 text-[#E8C848]' 
+                  : 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white'
+              } transition-all duration-300`}
+>>>>>>> rdp
             >
               <Users size={14} className="mr-1" />
               Both
@@ -742,9 +826,15 @@ const DisplayTeammates = ({
               const isInvited = hasAnyInvitation(teammate._id);
 
               return (
+<<<<<<< HEAD
                 <div
                   key={teammate._id}
                   className="flex flex-col bg-gray-50 rounded-lg border border-gray-200 overflow-hidden h-[300px] hover:shadow-md cursor-pointer transition-shadow"
+=======
+                <div 
+                  key={teammate._id} 
+                  className="flex flex-col bg-[#121212] rounded-lg border border-gray-800 overflow-hidden h-[300px] hover:shadow-lg cursor-pointer transition-shadow"
+>>>>>>> rdp
                   onClick={() => handleViewProfile(teammate._id)}
                 >
                   <div className="p-4 flex items-start space-x-3 flex-1">
@@ -758,8 +848,14 @@ const DisplayTeammates = ({
                       }}
                     />
                     <div className="flex-1 min-w-0">
+<<<<<<< HEAD
                       <p className="font-semibold text-gray-800">
                         {teammate.name}
+=======
+                      <p className="font-semibold text-white">{teammate.name}</p>
+                      <p className="text-sm text-gray-400 truncate">
+                        {teammate.education?.institution || 'Student'}
+>>>>>>> rdp
                       </p>
                       <p className="text-sm text-gray-500 truncate">
                         {teammate.education?.institution || "Student"}
@@ -776,10 +872,10 @@ const DisplayTeammates = ({
                       {/* Additional badges for "Both" type */}
                       {teammate.lookingFor?.purpose === "Both" && (
                         <div className="flex flex-wrap gap-1 mt-2">
-                          <span className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0.5 rounded-full flex items-center">
+                          <span className="bg-indigo-500/10 text-indigo-500 text-xs px-2 py-0.5 rounded-full flex items-center">
                             <Code size={12} className="mr-1" /> Projects
                           </span>
-                          <span className="bg-purple-50 text-purple-700 text-xs px-2 py-0.5 rounded-full flex items-center">
+                          <span className="bg-purple-500/10 text-purple-500 text-xs px-2 py-0.5 rounded-full flex items-center">
                             <Calendar size={12} className="mr-1" /> Hackathons
                           </span>
                         </div>
@@ -787,6 +883,7 @@ const DisplayTeammates = ({
 
                       {/* Urgency indicator if they have one */}
                       {teammate.lookingFor?.urgencyLevel && (
+<<<<<<< HEAD
                         <div
                           className={`flex items-center mt-2 text-xs ${
                             teammate.lookingFor.urgencyLevel === "High"
@@ -796,6 +893,15 @@ const DisplayTeammates = ({
                               : "text-blue-600"
                           }`}
                         >
+=======
+                        <div className={`flex items-center mt-2 text-xs ${
+                          teammate.lookingFor.urgencyLevel === 'High' 
+                            ? 'text-red-400' 
+                            : teammate.lookingFor.urgencyLevel === 'Medium'
+                              ? 'text-orange-400'
+                              : 'text-blue-400'
+                        }`}>
+>>>>>>> rdp
                           <Clock size={12} className="mr-1" />
                           <span>
                             {teammate.lookingFor.urgencyLevel === "High"
@@ -806,6 +912,7 @@ const DisplayTeammates = ({
                           </span>
                         </div>
                       )}
+<<<<<<< HEAD
 
                       {Array.isArray(teammate.skills) &&
                         teammate.skills.length > 0 && (
@@ -848,9 +955,40 @@ const DisplayTeammates = ({
                         </div>
                       )}
 
+=======
+                      
+                      {Array.isArray(teammate.skills) && teammate.skills.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-2">
+                          {teammate.skills.slice(0, 3).map((skill, i) => (
+                            <span key={i} className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
+                              {skill}
+                            </span>
+                          ))}
+                          {teammate.skills.length > 3 && (
+                            <span className="text-xs text-gray-400">+{teammate.skills.length - 3} more</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 border-t border-gray-800 bg-[#121212]">
+                    {/* Desired skills */}
+                    {teammate.lookingFor?.desiredSkills && teammate.lookingFor.desiredSkills.length > 0 && (
+                      <div className="flex items-start mt-1 text-xs text-gray-400 mb-2">
+                        <Award size={12} className="mr-1 mt-0.5 flex-shrink-0" />
+                        <span>
+                          <span className="font-medium">Looking for: </span>
+                          {teammate.lookingFor.desiredSkills.slice(0, 3).join(', ')}
+                          {teammate.lookingFor.desiredSkills.length > 3 && ' + more'}
+                        </span>
+                      </div>
+                    )}
+                    
+>>>>>>> rdp
                     {/* Location */}
                     {teammate.location && (
-                      <div className="flex items-center mt-1 text-xs text-gray-600 mb-2">
+                      <div className="flex items-center mt-1 text-xs text-gray-400 mb-2">
                         <MapPin size={12} className="mr-1" />
                         <span>
                           {typeof teammate.location === "string"
@@ -870,8 +1008,13 @@ const DisplayTeammates = ({
                         onClick={(e) => {
                           e.stopPropagation();
                           handleOpenChat(teammate);
+<<<<<<< HEAD
                         }}
                         className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm flex items-center justify-center hover:bg-gray-200"
+=======
+                        }} 
+                        className="bg-gray-800 text-gray-400 px-3 py-1 rounded-lg text-sm flex items-center justify-center hover:bg-gray-700 hover:text-white transition-all duration-300"
+>>>>>>> rdp
                       >
                         <MessageCircle size={14} className="mr-1" /> Chat
                       </button>
@@ -881,7 +1024,7 @@ const DisplayTeammates = ({
                         (isInvited ? (
                           <button
                             disabled
-                            className="bg-green-50 text-green-700 px-3 py-1 rounded-lg text-sm flex items-center justify-center cursor-default"
+                            className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm flex items-center justify-center cursor-default"
                           >
                             <Check size={14} className="mr-1" /> Invited
                           </button>
@@ -891,7 +1034,7 @@ const DisplayTeammates = ({
                               e.stopPropagation();
                               handleOpenInviteModal(teammate);
                             }}
-                            className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-sm flex items-center justify-center hover:bg-emerald-200"
+                            className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm flex items-center justify-center hover:bg-[#E8C848]/20 transition-all duration-300"
                           >
                             <UserPlus size={14} className="mr-1" /> Invite
                           </button>
@@ -902,7 +1045,7 @@ const DisplayTeammates = ({
                           e.stopPropagation();
                           handleViewProfile(teammate._id);
                         }}
-                        className="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-sm flex-1 hover:bg-emerald-200"
+                        className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm flex-1 hover:bg-[#E8C848]/20 transition-all duration-300"
                       >
                         View Profile
                       </button>
@@ -914,10 +1057,15 @@ const DisplayTeammates = ({
         </div>
       ) : (
         <div className="text-center py-10">
+<<<<<<< HEAD
           <User size={48} className="mx-auto text-gray-300 mb-3" />
           <h4 className="text-lg font-medium text-gray-500 mb-1">
             No teammates found
           </h4>
+=======
+          <User size={48} className="mx-auto text-gray-800 mb-3" />
+          <h4 className="text-lg font-medium text-gray-400 mb-1">No teammates found</h4>
+>>>>>>> rdp
           <p className="text-gray-400 text-sm">
             {isFullPage
               ? purposeFilter !== "all"
@@ -933,7 +1081,7 @@ const DisplayTeammates = ({
       {/* Pagination or more teammates button - only in full page view */}
       {isFullPage && filteredTeammates.length > 8 && (
         <div className="mt-6 flex justify-center">
-          <button className="bg-emerald-50 text-emerald-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-100 transition-colors">
+          <button className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/20 transition-all duration-300">
             Load More Teammates
           </button>
         </div>

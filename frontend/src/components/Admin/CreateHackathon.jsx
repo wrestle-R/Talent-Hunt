@@ -15,8 +15,10 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
     location: '',
     prizePool: 0,
     totalCapacity: 100,
-    domain: [],
-    problemStatement: [] 
+    primaryDomain: '', // Primary domain field
+    primaryProblemStatement: '', // Primary problem statement field
+    domain: [], // Legacy field
+    problemStatement: [] // Legacy field
   });
   
   // If editing, populate form with existing data
@@ -32,6 +34,8 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
         location: hackathon.location || '',
         prizePool: hackathon.prizePool || 0,
         totalCapacity: hackathon.registration?.totalCapacity || 100,
+        primaryDomain: hackathon.primaryDomain || '', // Load primary domain
+        primaryProblemStatement: hackathon.primaryProblemStatement || '', // Load primary problem statement
         domain: hackathon.domain ? [...hackathon.domain] : [],
         problemStatement: hackathon.problemStatement ? [...hackathon.problemStatement] : []
       });
@@ -95,6 +99,19 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
     try {
       setLoading(true);
       
+      // Ensure primary domain and problem statement are set
+      if (!formData.primaryDomain.trim()) {
+        alert("Primary domain is required");
+        setLoading(false);
+        return;
+      }
+      
+      if (!formData.primaryProblemStatement.trim()) {
+        alert("Primary problem statement is required");
+        setLoading(false);
+        return;
+      }
+      
       // Prepare data with proper types
       const hackathonData = {
         ...formData,
@@ -111,7 +128,8 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
           ...hackathonData,
           registration: {
             totalCapacity: Number(hackathonData.totalCapacity),
-            currentlyRegistered: hackathon.registration?.currentlyRegistered || 0
+            currentlyRegistered: hackathon.registration?.currentlyRegistered || 0,
+            requiredTeamSize: 4
           },
           createdAt: hackathon.createdAt
         };
@@ -126,7 +144,8 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
           ...hackathonData,
           registration: {
             totalCapacity: Number(hackathonData.totalCapacity),
-            currentlyRegistered: 0
+            currentlyRegistered: 0,
+            requiredTeamSize: 4
           },
           createdAt: new Date().toISOString()
         };
@@ -189,7 +208,7 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
                 className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                 required
             />
-            </div>
+          </div>
           
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -279,102 +298,38 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
               required
             />
           </div>
-          
+
+          {/* Primary Domain field */}
           <div className="col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Domains / Topics
+              Primary Domain*
             </label>
-            <div className="flex items-center">
-              <input
-                type="text"
-                value={domainInput}
-                onChange={(e) => setDomainInput(e.target.value)}
-                onKeyDown={handleDomainKeyDown}
-                placeholder="Add a domain and press Enter"
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                type="button"
-                onClick={() => {
-                  if (domainInput.trim() !== '') {
-                    if (!formData.domain.includes(domainInput.trim())) {
-                      setFormData({
-                        ...formData,
-                        domain: [...formData.domain, domainInput.trim()]
-                      });
-                    }
-                    setDomainInput('');
-                  }
-                }}
-                className="ml-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md"
-              >
-                Add
-              </button>
-            </div>
-            
-            <div className="flex flex-wrap gap-2 mt-2">
-              {formData.domain.map((domain, index) => (
-                <div key={index} className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm flex items-center">
-                  {domain}
-                  <button
-                    type="button"
-                    onClick={() => removeDomain(index)}
-                    className="ml-1 text-blue-600 hover:text-blue-800"
-                  >
-                    &times;
-                  </button>
-                </div>
-              ))}
-            </div>
-
-            {/* Problem Statements Section - Add this to the form */}
-            <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-                Problem Statements
-            </label>
-            <div className="flex flex-wrap gap-2 mb-2">
-                {formData.problemStatement.map((problem, index) => (
-                <div key={index} className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full flex items-center gap-1">
-                    {problem}
-                    <button
-                    type="button"
-                    onClick={() => removeProblemStatement(index)}
-                    className="ml-1 text-orange-600 hover:text-orange-800"
-                    >
-                    &times;
-                    </button>
-                </div>
-                ))}
-            </div>
-            <div className="flex">
-                <input
-                type="text"
-                value={problemStatementInput}
-                onChange={(e) => setProblemStatementInput(e.target.value)}
-                onKeyDown={handleProblemKeyDown}
-                placeholder="Add a problem statement and press Enter"
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button
-                type="button"
-                onClick={() => {
-                    if (problemStatementInput.trim() !== '') {
-                    if (!formData.problemStatement.includes(problemStatementInput.trim())) {
-                        setFormData({
-                        ...formData,
-                        problemStatement: [...formData.problemStatement, problemStatementInput.trim()]
-                        });
-                    }
-                    setProblemStatementInput('');
-                    }
-                }}
-                className="ml-2 bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded-md"
-                >
-                Add
-                </button>
-            </div>
-            </div>
+            <input
+              type="text"
+              name="primaryDomain"
+              value={formData.primaryDomain}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Main domain of the hackathon (e.g., AI, Web3, Healthcare)"
+              required
+            />
           </div>
+
+          {/* Primary Problem Statement field */}
+          <div className="col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Primary Problem Statement*
+            </label>
+            <textarea
+              name="primaryProblemStatement"
+              value={formData.primaryProblemStatement}
+              onChange={handleChange}
+              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
+              placeholder="Main problem statement that participants will solve"
+              required
+            />
+          </div>
+         
           
           <div className="col-span-2 mt-4 flex justify-end">
             <button
@@ -402,5 +357,3 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
 };
 
 export default CreateHackathon;
-
-

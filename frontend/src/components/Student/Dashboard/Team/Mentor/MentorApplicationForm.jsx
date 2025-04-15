@@ -46,27 +46,27 @@ const MentorApplicationForm = ({ mentor, teamId, studentId, onClose, onApplicati
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full">
+    <div className="fixed inset-0 bg-[#121212]/80 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-[#1A1A1A] border border-gray-800 hover:border-[#E8C848]/30 rounded-lg p-6 max-w-md w-full shadow-lg transition-all duration-300">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-800">Request Mentorship</h3>
+          <h3 className="text-lg font-semibold text-white">Request Mentorship</h3>
           <button 
             onClick={onClose}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-400 hover:text-[#E8C848] transition-colors duration-300"
           >
             <X size={20} />
           </button>
         </div>
         
         <div className="mb-4">
-          <p className="text-gray-700">
-            You're requesting mentorship from <span className="font-semibold">{mentor.name}</span>
+          <p className="text-gray-300">
+            You're requesting mentorship from <span className="font-semibold text-[#E8C848]">{mentor.name}</span>
           </p>
         </div>
         
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Message to Mentor
             </label>
             <textarea
@@ -74,13 +74,13 @@ const MentorApplicationForm = ({ mentor, teamId, studentId, onClose, onApplicati
               onChange={(e) => setMessage(e.target.value)}
               placeholder="Introduce your team and explain why you're looking for mentorship..."
               rows={4}
-              className="w-full p-2 border border-gray-300 rounded-lg"
+              className="w-full p-2 bg-[#121212] border border-gray-800 hover:border-[#E8C848]/30 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[#E8C848] transition-all duration-300"
               required
             ></textarea>
           </div>
           
           {error && (
-            <div className="mb-4 text-red-600 text-sm bg-red-50 p-2 rounded">
+            <div className="mb-4 text-red-400 text-sm bg-red-900/20 border border-red-800 p-2 rounded">
               {error}
             </div>
           )}
@@ -89,14 +89,14 @@ const MentorApplicationForm = ({ mentor, teamId, studentId, onClose, onApplicati
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+              className="px-4 py-2 border border-gray-800 hover:border-[#E8C848]/30 rounded-lg text-gray-300 hover:text-white hover:bg-[#121212] transition-all duration-300"
               disabled={loading}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+              className="bg-[#E8C848] text-[#121212] px-4 py-2 rounded-lg hover:bg-[#E8C848]/80 flex items-center gap-2 transition-all duration-300 shadow-lg shadow-[#E8C848]/30"
               disabled={loading}
             >
               <Send size={16} />

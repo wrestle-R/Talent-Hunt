@@ -225,9 +225,9 @@ const TeamManage = () => {
     return (
       <div className="max-w-6xl mx-auto p-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
-          <div className="h-40 bg-gray-200 rounded mb-6"></div>
-          <div className="h-60 bg-gray-200 rounded"></div>
+          <div className="h-8 bg-[#1A1A1A] rounded w-1/4 mb-4"></div>
+          <div className="h-40 bg-[#1A1A1A] rounded mb-6"></div>
+          <div className="h-60 bg-[#1A1A1A] rounded"></div>
         </div>
       </div>
     );
@@ -239,17 +239,17 @@ const TeamManage = () => {
         <div className="flex items-center mb-6">
           <button
             onClick={() => navigate(`/student/team/${teamId}`)}
-            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors mr-4"
+            className="p-2 rounded-full bg-[#1A1A1A] text-[#E8C848] hover:bg-[#E8C848]/10 transition-all duration-300"
           >
             <ChevronLeft size={20} />
           </button>
-          <h2 className="text-2xl font-bold text-gray-800">Manage Team</h2>
+          <h2 className="text-2xl font-bold text-white">Manage Team</h2>
         </div>
-        <div className="bg-red-50 text-red-700 p-4 rounded-lg">
+        <div className="bg-red-900/20 text-red-400 p-4 rounded-lg border border-red-800">
           <p>{error}</p>
           <button 
             onClick={() => navigate(`/student/team/${teamId}`)} 
-            className="mt-3 bg-red-100 text-red-700 px-4 py-2 rounded-lg hover:bg-red-200"
+            className="mt-3 bg-red-900/30 text-red-400 px-4 py-2 rounded-lg hover:bg-red-900/40 transition-all duration-300"
           >
             Back to Team
           </button>
@@ -263,26 +263,26 @@ const TeamManage = () => {
   }
   
   return (
-    <div className="max-w-6xl mx-auto p-6">
+    <div className="max-w-6xl mx-auto p-6 text-white">
       {/* Header with back button */}
       <div className="flex items-center mb-6">
         <button
           onClick={() => navigate(`/student/team/${teamId}`)}
-          className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors mr-4"
+          className="p-2 rounded-full bg-[#1A1A1A] text-[#E8C848] hover:bg-[#E8C848]/10 transition-all duration-300"
         >
           <ChevronLeft size={20} />
         </button>
-        <h2 className="text-2xl font-bold text-gray-800">Manage Team Settings</h2>
+        <h2 className="text-2xl font-bold text-white">Manage Team Settings</h2>
       </div>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Team Information */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">Basic Information</h3>
+        <div className="bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+          <h3 className="font-semibold text-lg text-white mb-4">Basic Information</h3>
           
           <div className="space-y-4">
             <div>
-              <label htmlFor="teamName" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="teamName" className="block text-sm font-medium text-gray-300 mb-1">
                 Team Name*
               </label>
               <input
@@ -290,14 +290,14 @@ const TeamManage = () => {
                 type="text"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
-                className="w-full p-2 border border-gray-300 rounded-lg"
+                className="w-full p-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] placeholder-gray-500 transition-all duration-300"
                 required
                 placeholder="Enter team name"
               />
             </div>
             
             <div>
-              <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="description" className="block text-sm font-medium text-gray-300 mb-1">
                 Description
               </label>
               <textarea
@@ -305,46 +305,50 @@ const TeamManage = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={4}
-                className="w-full p-2 border border-gray-300 rounded-lg"
+                className="w-full p-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] placeholder-gray-500 transition-all duration-300"
                 placeholder="Describe your team, mission, and what you're working on"
               ></textarea>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Team Visibility
               </label>
               <div className="flex space-x-4">
                 <div 
-                  className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                    isPublic ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-gray-200 hover:bg-gray-50'
+                  className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-300 ${
+                    isPublic 
+                      ? 'bg-[#E8C848]/10 border-[#E8C848]/30 text-[#E8C848]' 
+                      : 'bg-[#1A1A1A] border-gray-800 text-gray-400 hover:bg-[#E8C848]/10 hover:border-[#E8C848]/30 hover:text-[#E8C848]'
                   }`}
                   onClick={() => setIsPublic(true)}
                 >
-                  <Globe className={`mr-2 ${isPublic ? 'text-indigo-600' : 'text-gray-400'}`} size={20} />
+                  <Globe className="mr-2" size={20} />
                   <div>
-                    <p className={`font-medium ${isPublic ? 'text-indigo-700' : 'text-gray-700'}`}>Public</p>
-                    <p className="text-xs text-gray-500">Visible to all students on Talent Hunt</p>
+                    <p className="font-medium">Public</p>
+                    <p className="text-xs text-gray-400">Visible to all students on Talent Hunt</p>
                   </div>
                 </div>
                 
                 <div 
-                  className={`flex items-center p-3 border rounded-lg cursor-pointer transition-colors ${
-                    !isPublic ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-gray-200 hover:bg-gray-50'
+                  className={`flex items-center p-3 border rounded-lg cursor-pointer transition-all duration-300 ${
+                    !isPublic 
+                      ? 'bg-[#E8C848]/10 border-[#E8C848]/30 text-[#E8C848]' 
+                      : 'bg-[#1A1A1A] border-gray-800 text-gray-400 hover:bg-[#E8C848]/10 hover:border-[#E8C848]/30 hover:text-[#E8C848]'
                   }`}
                   onClick={() => setIsPublic(false)}
                 >
-                  <Lock className={`mr-2 ${!isPublic ? 'text-indigo-600' : 'text-gray-400'}`} size={20} />
+                  <Lock className="mr-2" size={20} />
                   <div>
-                    <p className={`font-medium ${!isPublic ? 'text-indigo-700' : 'text-gray-700'}`}>Private</p>
-                    <p className="text-xs text-gray-500">Only accessible by team members and by invitation</p>
+                    <p className="font-medium">Private</p>
+                    <p className="text-xs text-gray-400">Only accessible by team members and by invitation</p>
                   </div>
                 </div>
               </div>
             </div>
             
             <div>
-              <label htmlFor="maxTeamSize" className="block text-sm font-medium text-gray-700 mb-1">
+              <label htmlFor="maxTeamSize" className="block text-sm font-medium text-gray-300 mb-1">
                 Maximum Team Size (1-15)
               </label>
               <input
@@ -354,9 +358,9 @@ const TeamManage = () => {
                 max={15}
                 value={maxTeamSize}
                 onChange={(e) => setMaxTeamSize(parseInt(e.target.value) || 7)}
-                className="w-full p-2 border border-gray-300 rounded-lg"
+                className="w-full p-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] placeholder-gray-500 transition-all duration-300"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-gray-400 mt-1">
                 Current member count: {team.members.length} (cannot set lower than current count)
               </p>
             </div>
@@ -364,31 +368,31 @@ const TeamManage = () => {
         </div>
         
         {/* Tech Stack */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">Tech Stack</h3>
+        <div className="bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+          <h3 className="font-semibold text-lg text-white mb-4">Tech Stack</h3>
           
           <div className="mb-4">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Technologies your team uses
             </label>
             <div className="flex flex-wrap gap-2 mb-3">
               {techStack.map((tech, index) => (
                 <div 
                   key={index} 
-                  className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm flex items-center"
+                  className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-full text-sm flex items-center border border-[#E8C848]/30"
                 >
                   {tech}
                   <button 
                     type="button"
                     onClick={() => handleRemoveTechItem(tech)} 
-                    className="ml-2 text-indigo-500 hover:text-indigo-700"
+                    className="ml-2 text-[#E8C848]/70 hover:text-[#E8C848]"
                   >
                     <X size={14} />
                   </button>
                 </div>
               ))}
               {techStack.length === 0 && (
-                <p className="text-sm text-gray-500 italic">No technologies added yet</p>
+                <p className="text-sm text-gray-400 italic">No technologies added yet</p>
               )}
             </div>
             
@@ -397,13 +401,13 @@ const TeamManage = () => {
                 type="text"
                 value={newTechItem}
                 onChange={(e) => setNewTechItem(e.target.value)}
-                className="flex-1 p-2 border border-gray-300 rounded-l-lg"
+                className="flex-1 p-2 bg-[#121212] border border-gray-800 rounded-l-lg text-white focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] placeholder-gray-500 transition-all duration-300"
                 placeholder="Add a technology (e.g., React, Node.js, Python)"
               />
               <button
                 type="button"
                 onClick={handleAddTechItem}
-                className="bg-indigo-600 text-white px-4 py-2 rounded-r-lg hover:bg-indigo-700"
+                className="bg-[#E8C848] text-[#121212] px-4 py-2 rounded-r-lg hover:bg-[#E8C848]/80 transition-all duration-300"
               >
                 <Plus size={20} />
               </button>
@@ -412,8 +416,8 @@ const TeamManage = () => {
         </div>
         
         {/* Recruitment Settings */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">Recruitment Settings</h3>
+        <div className="bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+          <h3 className="font-semibold text-lg text-white mb-4">Recruitment Settings</h3>
           
           <div className="space-y-4">
             <div className="flex items-center">
@@ -422,9 +426,9 @@ const TeamManage = () => {
                 type="checkbox"
                 checked={isRecruiting}
                 onChange={(e) => setIsRecruiting(e.target.checked)}
-                className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                className="h-4 w-4 text-[#E8C848] focus:ring-[#E8C848] border-gray-800 rounded"
               />
-              <label htmlFor="isRecruiting" className="ml-2 block text-sm text-gray-700">
+              <label htmlFor="isRecruiting" className="ml-2 block text-sm text-gray-300">
                 Open for new members
               </label>
             </div>
@@ -432,7 +436,7 @@ const TeamManage = () => {
             {isRecruiting && (
               <>
                 <div>
-                  <label htmlFor="recruitmentMessage" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="recruitmentMessage" className="block text-sm font-medium text-gray-300 mb-1">
                     Recruitment Message
                   </label>
                   <textarea
@@ -440,33 +444,33 @@ const TeamManage = () => {
                     value={recruitmentMessage}
                     onChange={(e) => setRecruitmentMessage(e.target.value)}
                     rows={3}
-                    className="w-full p-2 border border-gray-300 rounded-lg"
+                    className="w-full p-2 bg-[#121212] border border-gray-800 rounded-lg text-white focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] placeholder-gray-500 transition-all duration-300"
                     placeholder="Describe what kind of members you're looking for"
                   ></textarea>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className="block text-sm font-medium text-gray-300 mb-1">
                     Skills Needed
                   </label>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {skillsNeeded.map((skill, index) => (
                       <div 
                         key={index} 
-                        className="bg-green-50 text-green-700 px-3 py-1 rounded-full text-sm flex items-center"
+                        className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-full text-sm flex items-center border border-[#E8C848]/30"
                       >
                         {skill}
                         <button 
                           type="button"
                           onClick={() => handleRemoveSkill(skill)} 
-                          className="ml-2 text-green-500 hover:text-green-700"
+                          className="ml-2 text-[#E8C848]/70 hover:text-[#E8C848]"
                         >
                           <X size={14} />
                         </button>
                       </div>
                     ))}
                     {skillsNeeded.length === 0 && (
-                      <p className="text-sm text-gray-500 italic">No specific skills listed</p>
+                      <p className="text-sm text-gray-400 italic">No specific skills listed</p>
                     )}
                   </div>
                   
@@ -475,13 +479,13 @@ const TeamManage = () => {
                       type="text"
                       value={newSkill}
                       onChange={(e) => setNewSkill(e.target.value)}
-                      className="flex-1 p-2 border border-gray-300 rounded-l-lg"
+                      className="flex-1 p-2 bg-[#121212] border border-gray-800 rounded-l-lg text-white focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] placeholder-gray-500 transition-all duration-300"
                       placeholder="Add a skill (e.g., UI/UX Design, Backend Development)"
                     />
                     <button
                       type="button"
                       onClick={handleAddSkill}
-                      className="bg-green-600 text-white px-4 py-2 rounded-r-lg hover:bg-green-700"
+                      className="bg-[#E8C848] text-[#121212] px-4 py-2 rounded-r-lg hover:bg-[#E8C848]/80 transition-all duration-300"
                     >
                       <Plus size={20} />
                     </button>
@@ -493,15 +497,15 @@ const TeamManage = () => {
         </div>
         
         {/* Join Code Management */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">Team Join Code</h3>
+        <div className="bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+          <h3 className="font-semibold text-lg text-white mb-4">Team Join Code</h3>
           
-          <div className="bg-indigo-50 p-4 rounded-lg mb-4">
+          <div className="bg-[#E8C848]/10 p-4 rounded-lg mb-4 border border-[#E8C848]/30">
             <div className="flex justify-between items-center">
               <div>
-                <p className="text-sm text-indigo-700 mb-1">Current Join Code:</p>
-                <p className="text-indigo-700 font-mono text-lg">{joinCode}</p>
-                <p className="text-xs text-indigo-600 mt-1">
+                <p className="text-sm text-[#E8C848] mb-1">Current Join Code:</p>
+                <p className="text-[#E8C848] font-mono text-lg">{joinCode}</p>
+                <p className="text-xs text-[#E8C848]/70 mt-1">
                   Share this code with people you want to join your team directly
                 </p>
               </div>
@@ -512,7 +516,7 @@ const TeamManage = () => {
                     navigator.clipboard.writeText(joinCode);
                     toast.success('Join code copied to clipboard');
                   }}
-                  className="bg-indigo-100 text-indigo-700 px-3 py-2 rounded-md hover:bg-indigo-200 flex items-center gap-1"
+                  className="bg-[#E8C848]/20 text-[#E8C848] px-3 py-2 rounded-md hover:bg-[#E8C848]/30 transition-all duration-300 flex items-center gap-1"
                 >
                   <Clipboard size={16} />
                   Copy
@@ -521,7 +525,7 @@ const TeamManage = () => {
                   type="button"
                   onClick={handleRegenerateJoinCode}
                   disabled={generatingCode}
-                  className="bg-indigo-600 text-white px-3 py-2 rounded-md hover:bg-indigo-700 flex items-center gap-1"
+                  className="bg-[#E8C848] text-[#121212] px-3 py-2 rounded-md hover:bg-[#E8C848]/80 transition-all duration-300 flex items-center gap-1"
                 >
                   <RefreshCw size={16} className={generatingCode ? 'animate-spin' : ''} />
                   Generate New Code
@@ -530,7 +534,7 @@ const TeamManage = () => {
             </div>
           </div>
           
-          <div className="rounded-lg bg-yellow-50 border border-yellow-100 p-3 text-sm text-yellow-800 flex items-start">
+          <div className="rounded-lg bg-yellow-900/20 border border-yellow-800 p-3 text-sm text-yellow-400 flex items-start">
             <AlertTriangle className="text-yellow-500 mr-2 flex-shrink-0 mt-0.5" size={16} />
             <p>
               Regenerating the join code will invalidate the previous code. 
@@ -540,14 +544,14 @@ const TeamManage = () => {
         </div>
         
         {/* Team Members Management */}
-        <div className="bg-white rounded-xl shadow-md p-6">
-          <h3 className="font-semibold text-lg text-gray-800 mb-4">Team Members</h3>
+        <div className="bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+          <h3 className="font-semibold text-lg text-white mb-4">Team Members</h3>
           
           <div className="space-y-3">
             {team.members.map(member => (
-              <div key={member._id} className="flex justify-between items-center p-3 border border-gray-200 rounded-lg">
+              <div key={member._id} className="flex justify-between items-center p-3 border border-gray-800 rounded-lg bg-[#121212]">
                 <div className="flex items-center">
-                  <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-200 mr-3">
+                  <div className="h-10 w-10 rounded-full overflow-hidden bg-gray-800 mr-3">
                     {member.profile_picture ? (
                       <img 
                         src={member.profile_picture}
@@ -555,21 +559,21 @@ const TeamManage = () => {
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center bg-indigo-100 text-indigo-600">
+                      <div className="h-full w-full flex items-center justify-center bg-[#E8C848]/20 text-[#E8C848]">
                         {member.name.charAt(0).toUpperCase()}
                       </div>
                     )}
                   </div>
                   <div>
-                    <p className="font-medium text-gray-800">
+                    <p className="font-medium text-white">
                       {member.name}
                       {member._id === team.leader._id && (
-                        <span className="ml-2 text-xs bg-yellow-100 text-yellow-800 px-2 py-0.5 rounded-full">
+                        <span className="ml-2 text-xs bg-yellow-900/20 text-yellow-400 px-2 py-0.5 rounded-full">
                           Leader
                         </span>
                       )}
                     </p>
-                    <p className="text-sm text-gray-500">{member.role || 'Member'}</p>
+                    <p className="text-sm text-gray-400">{member.role || 'Member'}</p>
                   </div>
                 </div>
                 
@@ -578,7 +582,7 @@ const TeamManage = () => {
                   <button
                     type="button"
                     onClick={() => handleRemoveMember(member._id)}
-                    className="text-red-600 hover:text-red-800 p-1"
+                    className="text-red-400 hover:text-red-600 p-1"
                   >
                     <X size={20} />
                   </button>
@@ -593,7 +597,7 @@ const TeamManage = () => {
           <button
             type="submit"
             disabled={saving}
-            className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 flex items-center gap-2"
+            className="bg-[#E8C848] text-[#121212] px-6 py-3 rounded-lg hover:bg-[#E8C848]/80 flex items-center gap-2 transition-all duration-300 shadow-lg shadow-[#E8C848]/30 disabled:opacity-50"
           >
             {saving ? (
               <>

@@ -78,9 +78,9 @@ const StudentHero = () => {
   const profileWidth = "400px";
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-[#121212] flex">
       {/* Left Section - Fixed Profile */}
-      <div className="fixed w-full h-screen" style={{ width: profileWidth }}>
+      <div className="fixed w-full h-screen border-r border-gray-800" style={{ width: profileWidth }}>
         <StudentProfile 
           userData={userData}
           profileCompletion={profileCompletion}
@@ -92,7 +92,7 @@ const StudentHero = () => {
       </div>
       
       {/* Right Section - Dashboard with left margin */}
-      <div className="flex-1" style={{ marginLeft: profileWidth }}>
+      <div className="flex-1 bg-[#121212]" style={{ marginLeft: profileWidth }}>
         <StudentDashboard 
           userData={userData}
           formatDate={formatDate}

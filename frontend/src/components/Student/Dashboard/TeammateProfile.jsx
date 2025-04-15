@@ -59,22 +59,22 @@ const TeammateProfile = () => {
   
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-emerald-500"></div>
+      <div className="flex justify-center items-center min-h-screen bg-[#121212]">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E8C848]"></div>
       </div>
     );
   }
   
   if (error || !teammate) {
     return (
-      <div className="max-w-5xl mx-auto p-6">
-        <div className="text-center py-10 bg-white rounded-lg shadow-sm border border-gray-200">
-          <User size={48} className="mx-auto text-gray-300 mb-3" />
-          <h2 className="text-xl font-medium text-gray-700 mb-2">Teammate Not Found</h2>
-          <p className="text-gray-500 mb-4">{error || "Unable to load teammate details"}</p>
+      <div className="max-w-5xl mx-auto p-6 bg-[#121212]">
+        <div className="text-center py-10 bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
+          <User size={48} className="mx-auto text-[#E8C848]/30 mb-3" />
+          <h2 className="text-xl font-medium text-white mb-2">Teammate Not Found</h2>
+          <p className="text-gray-400 mb-4">{error || "Unable to load teammate details"}</p>
           <button 
             onClick={() => navigate('/student/teammates')}
-            className="inline-flex items-center px-4 py-2 bg-emerald-100 text-emerald-700 rounded-lg hover:bg-emerald-200"
+            className="inline-flex items-center px-4 py-2 bg-[#E8C848]/10 text-[#E8C848] rounded-lg hover:bg-[#E8C848]/20 transition-all duration-300"
           >
             <ChevronLeft size={16} className="mr-1" />
             Back to Teammates
@@ -96,22 +96,22 @@ const TeammateProfile = () => {
     
     if (purpose === 'Project' || purpose === 'Both') {
       content = (
-        <div className="bg-indigo-50 p-4 rounded-lg mb-4">
-          <h3 className="font-medium text-indigo-800 flex items-center mb-2">
+        <div className="bg-[#1A1A1A] p-4 rounded-lg mb-4 border border-gray-800">
+          <h3 className="font-medium text-[#E8C848] flex items-center mb-2">
             <Code size={16} className="mr-2" />
             Looking for Project Teammates
           </h3>
           
           {teammate.lookingFor.projectDescription && (
-            <p className="text-indigo-700 text-sm mb-3">{teammate.lookingFor.projectDescription}</p>
+            <p className="text-gray-400 text-sm mb-3">{teammate.lookingFor.projectDescription}</p>
           )}
           
           {teammate.lookingFor.desiredSkills && teammate.lookingFor.desiredSkills.length > 0 && (
             <div className="mb-3">
-              <p className="text-xs font-medium text-indigo-800 mb-1">Desired Skills:</p>
+              <p className="text-xs font-medium text-[#E8C848] mb-1">Desired Skills:</p>
               <div className="flex flex-wrap gap-1">
                 {teammate.lookingFor.desiredSkills.map((skill, index) => (
-                  <span key={index} className="bg-indigo-100 text-indigo-700 text-xs px-2 py-0.5 rounded-full">
+                  <span key={index} className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
                     {skill}
                   </span>
                 ))}
@@ -119,7 +119,7 @@ const TeammateProfile = () => {
             </div>
           )}
           
-          <div className="flex items-center gap-4 text-xs text-indigo-700">
+          <div className="flex items-center gap-4 text-xs text-gray-400">
             {teammate.lookingFor.teamSizePreference && (
               <span className="flex items-center">
                 <Users size={12} className="mr-1" />
@@ -136,9 +136,9 @@ const TeammateProfile = () => {
           </div>
           
           {teammate.lookingFor.projectDetails && (
-            <div className="mt-3 border-t border-indigo-100 pt-3">
-              <p className="text-xs font-medium text-indigo-800 mb-1">Project Details:</p>
-              <div className="grid grid-cols-2 gap-2 text-xs text-indigo-700">
+            <div className="mt-3 border-t border-gray-800 pt-3">
+              <p className="text-xs font-medium text-[#E8C848] mb-1">Project Details:</p>
+              <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
                 <span className="flex items-center">
                   <FileText size={12} className="mr-1" />
                   Type: {teammate.lookingFor.projectDetails.project_type}
@@ -160,8 +160,8 @@ const TeammateProfile = () => {
     
     if (purpose === 'Hackathon' || purpose === 'Both') {
       const hackathonContent = (
-        <div className="bg-purple-50 p-4 rounded-lg mb-4">
-          <h3 className="font-medium text-purple-800 flex items-center mb-2">
+        <div className="bg-[#1A1A1A] p-4 rounded-lg mb-4 border border-gray-800">
+          <h3 className="font-medium text-[#E8C848] flex items-center mb-2">
             <Calendar size={16} className="mr-2" />
             Looking for Hackathon Team
           </h3>
@@ -170,14 +170,14 @@ const TeammateProfile = () => {
             <>
               <div className="mb-3">
                 {teammate.lookingFor.hackathonDetails.hackathon_name && (
-                  <p className="text-purple-700 text-sm mb-1">
+                  <p className="text-gray-400 text-sm mb-1">
                     <span className="font-medium">Hackathon: </span>
                     {teammate.lookingFor.hackathonDetails.hackathon_name}
                   </p>
                 )}
                 
                 {teammate.lookingFor.hackathonDetails.idea_description && (
-                  <p className="text-purple-700 text-sm">
+                  <p className="text-gray-400 text-sm">
                     <span className="font-medium">Idea: </span>
                     {teammate.lookingFor.hackathonDetails.idea_description}
                   </p>
@@ -187,10 +187,10 @@ const TeammateProfile = () => {
               {teammate.lookingFor.hackathonDetails.required_skills && 
                teammate.lookingFor.hackathonDetails.required_skills.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-xs font-medium text-purple-800 mb-1">Looking for:</p>
+                  <p className="text-xs font-medium text-[#E8C848] mb-1">Looking for:</p>
                   <div className="flex flex-wrap gap-1">
                     {teammate.lookingFor.hackathonDetails.required_skills.map((skill, index) => (
-                      <span key={index} className="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full">
+                      <span key={index} className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
                         {skill}
                       </span>
                     ))}
@@ -198,7 +198,7 @@ const TeammateProfile = () => {
                 </div>
               )}
               
-              <div className="flex items-center gap-4 text-xs text-purple-700">
+              <div className="flex items-center gap-4 text-xs text-gray-400">
                 {teammate.lookingFor.hackathonDetails.team_size && (
                   <span className="flex items-center">
                     <Users size={12} className="mr-1" />
@@ -218,14 +218,14 @@ const TeammateProfile = () => {
           
           {!teammate.lookingFor.hackathonDetails && (
             <>
-              <p className="text-purple-700 text-sm mb-3">Open to participating in hackathons</p>
+              <p className="text-gray-400 text-sm mb-3">Open to participating in hackathons</p>
               
               {teammate.lookingFor.desiredSkills && teammate.lookingFor.desiredSkills.length > 0 && (
                 <div className="mb-3">
-                  <p className="text-xs font-medium text-purple-800 mb-1">Desired Skills:</p>
+                  <p className="text-xs font-medium text-[#E8C848] mb-1">Desired Skills:</p>
                   <div className="flex flex-wrap gap-1">
                     {teammate.lookingFor.desiredSkills.map((skill, index) => (
-                      <span key={index} className="bg-purple-100 text-purple-700 text-xs px-2 py-0.5 rounded-full">
+                      <span key={index} className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
                         {skill}
                       </span>
                     ))}
@@ -259,24 +259,24 @@ const TeammateProfile = () => {
         <title>{teammate.name} | TalentHunt</title>
       </Helmet>
       
-      <div className="bg-gray-50 min-h-screen py-8">
+      <div className="bg-[#121212] min-h-screen py-8">
         <div className="max-w-5xl mx-auto px-4">
           <button 
             onClick={() => navigate('/student/teammates')}
-            className="flex items-center text-emerald-600 hover:text-emerald-700 mb-6"
+            className="flex items-center text-[#E8C848] hover:text-[#E8C848]/80 mb-6 transition-all duration-300"
           >
             <ChevronLeft size={20} className="mr-1" />
             Back to Teammates
           </button>
           
-          <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300 overflow-hidden">
             {/* Header / Profile Summary */}
-            <div className="p-6 border-b border-gray-100">
+            <div className="p-6 border-b border-gray-800">
               <div className="flex flex-col md:flex-row items-start md:items-center">
                 <img 
                   src={teammate.profile_picture || StudentPlaceholder} 
                   alt={teammate.name} 
-                  className="w-20 h-20 rounded-full object-cover mb-4 md:mb-0 md:mr-6"
+                  className="w-20 h-20 rounded-full object-cover mb-4 md:mb-0 md:mr-6 border-2 border-[#E8C848]/20"
                   onError={(e) => {
                     e.target.onerror = null;
                     e.target.src = 'https://via.placeholder.com/80?text=👤';
@@ -286,15 +286,15 @@ const TeammateProfile = () => {
                 <div className="flex-1">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between">
                     <div>
-                      <h1 className="text-2xl font-bold text-gray-800">{teammate.name}</h1>
-                      <p className="text-gray-600">
+                      <h1 className="text-2xl font-bold text-white">{teammate.name}</h1>
+                      <p className="text-gray-400">
                         {teammate.education?.degree ? `${teammate.education.degree} Student` : 'Student'}
                         {teammate.education?.institution && ` at ${teammate.education.institution}`}
                       </p>
                       
                       {teammate.location && (
                         <p className="text-gray-500 text-sm mt-1 flex items-center">
-                          <MapPin size={14} className="mr-1" />
+                          <MapPin size={14} className="mr-1 text-[#E8C848]" />
                           {typeof teammate.location === 'string' 
                             ? teammate.location 
                             : `${teammate.location.city || ''} ${teammate.location.country || ''}`.trim()}
@@ -305,7 +305,7 @@ const TeammateProfile = () => {
                     <div className="flex gap-3 mt-4 md:mt-0">
                       <button 
                         onClick={handleOpenChat}
-                        className="bg-emerald-100 text-emerald-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-emerald-200 transition flex items-center"
+                        className="bg-[#E8C848] text-[#121212] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/80 transition-all duration-300 flex items-center shadow-lg shadow-[#E8C848]/20"
                       >
                         <MessageCircle size={16} className="mr-2" />
                         Message
@@ -316,12 +316,12 @@ const TeammateProfile = () => {
                   {/* Profile Completion */}
                   <div className="mt-4">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs text-gray-500">Profile Completion</p>
-                      <span className="text-xs font-medium text-gray-700">{teammate.profileCompletion}%</span>
+                      <p className="text-xs text-gray-400">Profile Completion</p>
+                      <span className="text-xs font-medium text-white">{teammate.profileCompletion}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-[#121212] rounded-full h-2">
                       <div 
-                        className="bg-emerald-500 h-2 rounded-full" 
+                        className="bg-[#E8C848] h-2 rounded-full transition-all duration-300" 
                         style={{ width: `${teammate.profileCompletion}%` }}
                       ></div>
                     </div>
@@ -332,8 +332,8 @@ const TeammateProfile = () => {
             
             {/* Looking For Section */}
             {teammate.lookingFor?.isLookingForTeammates && (
-              <div className="p-6 border-b border-gray-100">
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">Currently Looking For</h2>
+              <div className="p-6 border-b border-gray-800">
+                <h2 className="text-lg font-semibold text-white mb-4">Currently Looking For</h2>
                 {getLookingForInfo()}
               </div>
             )}
@@ -345,18 +345,18 @@ const TeammateProfile = () => {
                 {/* Bio Section */}
                 {teammate.bio && (
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3">About</h2>
-                    <p className="text-gray-700">{teammate.bio}</p>
+                    <h2 className="text-lg font-semibold text-white mb-3">About</h2>
+                    <p className="text-gray-400">{teammate.bio}</p>
                   </div>
                 )}
                 
                 {/* Skills Section */}
                 {teammate.skills && teammate.skills.length > 0 && (
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3">Skills</h2>
+                    <h2 className="text-lg font-semibold text-white mb-3">Skills</h2>
                     <div className="flex flex-wrap gap-2">
                       {teammate.skills.map((skill, index) => (
-                        <span key={index} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                        <span key={index} className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-full text-sm">
                           {skill}
                         </span>
                       ))}
@@ -367,18 +367,18 @@ const TeammateProfile = () => {
                 {/* Projects Section */}
                 {teammate.projects && teammate.projects.length > 0 && (
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3">Projects</h2>
+                    <h2 className="text-lg font-semibold text-white mb-3">Projects</h2>
                     <div className="space-y-4">
                       {teammate.projects.map(project => (
-                        <div key={project._id} className="border border-gray-200 rounded-lg p-4">
-                          <h3 className="font-semibold text-gray-800">{project.name}</h3>
-                          <p className="text-gray-600 text-sm mt-1 mb-3">{project.description}</p>
+                        <div key={project._id} className="border border-gray-800 rounded-lg p-4 bg-[#1A1A1A]">
+                          <h3 className="font-semibold text-white">{project.name}</h3>
+                          <p className="text-gray-400 text-sm mt-1 mb-3">{project.description}</p>
                           
                           {/* Tech Stack */}
                           {project.tech_stack && project.tech_stack.length > 0 && (
                             <div className="flex flex-wrap gap-1 mb-3">
                               {project.tech_stack.map((tech, index) => (
-                                <span key={index} className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0.5 rounded-full">
+                                <span key={index} className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
                                   {tech}
                                 </span>
                               ))}
@@ -392,7 +392,7 @@ const TeammateProfile = () => {
                                 href={project.github_link} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="flex items-center text-gray-600 hover:text-gray-900 text-xs"
+                                className="flex items-center text-gray-400 hover:text-white text-xs"
                               >
                                 <Github size={14} className="mr-1" />
                                 GitHub
@@ -404,7 +404,7 @@ const TeammateProfile = () => {
                                 href={project.live_demo} 
                                 target="_blank" 
                                 rel="noopener noreferrer"
-                                className="flex items-center text-gray-600 hover:text-gray-900 text-xs"
+                                className="flex items-center text-gray-400 hover:text-white text-xs"
                               >
                                 <Globe size={14} className="mr-1" />
                                 Live Demo
@@ -420,14 +420,14 @@ const TeammateProfile = () => {
                 {/* Achievements Section */}
                 {teammate.achievements && teammate.achievements.length > 0 && (
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3">Achievements</h2>
+                    <h2 className="text-lg font-semibold text-white mb-3">Achievements</h2>
                     <div className="space-y-3">
                       {teammate.achievements.map((achievement, index) => (
                         <div key={index} className="flex items-start">
-                          <Award size={16} className="text-emerald-500 mt-1 mr-3" />
+                          <Award size={16} className="text-[#E8C848] mt-1 mr-3" />
                           <div>
-                            <h3 className="font-medium text-gray-800">{achievement.title}</h3>
-                            <p className="text-gray-600 text-sm">{achievement.description}</p>
+                            <h3 className="font-medium text-white">{achievement.title}</h3>
+                            <p className="text-gray-400 text-sm">{achievement.description}</p>
                             {achievement.date && (
                               <p className="text-gray-500 text-xs mt-1">
                                 {new Date(achievement.date).toLocaleDateString()}
@@ -445,17 +445,17 @@ const TeammateProfile = () => {
               <div className="space-y-6">
                 {/* Education */}
                 {teammate.education && (teammate.education.institution || teammate.education.degree) && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                      <BookOpen size={18} className="mr-2 text-emerald-600" />
+                  <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-800">
+                    <h2 className="text-lg font-semibold text-white mb-3 flex items-center">
+                      <BookOpen size={18} className="mr-2 text-[#E8C848]" />
                       Education
                     </h2>
                     <div>
                       {teammate.education.institution && (
-                        <p className="font-medium text-gray-800">{teammate.education.institution}</p>
+                        <p className="font-medium text-white">{teammate.education.institution}</p>
                       )}
                       {teammate.education.degree && (
-                        <p className="text-gray-600">{teammate.education.degree}</p>
+                        <p className="text-gray-400">{teammate.education.degree}</p>
                       )}
                       {teammate.education.graduation_year && (
                         <p className="text-gray-500 text-sm">Class of {teammate.education.graduation_year}</p>
@@ -466,14 +466,14 @@ const TeammateProfile = () => {
                 
                 {/* Interests */}
                 {teammate.interests && teammate.interests.length > 0 && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                      <Heart size={18} className="mr-2 text-emerald-600" />
+                  <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-800">
+                    <h2 className="text-lg font-semibold text-white mb-3 flex items-center">
+                      <Heart size={18} className="mr-2 text-[#E8C848]" />
                       Interests
                     </h2>
                     <div className="flex flex-wrap gap-2">
                       {teammate.interests.map((interest, index) => (
-                        <span key={index} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
+                        <span key={index} className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-full text-sm">
                           {interest}
                         </span>
                       ))}
@@ -484,12 +484,12 @@ const TeammateProfile = () => {
                 {/* Working Hours */}
                 {teammate.preferred_working_hours && (
                 teammate.preferred_working_hours.start_time || teammate.preferred_working_hours.end_time) && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                      <Clock size={18} className="mr-2 text-emerald-600" />
+                  <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-800">
+                    <h2 className="text-lg font-semibold text-white mb-3 flex items-center">
+                      <Clock size={18} className="mr-2 text-[#E8C848]" />
                       Preferred Working Hours
                     </h2>
-                    <p className="text-gray-700">
+                    <p className="text-gray-400">
                       {teammate.preferred_working_hours.start_time} - {teammate.preferred_working_hours.end_time}
                     </p>
                   </div>
@@ -497,12 +497,12 @@ const TeammateProfile = () => {
                 
                 {/* Goals */}
                 {teammate.goals && teammate.goals.length > 0 && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                      <Award size={18} className="mr-2 text-emerald-600" />
+                  <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-800">
+                    <h2 className="text-lg font-semibold text-white mb-3 flex items-center">
+                      <Award size={18} className="mr-2 text-[#E8C848]" />
                       Goals
                     </h2>
-                    <ul className="list-disc pl-5 text-gray-700 space-y-1">
+                    <ul className="list-disc pl-5 text-gray-400 space-y-1">
                       {teammate.goals.map((goal, index) => (
                         <li key={index}>{goal}</li>
                       ))}
@@ -516,9 +516,9 @@ const TeammateProfile = () => {
                   teammate.social_links.linkedin || 
                   teammate.social_links.portfolio
                 ) && (
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h2 className="text-lg font-semibold text-gray-800 mb-3 flex items-center">
-                      <LinkIcon size={18} className="mr-2 text-emerald-600" />
+                  <div className="bg-[#1A1A1A] p-4 rounded-lg border border-gray-800">
+                    <h2 className="text-lg font-semibold text-white mb-3 flex items-center">
+                      <LinkIcon size={18} className="mr-2 text-[#E8C848]" />
                       Connect
                     </h2>
                     <div className="space-y-2">
@@ -527,7 +527,7 @@ const TeammateProfile = () => {
                           href={teammate.social_links.github}
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex items-center text-gray-700 hover:text-gray-900"
+                          className="flex items-center text-gray-400 hover:text-white"
                         >
                           <Github size={16} className="mr-2" />
                           GitHub
@@ -540,7 +540,7 @@ const TeammateProfile = () => {
                           href={teammate.social_links.linkedin}
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex items-center text-gray-700 hover:text-gray-900"
+                          className="flex items-center text-gray-400 hover:text-white"
                         >
                           <Briefcase size={16} className="mr-2" />
                           LinkedIn
@@ -553,7 +553,7 @@ const TeammateProfile = () => {
                           href={teammate.social_links.portfolio}
                           target="_blank" 
                           rel="noopener noreferrer"
-                          className="flex items-center text-gray-700 hover:text-gray-900"
+                          className="flex items-center text-gray-400 hover:text-white"
                         >
                           <Globe size={16} className="mr-2" />
                           Portfolio
@@ -564,7 +564,7 @@ const TeammateProfile = () => {
                       {teammate.email && (
                         <a 
                           href={`mailto:${teammate.email}`}
-                          className="flex items-center text-gray-700 hover:text-gray-900"
+                          className="flex items-center text-gray-400 hover:text-white"
                         >
                           <Mail size={16} className="mr-2" />
                           Email

@@ -177,18 +177,18 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
   // Handle loading state
   if (loading) {
     return (
-      <div className={`bg-white rounded-xl shadow-md p-6 ${isFullPage ? 'min-h-[600px]' : ''}`}>
+      <div className={`bg-[#1A1A1A] rounded-xl shadow-lg p-6 ${isFullPage ? 'min-h-[600px]' : ''} border border-gray-800`}>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <Coffee className="text-indigo-600" />
+          <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+            <Coffee className="text-[#E8C848]" />
             {isRecommendations ? 'Mentor Suggestions' : 'Available Mentors'}
           </h3>
         </div>
         <div className="flex justify-center items-center h-40">
           <div className="animate-pulse flex flex-col items-center">
-            <div className="rounded-full bg-gray-200 h-12 w-12 mb-2"></div>
-            <div className="h-4 bg-gray-200 rounded w-24 mb-2"></div>
-            <div className="h-3 bg-gray-200 rounded w-32"></div>
+            <div className="rounded-full bg-[#121212] h-12 w-12 mb-2"></div>
+            <div className="h-4 bg-[#121212] rounded w-24 mb-2"></div>
+            <div className="h-3 bg-[#121212] rounded w-32"></div>
           </div>
         </div>
       </div>
@@ -197,20 +197,20 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
 
   if (error && mentors.length === 0) {
     return (
-      <div className={`bg-white rounded-xl shadow-md p-6 ${isFullPage ? 'min-h-[600px]' : ''}`}>
+      <div className={`bg-[#1A1A1A] rounded-xl shadow-lg p-6 ${isFullPage ? 'min-h-[600px]' : ''} border border-gray-800`}>
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <Coffee className="text-indigo-600" />
+          <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+            <Coffee className="text-[#E8C848]" />
             {isRecommendations ? 'Mentor Suggestions' : 'Available Mentors'}
           </h3>
         </div>
         <div className="flex justify-center items-center h-40">
-          <div className="text-center text-gray-500">
+          <div className="text-center text-gray-400">
             <p className="mb-2">Failed to load mentor suggestions.</p>
-            <p className="text-xs mb-3 text-red-500">{error}</p>
+            <p className="text-xs mb-3 text-red-400">{error}</p>
             <button 
               onClick={() => window.location.reload()} 
-              className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm"
+              className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm hover:bg-[#E8C848]/20 transition-all duration-300"
             >
               Try Again
             </button>
@@ -221,11 +221,11 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
   }
 
   return (
-    <div className={`${isFullPage ? 'bg-white rounded-xl shadow-md p-6 min-h-[600px]' : ''} relative`}>
+    <div className={`${isFullPage ? 'bg-[#1A1A1A] rounded-xl shadow-lg p-6 min-h-[600px] border border-gray-800' : ''} relative`}>
       {isFullPage && (
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <Coffee className="text-indigo-600" />
+          <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+            <Coffee className="text-[#E8C848]" />
             Available Mentors
           </h3>
         </div>
@@ -236,21 +236,21 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
         <div className="mb-6 space-y-4">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
-              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#E8C848]" />
               <input
                 type="text"
                 placeholder="Search by name, title, or expertise..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-2 bg-[#121212] border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] text-white placeholder-gray-500 transition-all duration-300"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <div className="relative w-full md:w-64">
-              <Filter size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Filter size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-[#E8C848]" />
               <input
                 type="text"
                 placeholder="Filter by expertise..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full pl-10 pr-4 py-2 bg-[#121212] border border-gray-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] text-white placeholder-gray-500 transition-all duration-300"
                 value={expertiseFilter}
                 onChange={(e) => setExpertiseFilter(e.target.value)}
               />
@@ -263,9 +263,9 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
               onClick={() => setAvailabilityFilter('all')}
               className={`px-3 py-1.5 rounded-lg text-sm font-medium ${
                 availabilityFilter === 'all' 
-                  ? 'bg-indigo-100 text-indigo-700' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                  ? 'bg-[#E8C848]/10 text-[#E8C848]' 
+                  : 'bg-[#121212] text-gray-300 hover:bg-[#E8C848]/10 hover:text-[#E8C848]'
+              } transition-all duration-300`}
             >
               All
             </button>
@@ -274,8 +274,8 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
               className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center ${
                 availabilityFilter === 'available' 
                   ? 'bg-green-100 text-green-700' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                  : 'bg-[#121212] text-gray-300 hover:bg-[#E8C848]/10 hover:text-[#E8C848]'
+              } transition-all duration-300`}
             >
               <Clock size={14} className="mr-1" /> 
               Available Now
@@ -285,8 +285,8 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
               className={`px-3 py-1.5 rounded-lg text-sm font-medium flex items-center ${
                 availabilityFilter === 'open' 
                   ? 'bg-blue-100 text-blue-700' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                  : 'bg-[#121212] text-gray-300 hover:bg-[#E8C848]/10 hover:text-[#E8C848]'
+              } transition-all duration-300`}
             >
               <Coffee size={14} className="mr-1" /> 
               Open to Mentorship
@@ -346,10 +346,10 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
             return (
               <div 
                 key={mentor._id} 
-                className="flex flex-col bg-gray-50 rounded-lg border border-gray-200 overflow-hidden h-[300px] hover:shadow-md cursor-pointer transition-shadow"
+                className="flex flex-col bg-[#121212] rounded-lg border border-gray-800 overflow-hidden h-[300px] hover:border-[#E8C848]/30 transition-all duration-300 shadow-lg hover:shadow-[#E8C848]/10"
               >
                 <div 
-                  className="p-4 flex items-start space-x-3 flex-1 cursor-pointer hover:bg-gray-100 transition-colors"
+                  className="p-4 flex items-start space-x-3 flex-1 cursor-pointer hover:bg-[#1A1A1A] transition-all duration-300"
                   onClick={() => handleViewProfile(mentor._id)}
                 >
                   <img 
@@ -362,14 +362,14 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
                     }}
                   />
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-800">{mentor.name || 'Unnamed Mentor'}</p>
-                    <p className="text-sm text-gray-500 truncate">
+                    <p className="font-semibold text-gray-300">{mentor.name || 'Unnamed Mentor'}</p>
+                    <p className="text-sm text-gray-400 truncate">
                       {mentorTitle}
                     </p>
                     
                     {/* Current company - safely rendered */}
                     {companyName && (
-                      <p className="text-sm text-gray-500 truncate flex items-center mt-1">
+                      <p className="text-sm text-gray-400 truncate flex items-center mt-1">
                         <Briefcase size={12} className="mr-1" />
                         {companyName}
                       </p>
@@ -397,7 +397,7 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
                             />
                           ))}
                         </div>
-                        <span className="ml-1 text-xs text-gray-600">
+                        <span className="ml-1 text-xs text-gray-400">
                           {rating.toFixed(1)}
                         </span>
                       </div>
@@ -407,21 +407,21 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
                     {allSkills.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-2">
                         {allSkills.slice(0, 3).map((skill, i) => (
-                          <span key={i} className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0.5 rounded-full">
+                          <span key={i} className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
                             {skill}
                           </span>
                         ))}
                         {allSkills.length > 3 && (
-                          <span className="text-xs text-gray-500">+{allSkills.length - 3} more</span>
+                          <span className="text-xs text-gray-400">+{allSkills.length - 3} more</span>
                         )}
                       </div>
                     )}
                   </div>
                 </div>
                 
-                <div className="p-4 border-t border-gray-200 bg-gray-50">
+                <div className="p-4 border-t border-gray-800 bg-[#121212]">
                   {/* Bio - safely rendered */}
-                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">
+                  <p className="text-sm text-gray-400 mb-3 line-clamp-2">
                     {mentorBio}
                   </p>
                   
@@ -431,13 +431,13 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
                         e.stopPropagation();
                         handleOpenChat(mentor);
                       }} 
-                      className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm flex items-center flex-1 justify-center hover:bg-gray-200"
+                      className="bg-[#1A1A1A] text-gray-300 px-3 py-1 rounded-lg text-sm flex items-center flex-1 justify-center hover:bg-[#E8C848]/10 hover:text-[#E8C848] transition-all duration-300"
                     >
                       <MessageCircle size={14} className="mr-1" /> Message
                     </button>
                     <button 
                       onClick={() => handleViewProfile(mentor._id)}
-                      className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-lg text-sm flex-1 hover:bg-indigo-200"
+                      className="bg-[#E8C848] text-[#121212] px-3 py-1 rounded-lg text-sm flex-1 hover:bg-[#E8C848]/80 transition-all duration-300 shadow-lg shadow-[#E8C848]/30"
                     >
                       View Profile
                     </button>
@@ -449,8 +449,8 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
         </div>
       ) : (
         <div className="text-center py-10">
-          <User size={48} className="mx-auto text-gray-300 mb-3" />
-          <h4 className="text-lg font-medium text-gray-500 mb-1">No mentors found</h4>
+          <User size={48} className="mx-auto text-[#E8C848]/30 mb-3" />
+          <h4 className="text-lg font-medium text-gray-300 mb-1">No mentors found</h4>
           <p className="text-gray-400 text-sm">
             {isFullPage 
               ? availabilityFilter !== 'all'
@@ -464,7 +464,7 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
       {/* Pagination or more mentors button - only in full page view */}
       {isFullPage && filteredMentors.length > 8 && (
         <div className="mt-6 flex justify-center">
-          <button className="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg text-sm font-medium hover:bg-indigo-100 transition-colors">
+          <button className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/20 transition-all duration-300">
             Load More Mentors
           </button>
         </div>

@@ -472,57 +472,55 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
   if (!isOpen || !user) return null;
 
   const userDetails = getUserDetails(user);
-  const isMentor = !!user.organization || !!user.current_role?.company;
-  const headerColor = isMentor ? "bg-indigo-600" : "bg-emerald-600";
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-xl z-50 flex flex-col animate-slide-in-right">
+    <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-[#1A1A1A] shadow-lg z-50 flex flex-col animate-slide-in-right border-l border-gray-800">
       {/* Chat Header */}
-      <div className={`px-4 py-3 ${headerColor} text-white flex items-center justify-between`}>
+      <div className="px-4 py-3 bg-[#121212] border-b border-gray-800 text-white flex items-center justify-between">
         <div className="flex items-center">
-          <button onClick={onClose} className={isMentor ? "p-1 mr-2 rounded-full hover:bg-indigo-700" : "p-1 mr-2 rounded-full hover:bg-emerald-700"}>
+          <button onClick={onClose} className="p-1 mr-2 rounded-full hover:bg-[#E8C848]/10 text-[#E8C848] transition-all duration-300">
             <ChevronLeft size={20} />
           </button>
           <div className="flex items-center">
             <img 
               src={userDetails.profilePic}
               alt={userDetails.name} 
-              className="w-8 h-8 rounded-full mr-3"
+              className="w-8 h-8 rounded-full mr-3 border border-gray-800"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = 'https://via.placeholder.com/40?text=👤';
               }}
             />
             <div>
-              <h3 className="font-medium">{userDetails.name}</h3>
+              <h3 className="font-medium text-white">{userDetails.name}</h3>
               {userDetails.affiliation && (
-                <p className={isMentor ? "text-xs text-indigo-100" : "text-xs text-emerald-100"}>
+                <p className="text-xs text-gray-400">
                   {userDetails.affiliation}
                 </p>
               )}
             </div>
           </div>
         </div>
-        <button onClick={onClose} className={isMentor ? "p-1 rounded-full hover:bg-indigo-700" : "p-1 rounded-full hover:bg-emerald-700"}>
+        <button onClick={onClose} className="p-1 rounded-full hover:bg-[#E8C848]/10 text-[#E8C848] transition-all duration-300">
           <X size={20} />
         </button>
       </div>
       
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-gray-50">
+      <div className="flex-1 overflow-y-auto p-4 bg-[#121212]">
         {isLoading ? (
           <div className="flex justify-center items-center h-full">
             <div className="animate-pulse flex flex-col items-center">
-              <div className="h-2.5 bg-gray-200 rounded-full w-24 mb-2.5"></div>
-              <div className="h-2.5 bg-gray-200 rounded-full w-32 mb-2.5"></div>
-              <div className="h-2.5 bg-gray-200 rounded-full w-28"></div>
+              <div className="h-2.5 bg-gray-800 rounded-full w-24 mb-2.5"></div>
+              <div className="h-2.5 bg-gray-800 rounded-full w-32 mb-2.5"></div>
+              <div className="h-2.5 bg-gray-800 rounded-full w-28"></div>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
             {messages.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-32 text-gray-500">
-                <MessageCircle size={24} className="mb-2 text-gray-300" />
+              <div className="flex flex-col items-center justify-center h-32 text-gray-400">
+                <MessageCircle size={24} className="mb-2 text-[#E8C848]" />
                 <p>No messages yet</p>
                 <p className="text-sm">Start a conversation with {userDetails.name}</p>
               </div>
@@ -540,26 +538,24 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
                     <div 
                       className={`max-w-[80%] rounded-lg px-3 py-2 ${
                         isMe 
-                          ? isMentor 
-                            ? `bg-indigo-500 text-white rounded-br-none ${msg.temp ? 'opacity-70' : ''}`
-                            : `bg-emerald-500 text-white rounded-br-none ${msg.temp ? 'opacity-70' : ''}`
-                          : 'bg-white border border-gray-200 rounded-bl-none relative group'
+                          ? `bg-[#E8C848] text-[#121212] rounded-br-none ${msg.temp ? 'opacity-70' : ''}`
+                          : 'bg-[#1A1A1A] text-white rounded-bl-none relative group border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300'
                       }`}
                     >
                       {!isMe && (
                         <button 
-                          className="absolute right-0 top-0 -mt-1 -mr-1 p-1 rounded-full bg-white shadow-md border border-gray-200 opacity-0 group-hover:opacity-100 transition-opacity"
+                          className="absolute right-0 top-0 -mt-1 -mr-1 p-1 rounded-full bg-[#121212] shadow-md border border-gray-800 opacity-0 group-hover:opacity-100 transition-opacity"
                           onClick={(e) => {
                             e.stopPropagation();
                             openReportModal(msg._id);
                           }}
                         >
-                          <Flag size={12} className="text-red-500" />
+                          <Flag size={12} className="text-[#E8C848]" />
                         </button>
                       )}
                       <p className="text-sm">{msg.message}</p>
                       <div className={`text-xs mt-1 flex items-center justify-end gap-1 ${
-                        isMe ? (isMentor ? 'text-indigo-100' : 'text-emerald-100') : 'text-gray-500'
+                        isMe ? 'text-[#121212]' : 'text-gray-400'
                       }`}>
                         {formatTime(msg.createdAt)}
                       </div>
@@ -570,7 +566,7 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
             )}
             {isTyping && (
               <div className="flex justify-start">
-                <div className="bg-gray-100 rounded-lg px-3 py-2 max-w-[80%]">
+                <div className="bg-gray-800 rounded-lg px-3 py-2 max-w-[80%]">
                   <div className="flex space-x-1">
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                     <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
@@ -587,11 +583,11 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
       {/* Context Menu */}
       {messageContextMenu.isOpen && (
         <div 
-          className="fixed bg-white shadow-lg rounded-md py-1 z-50 w-48 border border-gray-200"
+          className="fixed bg-[#121212] shadow-lg rounded-md py-1 z-50 w-48 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300"
           style={{ top: messageContextMenu.y, left: messageContextMenu.x }}
         >
           <button 
-            className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100 flex items-center"
+            className="w-full text-left px-4 py-2 text-sm text-[#E8C848] hover:bg-[#E8C848]/10 flex items-center transition-all duration-300"
             onClick={() => openReportModal(messageContextMenu.messageId)}
           >
             <Flag size={16} className="mr-2" /> Report Message
@@ -600,10 +596,10 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
       )}
       
       {/* Chat Input */}
-      <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-200 flex gap-2">
+      <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-800 bg-[#1A1A1A] flex gap-2">
         <button 
           type="button"
-          className="p-2 text-gray-500 rounded-full hover:bg-gray-100"
+          className="p-2 text-[#E8C848] rounded-full hover:bg-[#E8C848]/10 transition-all duration-300"
         >
           <Paperclip size={20} />
         </button>
@@ -612,19 +608,15 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
           value={message}
           onChange={handleInputChange}
           placeholder="Type a message..."
-          className={`flex-1 py-2 px-3 border rounded-full focus:outline-none focus:ring-2 ${
-            isMentor ? 'focus:ring-indigo-500' : 'focus:ring-emerald-500'
-          }`}
+          className="flex-1 py-2 px-3 bg-[#121212] text-white border border-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50 placeholder-gray-500"
         />
         <button 
           type="submit"
           disabled={!message.trim()}
-          className={`p-2 rounded-full ${
+          className={`p-2 rounded-full transition-all duration-300 ${
             message.trim()
-              ? isMentor
-                ? 'bg-indigo-500 text-white hover:bg-indigo-600'
-                : 'bg-emerald-500 text-white hover:bg-emerald-600'
-              : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+              ? 'bg-[#E8C848] text-[#121212] hover:bg-[#E8C848]/80'
+              : 'bg-gray-800 text-gray-600 cursor-not-allowed'
           }`}
         >
           <Send size={20} />
@@ -633,11 +625,11 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
       
       {/* Report Modal */}
       {isReportModalOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+        <div className="fixed inset-0 bg-[#121212]/80 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-[#1A1A1A] rounded-lg shadow-lg p-6 w-full max-w-md mx-4 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
             <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-gray-900 flex items-center">
-                <AlertCircle size={20} className="text-red-500 mr-2" />
+              <h3 className="text-lg font-medium text-white flex items-center">
+                <AlertCircle size={20} className="text-[#E8C848] mr-2" />
                 Report Message
               </h3>
               <button 
@@ -653,20 +645,20 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
               </button>
             </div>
             
-            <div className="mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-sm text-gray-600">Message content:</p>
-              <p className="text-gray-800 mt-1">{messageToReport?.message}</p>
+            <div className="mb-4 p-3 bg-[#121212] rounded-lg border border-gray-800">
+              <p className="text-sm text-gray-400">Message content:</p>
+              <p className="text-white mt-1">{messageToReport?.message}</p>
             </div>
             
             <form onSubmit={handleReportSubmit}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Reason for reporting*
                 </label>
                 <select
                   value={reportReason}
                   onChange={(e) => setReportReason(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-gray-800 bg-[#121212] text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50"
                   required
                 >
                   <option value="">Select a reason</option>
@@ -682,13 +674,13 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
               </div>
               
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-400 mb-2">
                   Additional information (optional)
                 </label>
                 <textarea
                   value={additionalInfo}
                   onChange={(e) => setAdditionalInfo(e.target.value)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full rounded-lg border border-gray-800 bg-[#121212] text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50"
                   placeholder="Please provide any additional details"
                   rows="3"
                   maxLength="500"
@@ -704,20 +696,20 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
                     setAdditionalInfo('');
                     setMessageToReport(null);
                   }}
-                  className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg text-sm"
+                  className="px-4 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm hover:bg-gray-700 hover:text-gray-300 transition-all duration-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingReport || !reportReason}
-                  className={`px-4 py-2 bg-red-600 text-white rounded-lg text-sm flex items-center ${
-                    isSubmittingReport || !reportReason ? 'opacity-70 cursor-not-allowed' : 'hover:bg-red-700'
+                  className={`px-4 py-2 bg-[#E8C848] text-[#121212] rounded-lg text-sm flex items-center transition-all duration-300 ${
+                    isSubmittingReport || !reportReason ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#E8C848]/80'
                   }`}
                 >
                   {isSubmittingReport ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#121212]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>

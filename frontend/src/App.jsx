@@ -11,7 +11,6 @@ import AdminHero from './components/Admin/AdminHero';
 import TeammatesPage from './components/Student/TeammatesPage';
 import MentorsPage from './components/Student/Dashboard/MentorsPage';
 import { UserProvider } from '../context/UserContext';
-import ManageHackathons from './components/Admin/ManageHackathons';
 import HackathonPage from './components/Student/Dashboard/HackathonPage';
 import HackathonDetail from './components/Student/Dashboard/HackathonDetail';
 import AdminModeration from './components/Moderator/ModeratorModeration';
@@ -36,8 +35,13 @@ import TeamManage from './components/Student/Dashboard/Team/TeamManage';
 import TeamStudentProfile from './components/Student/Dashboard/Team/StudentProfile'
 import TeamProjects from './components/Student/Dashboard/Team/TeamProjects'
 import TeamMentorManager from './components/Student/Dashboard/Team/Mentor/TeamMentorManager';
-import TeamMentorProfile from './components/Student/Dashboard/Team/Mentor/MentorProfile';
+// import TeamMentorProfile from './components/Student/Dashboard/Team/Mentor/MentorProfile';
 import Landing from './components/Landing'
+import HackathonParticipantManager from './components/Admin/HackathonParticipantManager'
+import ManageHackathons from './components/Admin/ManageHackathons'
+import ManageHackathonTeams from "./components/Admin/ManagehackathonTeams"
+import AllConversationsPageMentor from './components/Mentor/dashboard/AllConversationsPage';
+import TeamManagement from './components/Mentor/Team/TeamManagement';
 
 const role = localStorage.userRole
 console.log(role)
@@ -66,7 +70,9 @@ const App = () => {
               <Route path="/student/profile/:studentId" element={<TeamStudentProfile/>} /> 
               <Route path="/student/team/:teamId/projects" element={<TeamProjects />} />
               <Route path="/student/team/:teamId/mentors" element={<TeamMentorManager />} />
-              <Route path="/student/team/mentor/:mentorId" element={<TeamMentorProfile />} />
+              <Route path="/student/team/:teamId/settings" element={<TeamManage/>} />
+            
+              {/* <Route path="/student/team/mentor/:mentorId" element={<TeamMentorProfile />} /> */}
 
               {/* Hackathon Routes */}
               <Route path="/student/hackathons" element={<HackathonPage />} />
@@ -76,11 +82,21 @@ const App = () => {
               {/* Mentor Routes */}
               <Route path="/mentor/hero" element={<MentorHero />} />
               <Route path="/mentor/profile" element={<MentorProfile />} />
-              
+              <Route path="/mentor/conversations" element={<AllConversationsPageMentor />} />
+              <Route path="/mentor/team/:teamId" element={<TeamManagement />} />
               {/* Admin Routes */}
               <Route path="/admin/hero" element={<AdminHero />} /> 
               <Route path="/admin/hackathons" element={<ManageHackathons />} />
-              
+              <Route path="/admin/hackathons/:hackathonId/participants" element={ <HackathonParticipantManager />}/>
+              <Route path="/admin/hackathon_applications" element={<ManageHackathons />} />
+              <Route path="/admin/hackathon-applications" element={<ManageHackathons />} /> {/* Add this route */}
+{/* Admin Routes */}
+<Route path="/admin/hero" element={<AdminHero />} /> 
+<Route path="/admin/hackathons" element={<ManageHackathons />} />
+<Route path="/admin/hackathons/:hackathonId/participants" element={<HackathonParticipantManager />}/>
+<Route path="/admin/hackathon-applications" element={<ManageHackathons />} />
+
+<Route path="/admin/hackathons/:hackathonId/teams" element={<ManageHackathonTeams />} />
               {/* Auth Routes */}
               <Route path="/register" element={<Register />} />
               
@@ -124,6 +140,8 @@ const App = () => {
 
                 )
               }
+              <Route path="/" element={<Landing />} />
+
             </Routes>
           </div>
         </div>

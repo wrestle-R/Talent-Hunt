@@ -10,13 +10,13 @@ const CurrentTeamMentor = ({ team, onRemoveMentor, isLeader }) => {
   const [isChatOpen, setIsChatOpen] = useState(false);
 
   return (
-    <div>
+    <div className="text-white">
       <h3 className="font-medium text-lg mb-4">Current Team Mentor</h3>
       
       {team?.mentor?.mentorId ? (
-        <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <div className="bg-[#1A1A1A] border border-gray-800 hover:border-[#E8C848]/30 rounded-lg p-4 transition-all duration-300">
           <div className="flex items-start">
-            <div className="h-16 w-16 rounded-full overflow-hidden bg-gray-200 mr-4 flex-shrink-0">
+            <div className="h-16 w-16 rounded-full overflow-hidden bg-[#121212] mr-4 flex-shrink-0">
               {team.mentor.profile_picture ? (
                 <img 
                   src={team.mentor.profile_picture} 
@@ -24,7 +24,7 @@ const CurrentTeamMentor = ({ team, onRemoveMentor, isLeader }) => {
                   className="h-full w-full object-cover"
                 />
               ) : (
-                <div className="h-full w-full flex items-center justify-center bg-indigo-100 text-indigo-600">
+                <div className="h-full w-full flex items-center justify-center bg-[#E8C848]/10 text-[#E8C848]">
                   <User size={32} />
                 </div>
               )}
@@ -33,25 +33,25 @@ const CurrentTeamMentor = ({ team, onRemoveMentor, isLeader }) => {
             <div className="flex-1">
               <div className="flex justify-between items-start">
                 <div>
-                  <h4 className="font-semibold text-gray-800">
+                  <h4 className="font-semibold text-gray-200">
                     {team.mentor.name}
-                    <Shield size={14} className="ml-1 text-indigo-500 inline" />
+                    <Shield size={14} className="ml-1 text-[#E8C848] inline" />
                   </h4>
-                  <p className="text-sm text-gray-600 mt-1">
+                  <p className="text-sm text-gray-400 mt-1">
                     Joined {new Date(team.mentor.joinedAt).toLocaleDateString()}
                   </p>
                 </div>
-                <span className="bg-green-50 text-green-700 text-xs px-2 py-1 rounded-full">
+                <span className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-1 rounded-full">
                   Active Mentor
                 </span>
               </div>
               
               {team.mentor.expertise && team.mentor.expertise.length > 0 && (
                 <div className="mt-3">
-                  <p className="text-xs text-gray-600 mb-1">Expertise:</p>
+                  <p className="text-xs text-gray-400 mb-1">Expertise:</p>
                   <div className="flex flex-wrap gap-1">
                     {team.mentor.expertise.map((skill, idx) => (
-                      <span key={idx} className="bg-indigo-50 text-indigo-700 text-xs px-2 py-0.5 rounded-full">
+                      <span key={idx} className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
                         {skill}
                       </span>
                     ))}
@@ -63,7 +63,7 @@ const CurrentTeamMentor = ({ team, onRemoveMentor, isLeader }) => {
                 <div className="flex gap-3">
                   <button
                     onClick={() => navigate(`/student/mentor/${team.mentor.mentorId}`)}
-                    className="text-indigo-600 hover:text-indigo-800 text-sm flex items-center gap-1"
+                    className="text-[#E8C848] hover:text-[#E8C848]/80 text-sm flex items-center gap-1 transition-colors duration-300"
                   >
                     <ExternalLink size={14} />
                     View Profile
@@ -71,7 +71,7 @@ const CurrentTeamMentor = ({ team, onRemoveMentor, isLeader }) => {
                   
                   <button
                     onClick={() => setIsChatOpen(true)}
-                    className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
+                    className="text-[#E8C848] hover:text-[#E8C848]/80 text-sm flex items-center gap-1 transition-colors duration-300"
                   >
                     <MessageCircle size={14} />
                     Message
@@ -81,7 +81,7 @@ const CurrentTeamMentor = ({ team, onRemoveMentor, isLeader }) => {
                 {isLeader && (
                   <button 
                     onClick={() => onRemoveMentor(team.mentor.mentorId)}
-                    className="bg-red-50 text-red-700 px-3 py-1 rounded hover:bg-red-100 text-sm"
+                    className="bg-red-500/10 text-red-500 px-3 py-1 rounded hover:bg-red-500/20 text-sm transition-colors duration-300"
                   >
                     Remove Mentor
                   </button>
@@ -91,19 +91,12 @@ const CurrentTeamMentor = ({ team, onRemoveMentor, isLeader }) => {
           </div>
         </div>
       ) : (
-        <div className="text-center py-16 bg-gray-50 rounded-xl">
-          <Shield size={48} className="mx-auto text-gray-300 mb-3" />
-          <h3 className="text-xl font-medium text-gray-700 mb-2">No Mentor Yet</h3>
-          <p className="text-gray-500 mb-6 max-w-md mx-auto">
+        <div className="text-center py-16 bg-[#1A1A1A] border border-gray-800 hover:border-[#E8C848]/30 rounded-xl transition-all duration-300">
+          <Shield size={48} className="mx-auto text-[#E8C848]/30 mb-3" />
+          <h3 className="text-xl font-medium text-gray-200 mb-2">No Mentor Yet</h3>
+          <p className="text-gray-400 mb-6 max-w-md mx-auto">
             Your team doesn't have a mentor yet. Mentors can provide guidance, expertise, and help your team succeed.
           </p>
-          {/* <button
-            onClick={() => navigate(`/student/mentors`)}
-            className="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 inline-flex items-center gap-2"
-          >
-            <Shield size={16} />
-            Find a Mentor
-          </button> */}
         </div>
       )}
 
