@@ -162,15 +162,15 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-      <h3 className="text-lg font-semibold mb-4">
+    <div className="bg-[#1A1A1A] rounded-xl shadow-lg border border-gray-800 p-6 mb-6">
+      <h3 className="text-lg font-montserrat text-white mb-4">
         {isEditing ? 'Edit Hackathon' : 'Create New Hackathon'}
       </h3>
       
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Hackathon Name*
             </label>
             <input
@@ -178,26 +178,28 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
               name="hackathonName"
               value={formData.hackathonName}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 bg-[#111111] border border-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-transparent placeholder-gray-500"
+              placeholder="Enter hackathon name"
               required
             />
           </div>
           
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Description*
             </label>
             <textarea
               name="description"
               value={formData.description}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
+              className="w-full p-2 bg-[#111111] border border-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-transparent h-24 placeholder-gray-500"
+              placeholder="Enter hackathon description"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
                 Registration Deadline*
             </label>
             <input
@@ -205,13 +207,13 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
                 name="lastRegisterDate"
                 value={formData.lastRegisterDate}
                 onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-2 bg-[#111111] border border-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-transparent"
                 required
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Start Date*
             </label>
             <input
@@ -219,13 +221,13 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
               name="startDate"
               value={formData.startDate}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 bg-[#111111] border border-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-transparent"
               required
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               End Date*
             </label>
             <input
@@ -233,20 +235,20 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
               name="endDate"
               value={formData.endDate}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 bg-[#111111] border border-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-transparent"
               required
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Mode
             </label>
             <select
               name="mode"
               value={formData.mode}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 bg-[#111111] border border-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-transparent"
             >
               <option value="Online">Online</option>
               <option value="Offline">Offline</option>
@@ -255,7 +257,7 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Location {formData.mode !== 'Online' && '*'}
             </label>
             <input
@@ -265,13 +267,13 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
               onChange={handleChange}
               disabled={formData.mode === 'Online'}
               placeholder={formData.mode === 'Online' ? 'Online' : 'Enter location'}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              className="w-full p-2 bg-[#111111] border border-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-transparent disabled:bg-gray-100"
               required={formData.mode !== 'Online'}
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Prize Pool (INR)
             </label>
             <input
@@ -280,12 +282,12 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
               value={formData.prizePool}
               onChange={handleChange}
               min="0"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 bg-[#111111] border border-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-transparent"
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Maximum Participants*
             </label>
             <input
@@ -294,14 +296,14 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
               value={formData.totalCapacity}
               onChange={handleChange}
               min="1"
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 bg-[#111111] border border-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-transparent"
               required
             />
           </div>
 
           {/* Primary Domain field */}
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Primary Domain*
             </label>
             <input
@@ -309,7 +311,7 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
               name="primaryDomain"
               value={formData.primaryDomain}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full p-2 bg-[#111111] border border-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-transparent placeholder-gray-500"
               placeholder="Main domain of the hackathon (e.g., AI, Web3, Healthcare)"
               required
             />
@@ -317,14 +319,14 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
 
           {/* Primary Problem Statement field */}
           <div className="col-span-2">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-300 mb-1">
               Primary Problem Statement*
             </label>
             <textarea
               name="primaryProblemStatement"
               value={formData.primaryProblemStatement}
               onChange={handleChange}
-              className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 h-24"
+              className="w-full p-2 bg-[#111111] border border-gray-800 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-transparent h-24 placeholder-gray-500"
               placeholder="Main problem statement that participants will solve"
               required
             />
@@ -335,17 +337,17 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
             <button
               type="button"
               onClick={onCancel}
-              className="mr-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md"
+              className="mr-2 bg-[#111111] hover:bg-[#232323] text-white border border-gray-800 px-4 py-2 rounded-md transition-colors"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md flex items-center"
+              className="bg-[#E8C848] hover:bg-[#E8C848]/90 text-gray-900 px-4 py-2 rounded-md flex items-center transition-colors font-medium"
             >
               {loading && (
-                <div className="animate-spin mr-2 h-4 w-4 border-2 border-white rounded-full border-t-transparent"></div>
+                <div className="animate-spin mr-2 h-4 w-4 border-2 border-gray-900 rounded-full border-t-transparent"></div>
               )}
               {isEditing ? 'Update Hackathon' : 'Create Hackathon'}
             </button>
