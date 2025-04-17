@@ -54,7 +54,7 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
     try {
       setIsSubmitting(true);
 
-      const response = await axios.post(`http://localhost:4000/api/mentor/project-feedback/${team._id}`, {
+      const response = await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/project-feedback/${team._id}`, {
         mentorId,
         projectId,
         feedback: feedbackText
@@ -77,13 +77,13 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
   };
 
   return (
-    <div className="bg-[#1A1A1A] rounded-xl shadow-sm border border-gray-800">
+    <div className="bg-[#1A1A1A] rounded-xl shadow-lg border border-gray-800 transition-all duration-300">
       <div className="p-6 border-b border-gray-800">
-        <h2 className="text-lg font-semibold flex items-center text-white">
+        <h2 className="text-lg font-semibold flex items-center text-white font-montserrat">
           <FileCode size={20} className="mr-2 text-[#E8C848]" />
           Team Projects ({team.projects?.length || 0})
         </h2>
-        <p className="text-sm text-gray-400 mt-1">Review and provide feedback on team projects</p>
+        <p className="text-sm text-gray-400 mt-1 font-inter">Review and provide feedback on team projects</p>
       </div>
 
       <div className="divide-y divide-gray-800">
@@ -91,8 +91,8 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
           team.projects.map((project) => (
             <div key={project._id} className="p-0">
               <div
-                className={`px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-[#121212] ${
-                  expandedProject === project._id ? 'bg-[#121212]' : ''
+                className={`px-6 py-4 flex items-center justify-between cursor-pointer hover:bg-[#111111] transition-all duration-300 ${
+                  expandedProject === project._id ? 'bg-[#111111]' : ''
                 }`}
                 onClick={() => handleProjectClick(project._id)}
               >
@@ -130,7 +130,7 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
               </div>
 
               {expandedProject === project._id && (
-                <div className="px-6 py-4 bg-[#121212] border-t border-gray-800">
+                <div className="px-6 py-4 bg-[#111111] border-t border-gray-800">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                       <h4 className="text-sm font-medium text-gray-400 mb-3">Project Information</h4>
@@ -255,7 +255,7 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
                         value={feedbackText}
                         onChange={(e) => setFeedbackText(e.target.value)}
                         placeholder="Write your feedback for this project..."
-                        className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50 focus:border-[#E8C848] text-white placeholder-gray-500"
+                        className="w-full px-3 py-2 bg-[#1A1A1A] border border-gray-800 rounded-md focus:outline-none focus:ring-2 focus:ring-[#E8C848]/50 focus:border-[#E8C848] text-white placeholder-gray-500 font-inter"
                         rows="5"
                       />
                       <div className="mt-3 flex justify-end">
@@ -295,9 +295,9 @@ const TeamProjectsCard = ({ team, mentorId, onDataChange }) => {
             </div>
           ))
         ) : (
-          <div className="text-center py-12">
+          <div className="text-center py-12 font-inter">
             <FileCode size={32} className="mx-auto text-gray-600 mb-3" />
-            <h3 className="text-lg font-medium text-white">No Projects Yet</h3>
+            <h3 className="text-lg font-medium text-white font-montserrat">No Projects Yet</h3>
             <p className="text-gray-400 mt-1">This team hasn't created any projects</p>
           </div>
         )}

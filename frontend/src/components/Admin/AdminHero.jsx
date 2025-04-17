@@ -34,8 +34,8 @@ const AdminHero = () => {
     try {
       setLoading(true);
       
-      // Fetch profile data from API
-      const response = await axios.get(`http://localhost:4000/api/admin/profile/${uid}`);
+      // Fetch profile data from API using environment variable
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/admin/profile/${uid}`);
       
       if (response.data) {
         // Update user data from API response
@@ -53,17 +53,17 @@ const AdminHero = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#111111]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-500 border-t-transparent mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading your admin dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#E8C848] border-t-transparent mx-auto mb-4"></div>
+          <p className="text-gray-300 font-inter">Loading your admin dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-[#111111]">
       <AdminDashboard userData={userData} />
     </div>
   );

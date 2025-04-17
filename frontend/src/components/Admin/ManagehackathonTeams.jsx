@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
@@ -33,13 +32,13 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
       
       // Fetch individual applicants
       const individualsResponse = await axios.get(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/individual-applicants`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/individual-applicants`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
       // Fetch teams data
       const teamsResponse = await axios.get(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/teams`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/teams`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
@@ -98,7 +97,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
       const token = localStorage.getItem('token');
       
       const response = await axios.post(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/temp-teams`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/temp-teams`,
         {
           teamName: newTeamName,
           memberIds: selectedApplicants.map(a => a.student._id),
@@ -132,7 +131,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/applicants/${applicantId}/approve`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/applicants/${applicantId}/approve`,
         {},
         { headers: { Authorization: `Bearer ${token}` }}
       );
@@ -154,7 +153,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/applicants/${applicantId}/reject`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/applicants/${applicantId}/reject`,
         {},
         { headers: { Authorization: `Bearer ${token}` }}
       );
@@ -176,7 +175,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/teams/${teamId}/approve`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/teams/${teamId}/approve`,
         {},
         { headers: { Authorization: `Bearer ${token}` }}
       );
@@ -201,7 +200,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
       
       const token = localStorage.getItem('token');
       await axios.post(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/temp-teams/${tempTeamId}/convert`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/temp-teams/${tempTeamId}/convert`,
         {
           teamName: tempTeam.teamName,
           leaderId: tempTeam.leader._id
@@ -226,7 +225,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/temp-teams/${tempTeamId}`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/temp-teams/${tempTeamId}`,
         { headers: { Authorization: `Bearer ${token}` }}
       );
       
@@ -244,42 +243,54 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <RefreshCw className="w-6 h-6 animate-spin text-blue-500" />
-        <span className="ml-2 text-gray-600">Loading...</span>
+        <RefreshCw className="w-6 h-6 animate-spin text-[#E8C848]" />
+        <span className="ml-2 text-gray-400">Loading...</span>
       </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-6">
+    <div className="bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800 p-6">
       <div className="flex justify-between items-center mb-6">
         <div className="flex items-center">
           <button 
             onClick={onBack} 
-            className="mr-4 p-2 rounded-full hover:bg-gray-100"
+            className="mr-4 p-2 rounded-full hover:bg-[#E8C848]/20 text-gray-400 hover:text-[#E8C848] transition-colors"
           >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
+            <ArrowLeft className="w-5 h-5" />
           </button>
-          <h2 className="text-xl font-bold">Manage Hackathon Participants</h2>
+          <h2 className="text-xl font-bold text-white font-montserrat">Manage Hackathon Participants</h2>
         </div>
         
         <div className="flex space-x-4">
           <button 
-            className={`px-4 py-2 rounded-lg ${activeTab === 'individuals' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100'}`}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              activeTab === 'individuals' 
+                ? 'bg-[#E8C848] text-[#111111]' 
+                : 'bg-[#111111] text-gray-400 hover:text-white'
+            }`}
             onClick={() => setActiveTab('individuals')}
           >
             <User className="w-4 h-4 inline mr-1" />
             Individuals
           </button>
           <button 
-            className={`px-4 py-2 rounded-lg ${activeTab === 'teams' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100'}`}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              activeTab === 'teams' 
+                ? 'bg-[#E8C848] text-[#111111]' 
+                : 'bg-[#111111] text-gray-400 hover:text-white'
+            }`}
             onClick={() => setActiveTab('teams')}
           >
             <Users className="w-4 h-4 inline mr-1" />
             Teams
           </button>
           <button 
-            className={`px-4 py-2 rounded-lg ${activeTab === 'tempTeams' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100'}`}
+            className={`px-4 py-2 rounded-lg transition-colors ${
+              activeTab === 'tempTeams' 
+                ? 'bg-[#E8C848] text-[#111111]' 
+                : 'bg-[#111111] text-gray-400 hover:text-white'
+            }`}
             onClick={() => setActiveTab('tempTeams')}
           >
             <UserPlus className="w-4 h-4 inline mr-1" />
@@ -293,7 +304,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-red-50 border-l-4 border-red-500 text-red-700 p-4 mb-6 flex justify-between items-center"
+          className="bg-red-900/20 border border-red-800 text-red-200 p-4 mb-6 flex justify-between items-center"
         >
           <div className="flex items-center">
             <AlertCircle className="w-5 h-5 mr-2" />
@@ -309,7 +320,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
         <motion.div 
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-green-50 border-l-4 border-green-500 text-green-700 p-4 mb-6 flex justify-between items-center"
+          className="bg-[#E8C848]/20 border border-[#E8C848] text-[#E8C848] p-4 mb-6 flex justify-between items-center"
         >
           <div className="flex items-center">
             <Check className="w-5 h-5 mr-2" />
@@ -326,7 +337,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
         <div className="mb-4">
           <button
             onClick={() => setIsCreatingTeam(true)}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center"
+            className="bg-[#E8C848] text-[#111111] px-4 py-2 rounded-lg flex items-center hover:bg-[#E8C848]/90 transition-colors"
           >
             <Plus className="w-5 h-5 mr-2" /> Create Temporary Team
           </button>
@@ -337,22 +348,22 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
         <motion.div 
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
-          className="border border-blue-200 bg-blue-50 p-4 rounded-lg mb-6"
+          className="border border-[#E8C848] bg-[#1A1A1A] p-4 rounded-lg mb-6"
         >
-          <h3 className="text-lg font-medium mb-3">Create Temporary Team</h3>
+          <h3 className="text-lg font-medium mb-3 text-white">Create Temporary Team</h3>
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Team Name</label>
+            <label className="block text-sm font-medium mb-1 text-gray-400">Team Name</label>
             <input
               type="text"
               value={newTeamName}
               onChange={(e) => setNewTeamName(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 w-full"
+              className="border border-gray-800 rounded-lg px-3 py-2 w-full bg-[#111111] text-white"
               placeholder="Enter team name"
             />
           </div>
           
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-2">
+            <label className="block text-sm font-medium mb-2 text-gray-400">
               Selected Members: {selectedApplicants.length}/4
             </label>
             <div className="flex flex-wrap gap-2">
@@ -362,7 +373,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
                   className={`flex items-center px-3 py-1 rounded-full text-sm ${
                     selectedLeader && selectedLeader._id === applicant._id 
                     ? 'bg-yellow-200 border border-yellow-400' 
-                    : 'bg-blue-100 border border-blue-300'
+                    : 'bg-[#E8C848]/20 border border-[#E8C848] text-[#E8C848]'
                   }`}
                 >
                   {applicant.student.name}
@@ -388,7 +399,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
                 setSelectedLeader(null);
                 setNewTeamName('');
               }}
-              className="px-4 py-2 border border-gray-300 rounded-lg"
+              className="px-4 py-2 border border-gray-800 rounded-lg text-gray-400 hover:text-white"
             >
               Cancel
             </button>
@@ -397,8 +408,8 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
               disabled={selectedApplicants.length !== 4 || !selectedLeader || !newTeamName.trim()}
               className={`px-4 py-2 rounded-lg ${
                 selectedApplicants.length === 4 && selectedLeader && newTeamName.trim()
-                ? 'bg-blue-600 text-white' 
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                ? 'bg-[#E8C848] text-[#111111]' 
+                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
               }`}
             >
               Create Team
@@ -410,19 +421,19 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
       {/* Tab Content */}
       {activeTab === 'individuals' && (
         <div>
-          <h3 className="text-lg font-medium mb-3">Individual Applicants</h3>
+          <h3 className="text-lg font-medium mb-3 text-white">Individual Applicants</h3>
           <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
+            <table className="min-w-full divide-y divide-gray-800">
+              <thead className="bg-[#111111]">
                 <tr>
-                  {isCreatingTeam && <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Select</th>}
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Name</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Skills</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                  {isCreatingTeam && <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Select</th>}
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Skills</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
+              <tbody className="bg-[#1A1A1A] divide-y divide-gray-800">
                 {individuals.map(applicant => (
                   <tr key={applicant._id}>
                     {isCreatingTeam && (
@@ -433,7 +444,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
                             checked={selectedApplicants.some(a => a._id === applicant._id)}
                             onChange={() => toggleApplicantSelection(applicant)}
                             disabled={!applicant.student || applicant.assignedToTempTeam || applicant.status !== 'Approved'}
-                            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                            className="h-4 w-4 rounded border-gray-800 text-[#E8C848] focus:ring-[#E8C848] bg-[#111111]"
                           />
                           {selectedApplicants.some(a => a._id === applicant._id) && (
                             <button
@@ -441,7 +452,7 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
                               className={`px-2 py-1 text-xs rounded ${
                                 selectedLeader && selectedLeader._id === applicant._id
                                 ? 'bg-yellow-200 text-yellow-800' 
-                                : 'bg-gray-200 text-gray-700 hover:bg-yellow-100'
+                                : 'bg-gray-800 text-gray-400 hover:bg-yellow-100'
                               }`}
                             >
                               {selectedLeader && selectedLeader._id === applicant._id ? 'Leader' : 'Set as Leader'}
@@ -459,20 +470,20 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
                           onError={(e) => { e.target.src = '/default-avatar.png' }}
                         />
                         <div>
-                          <div className="font-medium">{applicant.student?.name || 'Unknown'}</div>
-                          <div className="text-sm text-gray-500">{applicant.student?.email || 'No email'}</div>
+                          <div className="font-medium text-white">{applicant.student?.name || 'Unknown'}</div>
+                          <div className="text-sm text-gray-400">{applicant.student?.email || 'No email'}</div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex flex-wrap gap-1">
                         {applicant.skills?.slice(0, 3).map((skill, i) => (
-                          <span key={i} className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded-full">
+                          <span key={i} className="inline-block px-2 py-1 text-xs bg-[#E8C848]/20 text-[#E8C848] rounded-full">
                             {skill}
                           </span>
                         ))}
                         {applicant.skills?.length > 3 && (
-                          <span className="inline-block px-2 py-1 text-xs bg-gray-100 text-gray-800 rounded-full">
+                          <span className="inline-block px-2 py-1 text-xs bg-gray-800 text-gray-400 rounded-full">
                             +{applicant.skills.length - 3} more
                           </span>
                         )}
@@ -480,13 +491,13 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                        ${applicant.status === 'Approved' ? 'bg-green-100 text-green-800' : 
-                          applicant.status === 'Rejected' ? 'bg-red-100 text-red-800' : 
-                          'bg-yellow-100 text-yellow-800'}`}>
+                        ${applicant.status === 'Approved' ? 'bg-green-900/20 text-green-200' : 
+                          applicant.status === 'Rejected' ? 'bg-red-900/20 text-red-200' : 
+                          'bg-yellow-900/20 text-yellow-200'}`}>
                         {applicant.status}
                       </span>
                       {applicant.assignedToTempTeam && (
-                        <span className="ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-800">
+                        <span className="ml-2 px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-900/20 text-purple-200">
                           In Team
                         </span>
                       )}
@@ -496,13 +507,13 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
                         <div className="flex space-x-2">
                           <button
                             onClick={() => handleApproveApplicant(applicant._id)}
-                            className="px-3 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200 flex items-center"
+                            className="px-3 py-1 text-xs bg-green-900/20 text-green-200 rounded hover:bg-green-800 flex items-center"
                           >
                             <Check className="w-3 h-3 mr-1" /> Approve
                           </button>
                           <button
                             onClick={() => handleRejectApplicant(applicant._id)}
-                            className="px-3 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200 flex items-center"
+                            className="px-3 py-1 text-xs bg-red-900/20 text-red-200 rounded hover:bg-red-800 flex items-center"
                           >
                             <X className="w-3 h-3 mr-1" /> Reject
                           </button>
@@ -519,138 +530,138 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
 
       {activeTab === 'teams' && (
         <div>
-                      <h3 className="text-lg font-medium mb-3">Team Applications</h3>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Members</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {teams.map(team => (
-                              <tr key={team._id}>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="font-medium">{team.team?.name || 'Team'}</div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="flex -space-x-2">
-                                    {team.team?.members?.slice(0, 4).map((member, idx) => (
-                                      <img 
-                                        key={idx}
-                                        src={member.student?.profile_picture || '/default-avatar.png'} 
-                                        alt={member.student?.name || `Member ${idx+1}`}
-                                        className="h-8 w-8 rounded-full border-2 border-white object-cover"
-                                        onError={(e) => { e.target.src = '/default-avatar.png' }}
-                                      />
-                                    ))}
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                    ${team.status === 'Approved' ? 'bg-green-100 text-green-800' : 
-                                      team.status === 'Rejected' ? 'bg-red-100 text-red-800' : 
-                                      'bg-yellow-100 text-yellow-800'}`}>
-                                    {team.status}
-                                  </span>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  {team.status === 'Pending' && (
-                                    <div className="flex space-x-2">
-                                      <button
-                                        onClick={() => handleApproveTeam(team._id)}
-                                        className="px-3 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200 flex items-center"
-                                      >
-                                        <Check className="w-3 h-3 mr-1" /> Approve
-                                      </button>
-                                      <button
-                                        onClick={() => handleRejectTeam(team._id)}
-                                        className="px-3 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200 flex items-center"
-                                      >
-                                        <X className="w-3 h-3 mr-1" /> Reject
-                                      </button>
-                                    </div>
-                                  )}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+          <h3 className="text-lg font-medium mb-3 text-white">Team Applications</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-800">
+              <thead className="bg-[#111111]">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Team</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Members</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Status</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-[#1A1A1A] divide-y divide-gray-800">
+                {teams.map(team => (
+                  <tr key={team._id}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="font-medium text-white">{team.team?.name || 'Team'}</div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex -space-x-2">
+                        {team.team?.members?.slice(0, 4).map((member, idx) => (
+                          <img 
+                            key={idx}
+                            src={member.student?.profile_picture || '/default-avatar.png'} 
+                            alt={member.student?.name || `Member ${idx+1}`}
+                            className="h-8 w-8 rounded-full border-2 border-[#1A1A1A] object-cover"
+                            onError={(e) => { e.target.src = '/default-avatar.png' }}
+                          />
+                        ))}
                       </div>
-                    </div>
-                  )}
-            
-                  {activeTab === 'tempTeams' && (
-                    <div>
-                      <h3 className="text-lg font-medium mb-3">Temporary Teams</h3>
-                      <div className="overflow-x-auto">
-                        <table className="min-w-full divide-y divide-gray-200">
-                          <thead className="bg-gray-50">
-                            <tr>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Team Name</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Leader</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Members</th>
-                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
-                            </tr>
-                          </thead>
-                          <tbody className="bg-white divide-y divide-gray-200">
-                            {temporaryTeams.map(team => (
-                              <tr key={team.tempTeamId}>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="font-medium">{team.teamName}</div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex items-center">
-                                    <img 
-                                      src={team.leader?.profile_picture || '/default-avatar.png'} 
-                                      alt={team.leader?.name || 'Leader'}
-                                      className="h-8 w-8 rounded-full object-cover mr-2"
-                                      onError={(e) => { e.target.src = '/default-avatar.png' }}
-                                    />
-                                    <span>{team.leader?.name}</span>
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4">
-                                  <div className="flex -space-x-2">
-                                    {team.members?.slice(0, 4).map((member, idx) => (
-                                      <img 
-                                        key={idx}
-                                        src={member.profile_picture || '/default-avatar.png'} 
-                                        alt={member.name || `Member ${idx+1}`}
-                                        className="h-8 w-8 rounded-full border-2 border-white object-cover"
-                                        onError={(e) => { e.target.src = '/default-avatar.png' }}
-                                      />
-                                    ))}
-                                  </div>
-                                </td>
-                                <td className="px-6 py-4 whitespace-nowrap">
-                                  <div className="flex space-x-2">
-                                    <button
-                                      onClick={() => convertTemporaryTeam(team.tempTeamId)}
-                                      className="px-3 py-1 text-xs bg-green-100 text-green-800 rounded hover:bg-green-200 flex items-center"
-                                    >
-                                      <Award className="w-3 h-3 mr-1" /> Convert to Official
-                                    </button>
-                                    <button
-                                      onClick={() => dissolveTemporaryTeam(team.tempTeamId)}
-                                      className="px-3 py-1 text-xs bg-red-100 text-red-800 rounded hover:bg-red-200 flex items-center"
-                                    >
-                                      <Trash2 className="w-3 h-3 mr-1" /> Dissolve
-                                    </button>
-                                  </div>
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span className={`px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
+                        ${team.status === 'Approved' ? 'bg-green-900/20 text-green-200' : 
+                          team.status === 'Rejected' ? 'bg-red-900/20 text-red-200' : 
+                          'bg-yellow-900/20 text-yellow-200'}`}>
+                        {team.status}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {team.status === 'Pending' && (
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => handleApproveTeam(team._id)}
+                            className="px-3 py-1 text-xs bg-green-900/20 text-green-200 rounded hover:bg-green-800 flex items-center"
+                          >
+                            <Check className="w-3 h-3 mr-1" /> Approve
+                          </button>
+                          <button
+                            onClick={() => handleRejectTeam(team._id)}
+                            className="px-3 py-1 text-xs bg-red-900/20 text-red-200 rounded hover:bg-red-800 flex items-center"
+                          >
+                            <X className="w-3 h-3 mr-1" /> Reject
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {activeTab === 'tempTeams' && (
+        <div>
+          <h3 className="text-lg font-medium mb-3 text-white">Temporary Teams</h3>
+          <div className="overflow-x-auto">
+            <table className="min-w-full divide-y divide-gray-800">
+              <thead className="bg-[#111111]">
+                <tr>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Team Name</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Leader</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Members</th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="bg-[#1A1A1A] divide-y divide-gray-800">
+                {temporaryTeams.map(team => (
+                  <tr key={team.tempTeamId}>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="font-medium text-white">{team.teamName}</div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex items-center">
+                        <img 
+                          src={team.leader?.profile_picture || '/default-avatar.png'} 
+                          alt={team.leader?.name || 'Leader'}
+                          className="h-8 w-8 rounded-full object-cover mr-2"
+                          onError={(e) => { e.target.src = '/default-avatar.png' }}
+                        />
+                        <span className="text-white">{team.leader?.name}</span>
                       </div>
-                    </div>
-                  )}
-                </div>
-              );
-            };
-            
-        export default ManageHackathonTeams;
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex -space-x-2">
+                        {team.members?.slice(0, 4).map((member, idx) => (
+                          <img 
+                            key={idx}
+                            src={member.profile_picture || '/default-avatar.png'} 
+                            alt={member.name || `Member ${idx+1}`}
+                            className="h-8 w-8 rounded-full border-2 border-[#1A1A1A] object-cover"
+                            onError={(e) => { e.target.src = '/default-avatar.png' }}
+                          />
+                        ))}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => convertTemporaryTeam(team.tempTeamId)}
+                          className="px-3 py-1 text-xs bg-green-900/20 text-green-200 rounded hover:bg-green-800 flex items-center"
+                        >
+                          <Award className="w-3 h-3 mr-1" /> Convert to Official
+                        </button>
+                        <button
+                          onClick={() => dissolveTemporaryTeam(team.tempTeamId)}
+                          className="px-3 py-1 text-xs bg-red-900/20 text-red-200 rounded hover:bg-red-800 flex items-center"
+                        >
+                          <Trash2 className="w-3 h-3 mr-1" /> Dissolve
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default ManageHackathonTeams;

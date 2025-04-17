@@ -50,9 +50,12 @@ const App = () => {
     <UserProvider>
       <Router>
         <div className="min-h-screen flex flex-col">
-          {/* <Navbar /> */}
+          <Navbar />
           <div className="flex-grow">
             <Routes>
+            <Route path="/" element={<Landing />} />
+
+
               {/* Student Routes */}
               <Route path="/student/hero" element={<StudentHero />} />
               <Route path="/student/profile" element={<StudentProfile />} />
@@ -140,7 +143,6 @@ const App = () => {
 
                 )
               }
-              <Route path="/" element={<Landing />} />
 
             </Routes>
           </div>

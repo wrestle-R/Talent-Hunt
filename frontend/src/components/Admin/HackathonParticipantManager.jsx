@@ -52,25 +52,25 @@ const HackathonParticipantManager = () => {
     try {
       // Fetch hackathon details
       const { data: hackathonData } = await axios.get(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}`
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}`
       );
       setHackathon(hackathonData);
       
       // Fetch individual applicants
       const { data: individualsData } = await axios.get(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/individual-applicants`
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/individual-applicants`
       );
       setIndividuals(individualsData.data);
       
       // Fetch team applicants
       const { data: teamApplicantsData } = await axios.get(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/team-applicants`
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/team-applicants`
       );
       setTeamApplicants(teamApplicantsData.data);
       
       // Fetch registered teams
       const { data: registeredTeamsData } = await axios.get(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/registered-teams`
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/registered-teams`
       );
       setRegisteredTeams(registeredTeamsData.teams);
       
@@ -86,7 +86,7 @@ const HackathonParticipantManager = () => {
   const handleUpdateApplicantStatus = async (applicantId, newStatus) => {
     try {
       await axios.put(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/individual-applicants/${applicantId}`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/individual-applicants/${applicantId}`,
         { status: newStatus }
       );
       
@@ -165,7 +165,7 @@ const HackathonParticipantManager = () => {
   const handleUpdateTeamStatus = async (teamId, newStatus) => {
     try {
       await axios.put(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/team-applicants/${teamId}`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/team-applicants/${teamId}`,
         { status: newStatus }
       );
       
@@ -182,14 +182,14 @@ const HackathonParticipantManager = () => {
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E8C848]"></div>
       </div>
     );
   }
   
   if (error && !hackathon) {
     return (
-      <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-md">
+      <div className="bg-red-900/20 border border-red-800 text-red-200 p-4 rounded-md">
         <div className="flex items-center">
           <AlertTriangle className="mr-2" size={20} />
           <p>{error}</p>
@@ -199,10 +199,10 @@ const HackathonParticipantManager = () => {
   }
   
   return (
-    <div className="bg-gray-50 min-h-screen p-6">
+    <div className="bg-[#111111] min-h-screen p-6">
       {/* Alerts */}
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-800 p-3 rounded-md mb-4">
+        <div className="bg-red-900/20 border border-red-800 text-red-200 p-3 rounded-md mb-4">
           <div className="flex items-center">
             <AlertTriangle className="mr-2" size={16} />
             <p>{error}</p>
@@ -211,7 +211,7 @@ const HackathonParticipantManager = () => {
       )}
       
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-800 p-3 rounded-md mb-4">
+        <div className="bg-[#E8C848]/20 border border-[#E8C848] text-[#E8C848] p-3 rounded-md mb-4">
           <div className="flex items-center">
             <Check className="mr-2" size={16} />
             <p>{success}</p>
@@ -220,22 +220,22 @@ const HackathonParticipantManager = () => {
       )}
       
       {/* Hackathon Header */}
-      <div className="bg-white rounded-xl shadow-sm p-6 mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">{hackathon.hackathonName}</h1>
-        <div className="flex items-center text-gray-600 text-sm">
-          <Calendar className="mr-1" size={14} />
+      <div className="bg-[#1A1A1A] rounded-xl shadow-lg border border-gray-800 p-6 mb-6">
+        <h1 className="text-2xl font-bold text-white mb-2 font-montserrat">{hackathon.hackathonName}</h1>
+        <div className="flex items-center text-gray-400 text-sm">
+          <Calendar className="mr-1 text-[#E8C848]" size={14} />
           <span>{new Date(hackathon.startDate).toLocaleDateString()} - {new Date(hackathon.endDate).toLocaleDateString()}</span>
         </div>
       </div>
       
       {/* Main Tabs */}
       <Tabs selectedIndex={activeTab} onSelect={index => setActiveTab(index)}>
-        <TabList className="flex border-b border-gray-200 mb-6">
+        <TabList className="flex border-b border-gray-800 mb-6">
           <Tab 
-            className={`py-3 px-4 font-medium text-sm cursor-pointer ${
+            className={`py-3 px-4 font-medium text-sm cursor-pointer transition-colors ${
               activeTab === 0 
-                ? 'text-blue-600 border-b-2 border-blue-600' 
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'text-[#E8C848] border-b-2 border-[#E8C848] font-montserrat' 
+                : 'text-gray-400 hover:text-white'
             }`}
           >
             <div className="flex items-center">
@@ -246,8 +246,8 @@ const HackathonParticipantManager = () => {
           <Tab 
             className={`py-3 px-4 font-medium text-sm cursor-pointer ${
               activeTab === 1
-                ? 'text-blue-600 border-b-2 border-blue-600' 
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'text-[#E8C848] border-b-2 border-[#E8C848] font-montserrat' 
+                : 'text-gray-400 hover:text-white'
             }`}
           >
             <div className="flex items-center">
@@ -258,8 +258,8 @@ const HackathonParticipantManager = () => {
           <Tab 
             className={`py-3 px-4 font-medium text-sm cursor-pointer ${
               activeTab === 2
-                ? 'text-blue-600 border-b-2 border-blue-600' 
-                : 'text-gray-600 hover:text-gray-900'
+                ? 'text-[#E8C848] border-b-2 border-[#E8C848] font-montserrat' 
+                : 'text-gray-400 hover:text-white'
             }`}
           >
             <div className="flex items-center">
@@ -272,20 +272,20 @@ const HackathonParticipantManager = () => {
         {/* Tab Content */}
         <TabPanel>
           {/* Individual Applicants Tab */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="font-bold text-lg">Individual Applicants</h2>
+          <div className="bg-[#1A1A1A] rounded-xl shadow-lg overflow-hidden border border-gray-800">
+            <div className="px-6 py-4 border-b border-gray-800">
+              <h2 className="font-bold text-lg text-white">Individual Applicants</h2>
             </div>
             
             {/* Individual Subtabs */}
             <div className="px-6 pt-4">
-              <div className="flex border-b border-gray-200">
+              <div className="flex border-b border-gray-800">
                 <button 
                   onClick={() => setActiveIndividualTab(0)}
                   className={`py-2 px-4 font-medium text-sm ${
                     activeIndividualTab === 0
-                      ? 'text-blue-600 border-b-2 border-blue-600' 
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'text-[#E8C848] border-b-2 border-[#E8C848] font-montserrat' 
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
                   Pending ({individuals.pending.length})
@@ -294,8 +294,8 @@ const HackathonParticipantManager = () => {
                   onClick={() => setActiveIndividualTab(1)}
                   className={`py-2 px-4 font-medium text-sm ${
                     activeIndividualTab === 1
-                      ? 'text-blue-600 border-b-2 border-blue-600' 
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'text-[#E8C848] border-b-2 border-[#E8C848] font-montserrat' 
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
                   Approved ({individuals.approved.length})
@@ -304,8 +304,8 @@ const HackathonParticipantManager = () => {
                   onClick={() => setActiveIndividualTab(2)}
                   className={`py-2 px-4 font-medium text-sm ${
                     activeIndividualTab === 2
-                      ? 'text-blue-600 border-b-2 border-blue-600' 
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'text-[#E8C848] border-b-2 border-[#E8C848] font-montserrat' 
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
                   Rejected ({individuals.rejected.length})
@@ -322,16 +322,16 @@ const HackathonParticipantManager = () => {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                      <table className="min-w-full divide-y divide-gray-800">
+                        <thead className="bg-[#2A2A2A]">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicant</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skills</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied On</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Applicant</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Skills</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Applied On</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-[#1A1A1A] divide-y divide-gray-800">
                           {individuals.pending.map(individual => (
                             <tr key={individual._id}>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -344,8 +344,8 @@ const HackathonParticipantManager = () => {
                                     />
                                   </div>
                                   <div className="ml-4">
-                                    <div className="text-sm font-medium text-gray-900">{individual.student.name}</div>
-                                    <div className="text-sm text-gray-500">{individual.student.email}</div>
+                                    <div className="text-sm font-medium text-white">{individual.student.name}</div>
+                                    <div className="text-sm text-gray-400">{individual.student.email}</div>
                                   </div>
                                 </div>
                               </td>
@@ -363,7 +363,7 @@ const HackathonParticipantManager = () => {
                                   )}
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                                 {new Date(individual.registeredAt).toLocaleDateString()}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -415,7 +415,7 @@ const HackathonParticipantManager = () => {
                           className={`p-4 border rounded-lg ${
                             individual.assignedToTempTeam
                               ? 'border-green-300 bg-green-50'
-                              : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm'
+                              : 'border-gray-800 bg-[#1A1A1A] hover:border-[#E8C848] hover:shadow-lg'
                           } transition-all`}
                           onClick={() => !individual.assignedToTempTeam && toggleIndividualSelection(individual)}
                         >
@@ -428,8 +428,8 @@ const HackathonParticipantManager = () => {
                               />
                             </div>
                             <div className="ml-3">
-                              <div className="text-sm font-medium text-gray-900">{individual.student.name}</div>
-                              <div className="text-xs text-gray-500">{individual.student.email}</div>
+                              <div className="text-sm font-medium text-white">{individual.student.name}</div>
+                              <div className="text-xs text-gray-400">{individual.student.email}</div>
                               {individual.assignedToTempTeam && (
                                 <div className="text-xs text-green-600 mt-1">Assigned to a team</div>
                               )}
@@ -463,16 +463,16 @@ const HackathonParticipantManager = () => {
                     </div>
                   ) : (
                     <div className="overflow-x-auto">
-                      <table className="min-w-full divide-y divide-gray-200">
-                        <thead className="bg-gray-50">
+                      <table className="min-w-full divide-y divide-gray-800">
+                        <thead className="bg-[#2A2A2A]">
                           <tr>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applicant</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Skills</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Applied On</th>
-                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Applicant</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Skills</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Applied On</th>
+                            <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
                           </tr>
                         </thead>
-                        <tbody className="bg-white divide-y divide-gray-200">
+                        <tbody className="bg-[#1A1A1A] divide-y divide-gray-800">
                           {individuals.rejected.map(individual => (
                             <tr key={individual._id}>
                               <td className="px-6 py-4 whitespace-nowrap">
@@ -485,8 +485,8 @@ const HackathonParticipantManager = () => {
                                     />
                                   </div>
                                   <div className="ml-4">
-                                    <div className="text-sm font-medium text-gray-900">{individual.student.name}</div>
-                                    <div className="text-sm text-gray-500">{individual.student.email}</div>
+                                    <div className="text-sm font-medium text-white">{individual.student.name}</div>
+                                    <div className="text-sm text-gray-400">{individual.student.email}</div>
                                   </div>
                                 </div>
                               </td>
@@ -504,7 +504,7 @@ const HackathonParticipantManager = () => {
                                   )}
                                 </div>
                               </td>
-                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                                 {new Date(individual.registeredAt).toLocaleDateString()}
                               </td>
                               <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
@@ -529,20 +529,20 @@ const HackathonParticipantManager = () => {
         
         <TabPanel>
           {/* Team Applicants Tab */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="font-bold text-lg">Team Applicants</h2>
+          <div className="bg-[#1A1A1A] rounded-xl shadow-lg overflow-hidden border border-gray-800">
+            <div className="px-6 py-4 border-b border-gray-800">
+              <h2 className="font-bold text-lg text-white">Team Applicants</h2>
             </div>
             
             {/* Team Subtabs */}
             <div className="px-6 pt-4">
-              <div className="flex border-b border-gray-200">
+              <div className="flex border-b border-gray-800">
                 <button 
                   onClick={() => setActiveTeamTab(0)}
                   className={`py-2 px-4 font-medium text-sm ${
                     activeTeamTab === 0
-                      ? 'text-blue-600 border-b-2 border-blue-600' 
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'text-[#E8C848] border-b-2 border-[#E8C848] font-montserrat' 
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
                   Pending ({teamApplicants.pending.length})
@@ -551,8 +551,8 @@ const HackathonParticipantManager = () => {
                   onClick={() => setActiveTeamTab(1)}
                   className={`py-2 px-4 font-medium text-sm ${
                     activeTeamTab === 1
-                      ? 'text-blue-600 border-b-2 border-blue-600' 
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'text-[#E8C848] border-b-2 border-[#E8C848] font-montserrat' 
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
                   Approved ({teamApplicants.approved.length})
@@ -561,8 +561,8 @@ const HackathonParticipantManager = () => {
                   onClick={() => setActiveTeamTab(2)}
                   className={`py-2 px-4 font-medium text-sm ${
                     activeTeamTab === 2
-                      ? 'text-blue-600 border-b-2 border-blue-600' 
-                      : 'text-gray-600 hover:text-gray-900'
+                      ? 'text-[#E8C848] border-b-2 border-[#E8C848] font-montserrat' 
+                      : 'text-gray-400 hover:text-white'
                   }`}
                 >
                   Rejected ({teamApplicants.rejected.length})
@@ -580,12 +580,12 @@ const HackathonParticipantManager = () => {
                   ) : (
                     <div className="space-y-6">
                       {teamApplicants.pending.map(application => (
-                        <div key={application._id} className="border border-gray-200 rounded-lg overflow-hidden bg-white">
-                          <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
-                            <h3 className="font-medium text-gray-900">
+                        <div key={application._id} className="border border-gray-800 rounded-lg overflow-hidden bg-[#1A1A1A]">
+                          <div className="px-4 py-3 bg-[#2A2A2A] border-b border-gray-800 flex justify-between items-center">
+                            <h3 className="font-medium text-white">
                               {application.team.name}
                             </h3>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-gray-400">
                               Applied {new Date(application.registeredAt).toLocaleDateString()}
                             </div>
                           </div>
@@ -600,8 +600,8 @@ const HackathonParticipantManager = () => {
                             </div>
                             
                             {expandedTeam === application._id ? (
-                              <div className="mt-3 border-t border-gray-200 pt-3">
-                                <h4 className="text-sm font-medium text-gray-700 mb-2">Team Members:</h4>
+                              <div className="mt-3 border-t border-gray-800 pt-3">
+                                <h4 className="text-sm font-medium text-gray-400 mb-2">Team Members:</h4>
                                 <div className="space-y-2">
                                   {application.team.members.map(member => (
                                     <div key={member._id} className="flex items-center">
@@ -613,7 +613,7 @@ const HackathonParticipantManager = () => {
                                         />
                                       </div>
                                       <div className="ml-3">
-                                        <div className="text-sm font-medium flex items-center">
+                                        <div className="text-sm font-medium flex items-center text-white">
                                           {member.student.name}
                                           {member.role === 'Leader' && (
                                             <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
@@ -622,20 +622,20 @@ const HackathonParticipantManager = () => {
                                             </span>
                                           )}
                                         </div>
-                                        <div className="text-xs text-gray-500">{member.student.email}</div>
+                                        <div className="text-xs text-gray-400">{member.student.email}</div>
                                       </div>
                                     </div>
                                   ))}
                                 </div>
                                 
-                                <div className="mt-4 text-sm text-gray-700">
+                                <div className="mt-4 text-sm text-gray-400">
                                   <h4 className="font-medium mb-1">Description:</h4>
                                   <p>{application.team.description || 'No description provided.'}</p>
                                 </div>
                                 
                                 <button
                                   onClick={() => setExpandedTeam(null)}
-                                  className="mt-4 text-blue-600 text-sm flex items-center"
+                                  className="mt-4 text-[#E8C848] text-sm flex items-center"
                                 >
                                   <ChevronUp size={16} className="mr-1" />
                                   Hide Details
@@ -645,7 +645,7 @@ const HackathonParticipantManager = () => {
                               <div className="flex items-center justify-between mt-3">
                                 <button
                                   onClick={() => setExpandedTeam(application._id)}
-                                  className="text-blue-600 text-sm flex items-center"
+                                  className="text-[#E8C848] text-sm flex items-center"
                                 >
                                   <ChevronDown size={16} className="mr-1" />
                                   View Team Details
@@ -866,9 +866,9 @@ const HackathonParticipantManager = () => {
         
         <TabPanel>
           {/* Registered Teams Tab */}
-          <div className="bg-white rounded-xl shadow-sm overflow-hidden">
-            <div className="px-6 py-4 border-b border-gray-200">
-              <h2 className="font-bold text-lg">Registered Teams</h2>
+          <div className="bg-[#1A1A1A] rounded-xl shadow-lg overflow-hidden border border-gray-800">
+            <div className="px-6 py-4 border-b border-gray-800">
+              <h2 className="font-bold text-lg text-white">Registered Teams</h2>
             </div>
             
             <div className="p-6">
@@ -879,9 +879,9 @@ const HackathonParticipantManager = () => {
               ) : (
                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {registeredTeams.map(team => (
-                    <div key={team._id} className="border border-gray-200 rounded-lg overflow-hidden bg-white hover:shadow-md transition-shadow">
-                      <div className="px-4 py-3 bg-blue-50 border-b border-blue-200 flex justify-between items-center">
-                        <h3 className="font-semibold text-blue-900">
+                    <div key={team._id} className="border border-gray-800 rounded-lg overflow-hidden bg-[#1A1A1A] hover:shadow-lg transition-shadow">
+                      <div className="px-4 py-3 bg-[#2A2A2A] border-b border-gray-800 flex justify-between items-center">
+                        <h3 className="font-semibold text-white">
                           {team.teamName}
                         </h3>
                         <div className="flex items-center">
@@ -893,7 +893,7 @@ const HackathonParticipantManager = () => {
                       </div>
                       
                       <div className="p-4">
-                        <h4 className="text-sm font-medium text-gray-700 mb-2">Team Members:</h4>
+                        <h4 className="text-sm font-medium text-gray-400 mb-2">Team Members:</h4>
                         <div className="space-y-2">
                           {team.members.slice(0, 2).map(member => (
                             <div key={member._id} className="flex items-center">
@@ -905,7 +905,7 @@ const HackathonParticipantManager = () => {
                                 />
                               </div>
                               <div className="ml-3">
-                                <div className="text-sm font-medium flex items-center">
+                                <div className="text-sm font-medium flex items-center text-white">
                                   {member.name}
                                   {member.isLeader && (
                                     <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
@@ -914,20 +914,20 @@ const HackathonParticipantManager = () => {
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-xs text-gray-500">{member.email}</div>
+                                <div className="text-xs text-gray-400">{member.email}</div>
                               </div>
                             </div>
                           ))}
                           
                           {team.members.length > 2 && (
-                            <div className="text-sm text-blue-600 mt-1">
+                            <div className="text-sm text-[#E8C848] mt-1">
                               +{team.members.length - 2} more members
                             </div>
                           )}
                         </div>
                         
                         {expandedTeam === team._id ? (
-                          <div className="mt-3 pt-3 border-t border-gray-200">
+                          <div className="mt-3 pt-3 border-t border-gray-800">
                             <div className="space-y-2">
                               {team.members.slice(2).map(member => (
                                 <div key={member._id} className="flex items-center">
@@ -939,7 +939,7 @@ const HackathonParticipantManager = () => {
                                     />
                                   </div>
                                   <div className="ml-3">
-                                    <div className="text-sm font-medium flex items-center">
+                                    <div className="text-sm font-medium flex items-center text-white">
                                       {member.name}
                                       {member.isLeader && (
                                         <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
@@ -948,7 +948,7 @@ const HackathonParticipantManager = () => {
                                         </span>
                                       )}
                                     </div>
-                                    <div className="text-xs text-gray-500">{member.email}</div>
+                                    <div className="text-xs text-gray-400">{member.email}</div>
                                   </div>
                                 </div>
                               ))}
@@ -956,7 +956,7 @@ const HackathonParticipantManager = () => {
                             
                             <button
                               onClick={() => setExpandedTeam(null)}
-                              className="mt-3 text-blue-600 text-sm flex items-center"
+                              className="mt-3 text-[#E8C848] text-sm flex items-center"
                             >
                               <ChevronUp size={16} className="mr-1" />
                               Show Less
@@ -966,7 +966,7 @@ const HackathonParticipantManager = () => {
                           team.members.length > 2 && (
                             <button
                               onClick={() => setExpandedTeam(team._id)}
-                              className="mt-3 text-blue-600 text-sm flex items-center"
+                              className="mt-3 text-[#E8C848] text-sm flex items-center"
                             >
                               <ChevronDown size={16} className="mr-1" />
                               View All Members

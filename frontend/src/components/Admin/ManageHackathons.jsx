@@ -26,7 +26,7 @@ const ManageHackathons = () => {
       setError(null);
       
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:4000/api/admin/hackathons', {
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -71,7 +71,7 @@ const ManageHackathons = () => {
       };
   
       const response = await axios.post(
-        'http://localhost:4000/api/admin/hackathons',
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons`,
         requestData,
         {
           headers: {
@@ -113,7 +113,7 @@ const ManageHackathons = () => {
       };
       
       const response = await axios.put(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}`,
         {
           ...hackathonData,
           adminUid: user.uid
@@ -146,7 +146,7 @@ const ManageHackathons = () => {
       
       const token = localStorage.getItem('token');
       const response = await axios.delete(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -164,13 +164,13 @@ const ManageHackathons = () => {
   };
 
   const renderHackathonCard = (hackathon) => (
-    <div key={hackathon._id} className="bg-white rounded-xl shadow-md p-6">
+    <div key={hackathon._id} className="bg-[#1A1A1A] rounded-xl shadow-lg border border-gray-800 p-6">
       <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-xl font-semibold mb-2">{hackathon.hackathonName}</h3>
-          <div className="flex gap-4 text-sm text-gray-600">
+          <h3 className="text-xl font-semibold mb-2 text-white font-montserrat">{hackathon.hackathonName}</h3>
+          <div className="flex gap-4 text-sm text-gray-400">
             <span className="flex items-center gap-1">
-              <Users size={16} />
+              <Users size={16} className="text-[#E8C848]" />
               {hackathon.registration.currentlyRegistered}/{hackathon.registration.totalCapacity}
             </span>
             <span>Teams of {hackathon.registration.requiredTeamSize}</span>
@@ -183,13 +183,13 @@ const ManageHackathons = () => {
               setEditingHackathon(hackathon);
               setActiveView('edit');
             }}
-            className="px-3 py-1 text-blue-600 hover:bg-blue-50 rounded-md"
+            className="px-3 py-1 text-[#E8C848] hover:bg-[#E8C848]/20 rounded-md transition-colors"
           >
             Edit
           </button>
           <button
             onClick={() => handleHackathonDelete(hackathon._id)}
-            className="px-3 py-1 text-red-600 hover:bg-red-50 rounded-md"
+            className="px-3 py-1 text-red-400 hover:bg-red-500/20 rounded-md transition-colors"
           >
             Delete
           </button>
@@ -198,78 +198,77 @@ const ManageHackathons = () => {
       
       <div className="mb-4">
         <div className="mb-2">
-          <span className="text-sm font-medium text-gray-700">Domain:</span>
-          <span className="ml-2 bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-sm">
+          <span className="text-sm font-medium text-gray-300">Domain:</span>
+          <span className="ml-2 bg-[#E8C848]/20 text-[#E8C848] px-2 py-0.5 rounded-full text-sm">
             {hackathon.primaryDomain}
           </span>
         </div>
         <div>
-          <span className="text-sm font-medium text-gray-700">Problem Statement:</span>
-          <p className="mt-1 text-gray-600 text-sm line-clamp-2">
+          <span className="text-sm font-medium text-gray-300">Problem Statement:</span>
+          <p className="mt-1 text-gray-400 text-sm line-clamp-2">
             {hackathon.primaryProblemStatement}
           </p>
         </div>
       </div>
       
-      <div className="border-t pt-4">
+      <div className="border-t border-gray-800 pt-4">
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
-            <span className="block text-gray-600">Teams</span>
-            <span className="font-medium">{hackathon.teamApplicants?.length || 0}</span>
+            <span className="block text-gray-400">Teams</span>
+            <span className="font-medium text-white">{hackathon.teamApplicants?.length || 0}</span>
           </div>
           <div>
-            <span className="block text-gray-600">Individual Applicants</span>
-            <span className="font-medium">{hackathon.individualApplicants?.length || 0}</span>
+            <span className="block text-gray-400">Individual Applicants</span>
+            <span className="font-medium text-white">{hackathon.individualApplicants?.length || 0}</span>
           </div>
           <div>
-            <span className="block text-gray-600">Temporary Teams</span>
-            <span className="font-medium">{hackathon.temporaryTeams?.length || 0}</span>
+            <span className="block text-gray-400">Temporary Teams</span>
+            <span className="font-medium text-white">{hackathon.temporaryTeams?.length || 0}</span>
           </div>
         </div>
       </div>
       
-      <div className="border-t mt-4 pt-4 flex gap-2">
-        
-<button
-  onClick={() => navigate(`/admin/hackathons/${hackathon._id}/participants`)}
-  className="text-sm bg-indigo-100 text-indigo-700 px-3 py-1 rounded-md hover:bg-indigo-200"
->
-  <Users className="w-4 h-4 inline mr-1" />
-  Manage Participants
-</button>
+      <div className="border-t border-gray-800 mt-4 pt-4 flex gap-2">
+        <button
+          onClick={() => navigate(`/admin/hackathons/${hackathon._id}/participants`)}
+          className="text-sm bg-[#E8C848]/20 text-[#E8C848] px-3 py-1 rounded-md hover:bg-[#E8C848]/30 transition-colors"
+        >
+          <Users className="w-4 h-4 inline mr-1" />
+          Manage Participants
+        </button>
       </div>
     </div>
   );
 
   if (loading && hackathons.length === 0) {
     return (
-      <div className="container mx-auto p-6">
+      <div className="container mx-auto p-6 bg-[#111111]">
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E8C848]"></div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6">
+    <div className="container mx-auto p-6 bg-[#111111] min-h-screen">
       <button 
-        className="mb-6 flex items-center gap-2 text-gray-600 hover:text-gray-800"
-        onClick={() => navigate('/admin/dashboard')}
+        className="mb-6 flex items-center gap-2 text-gray-400 hover:text-[#E8C848] transition-colors"
+        onClick={() => navigate('/admin/hero')}
       >
         <ArrowLeft size={16} />
         Back to Dashboard
       </button>
       
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <CalendarDays className="text-blue-600" />
+        <h1 className="text-2xl font-bold flex items-center gap-2 text-white font-montserrat">
+          <CalendarDays className="text-[#E8C848]" />
           Manage Hackathons
         </h1>
         {activeView === 'list' && (
           <button 
             onClick={() => setActiveView('create')}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg"
+            className="flex items-center gap-2 bg-[#E8C848] hover:bg-[#E8C848]/90 text-gray-900 px-4 py-2 rounded-lg transition-colors"
           >
             <Plus size={18} /> New Hackathon
           </button>
@@ -277,7 +276,7 @@ const ManageHackathons = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6">
+        <div className="bg-red-900/20 border border-red-800 text-red-200 p-4 rounded-lg mb-6">
           <div className="flex items-center gap-2">
             <AlertCircle size={20} />
             <p>{error}</p>
@@ -314,13 +313,13 @@ const ManageHackathons = () => {
       {activeView === 'list' && (
         <div className="grid gap-6">
           {hackathons.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-lg shadow">
+            <div className="text-center py-12 bg-[#1A1A1A] rounded-lg shadow">
               <CalendarDays size={48} className="mx-auto text-gray-300 mb-4" />
-              <h3 className="text-xl font-medium text-gray-700 mb-2">No Hackathons Yet</h3>
+              <h3 className="text-xl font-medium text-gray-300 mb-2">No Hackathons Yet</h3>
               <p className="text-gray-500 mb-4">Create your first hackathon to get started</p>
               <button
                 onClick={() => setActiveView('create')}
-                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+                className="bg-[#E8C848] text-gray-900 px-4 py-2 rounded-lg hover:bg-[#E8C848]/90 transition-colors"
               >
                 Create Hackathon
               </button>

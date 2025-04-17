@@ -28,7 +28,7 @@ const AdminProfile = () => {
         }
         
         const response = await axios.get(
-          `http://localhost:4000/api/admin/profile/${user.uid}`,
+          `${import.meta.env.VITE_APP_BASE_URL}/api/admin/profile/${user.uid}`,
         );
         
         if (response.data) {
@@ -65,7 +65,7 @@ const AdminProfile = () => {
       }
     
       await axios.put(
-        `http://localhost:4000/api/admin/profile/${user.uid}`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/profile/${user.uid}`,
         formData,
       );
       
@@ -79,51 +79,53 @@ const AdminProfile = () => {
   };
   
   if (loading) {
-    return <div className="flex justify-center p-8">Loading profile...</div>;
+    return <div className="flex justify-center p-8 text-gray-300">Loading profile...</div>;
   }
   
   return (
-    <div className="max-w-4xl mx-auto p-4 bg-gray-50">
+    <div className="max-w-4xl mx-auto p-4 bg-[#111111]">
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <User className="text-blue-600" /> Admin Information
+        <div className="bg-[#1A1A1A] p-6 rounded-lg shadow-lg border border-gray-800">
+          <h2 className="text-xl font-bold mb-4 flex items-center gap-2 text-white font-montserrat">
+            <User className="text-[#E8C848]" /> Admin Information
           </h2>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Name</label>
+              <label className="block text-sm font-medium mb-1 text-gray-300">Name</label>
               <input
                 type="text"
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 bg-[#111111] border border-gray-800 rounded-md text-white placeholder-gray-500 focus:border-[#E8C848] focus:ring-1 focus:ring-[#E8C848] transition-colors"
+                placeholder="Enter your name"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium mb-1">Email</label>
+              <label className="block text-sm font-medium mb-1 text-gray-300">Email</label>
               <input
                 type="email"
                 name="email"
                 value={formData.email}
                 onChange={handleChange}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 bg-[#111111] border border-gray-800 rounded-md text-white placeholder-gray-500"
                 readOnly
               />
             </div>
             <div className="md:col-span-2">
-              <label className="block text-sm font-medium mb-1">Organization</label>
+              <label className="block text-sm font-medium mb-1 text-gray-300">Organization</label>
               <div className="flex">
-                <div className="flex-none flex items-center bg-gray-100 px-3 border border-r-0 border-gray-300 rounded-l-md">
-                  <Building size={16} className="text-gray-500" />
+                <div className="flex-none flex items-center bg-[#111111] px-3 border border-r-0 border-gray-800 rounded-l-md">
+                  <Building size={16} className="text-[#E8C848]" />
                 </div>
                 <input
                   type="text"
                   name="organization"
                   value={formData.organization}
                   onChange={handleChange}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-r-md"
+                  className="flex-1 px-3 py-2 bg-[#111111] border border-gray-800 rounded-r-md text-white placeholder-gray-500 focus:border-[#E8C848] focus:ring-1 focus:ring-[#E8C848] transition-colors"
+                  placeholder="Enter your organization"
                 />
               </div>
             </div>
@@ -135,11 +137,11 @@ const AdminProfile = () => {
           <button
             type="submit"
             disabled={saving}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors flex items-center gap-2"
+            className="bg-[#E8C848] text-gray-900 px-6 py-2 rounded-md hover:bg-[#E8C848]/90 transition-colors flex items-center gap-2 font-medium"
           >
             {saving ? (
               <>
-                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-white"></div>
+                <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-gray-900"></div>
                 Saving...
               </>
             ) : (
