@@ -25,7 +25,7 @@ const Messages = () => {
   const fetchReportedMessages = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(`http://localhost:4000/api/moderator/messages/reported?status=${statusFilter}`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=${statusFilter}`);
       setReportedMessages(response.data);
       
       // Calculate stats
@@ -56,7 +56,7 @@ const Messages = () => {
 
   const updateMessageStatus = async (messageId, newStatus, actionTaken = null, notes = null) => {
     try {
-      await axios.put(`http://localhost:4000/api/moderator/messages/reported/${messageId}`, {
+      await axios.put(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported/${messageId}`, {
         status: newStatus,
         actionTaken: actionTaken,
         moderatorNotes: notes,
@@ -71,14 +71,14 @@ const Messages = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-[#111111] font-inter">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-            <Flag className="mr-2 text-red-500" size={24} />
+          <h1 className="text-2xl font-bold text-white flex items-center font-montserrat">
+            <Flag className="mr-2 text-[#E8C848]" size={24} />
             Reported Messages
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className="text-gray-400 mt-1">
             Review and moderate reported messages from users
           </p>
         </div>
@@ -86,7 +86,7 @@ const Messages = () => {
         <div className="mt-4 md:mt-0 flex items-center gap-3">
           <button 
             onClick={() => fetchReportedMessages()}
-            className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 px-3 py-1.5 rounded-md bg-indigo-50 hover:bg-indigo-100"
+            className="flex items-center gap-1 text-[#E8C848] hover:text-[#E8C848]/80 px-3 py-1.5 rounded-md bg-[#E8C848]/10 hover:bg-[#E8C848]/20 transition-colors duration-300"
           >
             <RefreshCw size={16} />
             <span>Refresh</span>
@@ -96,7 +96,7 @@ const Messages = () => {
             <select
               value={statusFilter}
               onChange={(e) => handleStatusChange(e.target.value)}
-              className="appearance-none bg-white border border-gray-300 rounded-md pl-10 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+              className="appearance-none bg-[#1A1A1A] border border-gray-700 rounded-md pl-10 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C848] text-sm text-gray-300"
             >
               <option value="pending">Pending</option>
               <option value="reviewed">Reviewed</option>
@@ -116,14 +116,14 @@ const Messages = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+        <div className="bg-[#1A1A1A] p-4 rounded-lg shadow-lg border border-gray-800">
           <div className="flex justify-between items-center">
-            <h3 className="text-sm font-medium text-gray-500">Total Reports</h3>
-            <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-              <Flag size={14} className="text-indigo-600" />
+            <h3 className="text-sm font-medium text-gray-400">Total Reports</h3>
+            <div className="w-8 h-8 rounded-full bg-[#E8C848]/10 flex items-center justify-center">
+              <Flag size={14} className="text-[#E8C848]" />
             </div>
           </div>
-          <p className="text-2xl font-semibold text-gray-800 mt-2">{stats.total}</p>
+          <p className="text-2xl font-semibold text-white mt-2">{stats.total}</p>
           <div className="mt-1 text-xs text-gray-500 flex items-center gap-1">
             <span className="inline-flex items-center">
               <Check size={12} className="text-emerald-500" />
@@ -139,7 +139,7 @@ const Messages = () => {
           </div>
         </div>
         
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+        <div className="bg-[#1A1A1A] p-4 rounded-lg shadow-sm border border-gray-100">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-medium text-gray-500">Student Messages</h3>
             <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center">
@@ -152,7 +152,7 @@ const Messages = () => {
           </div>
         </div>
         
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+        <div className="bg-[#1A1A1A] p-4 rounded-lg shadow-sm border border-gray-100">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-medium text-gray-500">Mentor Messages</h3>
             <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
@@ -165,7 +165,7 @@ const Messages = () => {
           </div>
         </div>
         
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+        <div className="bg-[#1A1A1A] p-4 rounded-lg shadow-sm border border-gray-100">
           <div className="flex justify-between items-center">
             <h3 className="text-sm font-medium text-gray-500">Action Taken</h3>
             <div className="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
@@ -181,34 +181,34 @@ const Messages = () => {
 
       {/* Custom Tabs */}
       <div className="mb-6">
-        <div className="bg-white p-1 rounded-lg border border-gray-200 flex overflow-x-auto">
+        <div className="bg-[#1A1A1A] p-1 rounded-lg border border-gray-800 flex overflow-x-auto">
           <div className="flex space-x-1">
             <button 
               onClick={() => setActiveTab('all')} 
-              className={`px-4 py-2 text-sm rounded-md ${
+              className={`px-4 py-2 text-sm rounded-md transition-colors duration-300 ${
                 activeTab === 'all' 
-                  ? 'bg-gray-100 text-gray-900 font-medium' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-[#111111] text-white font-medium' 
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-[#111111]/60'
               }`}
             >
               All Messages
             </button>
             <button 
               onClick={() => setActiveTab('student')} 
-              className={`px-4 py-2 text-sm rounded-md ${
+              className={`px-4 py-2 text-sm rounded-md transition-colors duration-300 ${
                 activeTab === 'student' 
-                  ? 'bg-gray-100 text-gray-900 font-medium' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-[#111111] text-white font-medium' 
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-[#111111]/60'
               }`}
             >
               Student Messages
             </button>
             <button 
               onClick={() => setActiveTab('mentor')} 
-              className={`px-4 py-2 text-sm rounded-md ${
+              className={`px-4 py-2 text-sm rounded-md transition-colors duration-300 ${
                 activeTab === 'mentor' 
-                  ? 'bg-gray-100 text-gray-900 font-medium' 
-                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                  ? 'bg-[#111111] text-white font-medium' 
+                  : 'text-gray-400 hover:text-gray-300 hover:bg-[#111111]/60'
               }`}
             >
               Mentor Messages
@@ -220,17 +220,17 @@ const Messages = () => {
         <div className="mt-4">
           {/* All Messages Tab */}
           {activeTab === 'all' && (
-            <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+            <div className="bg-[#1A1A1A] rounded-lg border border-gray-800 overflow-hidden">
               {isLoading ? (
                 <div className="p-8 text-center">
-                  <div className="animate-spin w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-                  <p className="text-gray-500">Loading reported messages...</p>
+                  <div className="animate-spin w-10 h-10 border-4 border-[#E8C848] border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p className="text-gray-400">Loading reported messages...</p>
                 </div>
               ) : reportedMessages.length === 0 ? (
                 <div className="p-8 text-center">
-                  <Flag size={48} className="mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">No reported messages found</h3>
-                  <p className="text-gray-500 max-w-md mx-auto">
+                  <Flag size={48} className="mx-auto mb-4 text-gray-600" />
+                  <h3 className="text-lg font-medium text-gray-300 mb-2 font-montserrat">No reported messages found</h3>
+                  <p className="text-gray-400 max-w-md mx-auto">
                     {statusFilter === 'all' 
                       ? "There are no reported messages in the system." 
                       : `There are no ${statusFilter} reports at the moment.`}
@@ -238,18 +238,18 @@ const Messages = () => {
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="w-full divide-y divide-gray-800">
+                    <thead className="bg-[#111111]">
                       <tr>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reported Message</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sender</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reported On</th>
-                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Reported Message</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Sender</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Reason</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Reported On</th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-[#1A1A1A] divide-y divide-gray-800">
                       {reportedMessages.map((message) => (
                         <tr key={message._id} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
@@ -394,13 +394,13 @@ const Messages = () => {
       </div>
       
       {/* Information Banner */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start space-x-3">
+      <div className="bg-[#E8C848]/10 border border-[#E8C848]/20 rounded-lg p-4 flex items-start space-x-3">
         <div className="flex-shrink-0">
-          <Info size={20} className="text-blue-500" />
+          <Info size={20} className="text-[#E8C848]" />
         </div>
         <div>
-          <h4 className="text-sm font-medium text-blue-800">Moderation Guidelines</h4>
-          <p className="text-sm text-blue-600 mt-1">
+          <h4 className="text-sm font-medium text-[#E8C848] font-montserrat">Moderation Guidelines</h4>
+          <p className="text-sm text-gray-300 mt-1">
             Carefully review each reported message. Take action on clear violations of community guidelines.
             Contact the Admin team for guidance on complex cases or when issuing account suspensions.
           </p>

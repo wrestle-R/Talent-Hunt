@@ -10,11 +10,11 @@ const AdminModeration = () => {
   const [activeSubTab, setActiveSubTab] = useState('active');
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">User Moderation</h1>
+    <div className="container mx-auto px-4 py-8 bg-[#111111] font-inter">
+      <h1 className="text-2xl font-bold text-white mb-6 font-montserrat">User Moderation</h1>
       
       {/* Main Tabs - Students / Mentors */}
-      <div className="flex border-b border-gray-200 mb-6">
+      <div className="flex border-b border-gray-800 mb-6">
         <button
           onClick={() => {
             setActiveTab('students');
@@ -22,9 +22,9 @@ const AdminModeration = () => {
           }}
           className={`py-3 px-4 text-sm font-medium flex items-center gap-1 ${
             activeTab === 'students'
-              ? 'text-emerald-600 border-b-2 border-emerald-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+              ? 'text-[#E8C848] border-b-2 border-[#E8C848]'
+              : 'text-gray-400 hover:text-gray-300'
+          } transition-colors duration-300`}
         >
           <Users size={18} />
           Students
@@ -37,9 +37,9 @@ const AdminModeration = () => {
           }}
           className={`py-3 px-4 text-sm font-medium flex items-center gap-1 ${
             activeTab === 'mentors'
-              ? 'text-blue-600 border-b-2 border-blue-600'
-              : 'text-gray-500 hover:text-gray-700'
-          }`}
+              ? 'text-[#E8C848] border-b-2 border-[#E8C848]'
+              : 'text-gray-400 hover:text-gray-300'
+          } transition-colors duration-300`}
         >
           <Users size={18} />
           Mentors
@@ -52,10 +52,8 @@ const AdminModeration = () => {
           onClick={() => setActiveSubTab('active')}
           className={`py-2 px-4 text-sm font-medium rounded-full mr-2 ${
             activeSubTab === 'active'
-              ? activeTab === 'students' 
-                ? 'bg-emerald-100 text-emerald-700'
-                : 'bg-blue-100 text-blue-700'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-[#E8C848]/20 text-[#E8C848]'
+              : 'bg-[#1A1A1A] text-gray-400 hover:bg-[#1A1A1A]/80 transition-colors duration-300'
           }`}
         >
           Active
@@ -65,8 +63,8 @@ const AdminModeration = () => {
           onClick={() => setActiveSubTab('rejected')}
           className={`py-2 px-4 text-sm font-medium rounded-full flex items-center gap-1 ${
             activeSubTab === 'rejected'
-              ? 'bg-red-100 text-red-700'
-              : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              ? 'bg-red-900/30 text-red-400'
+              : 'bg-[#1A1A1A] text-gray-400 hover:bg-[#1A1A1A]/80 transition-colors duration-300'
           }`}
         >
           <UserX size={14} />

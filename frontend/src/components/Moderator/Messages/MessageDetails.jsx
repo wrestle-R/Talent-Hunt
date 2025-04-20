@@ -19,7 +19,7 @@ const MessageDetails = () => {
     const fetchMessage = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(`http://localhost:4000/api/moderator/messages/reported?status=all`);
+        const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=all`);
         
         // Find the specific message in the response
         const foundMessage = response.data.find(msg => msg._id === messageId);
@@ -44,7 +44,7 @@ const MessageDetails = () => {
     try {
       setIsSubmitting(true);
       
-      await axios.put(`http://localhost:4000/api/moderator/messages/reported/${messageId}`, {
+      await axios.put(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported/${messageId}`, {
         status: newStatus,
         actionTaken: actionTaken,
         moderatorNotes: moderatorNotes,
@@ -52,7 +52,7 @@ const MessageDetails = () => {
       });
       
       // Refresh the message data
-      const response = await axios.get(`http://localhost:4000/api/moderator/messages/reported?status=all`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=all`);
       const updatedMessage = response.data.find(msg => msg._id === messageId);
       if (updatedMessage) {
         setMessage(updatedMessage);
@@ -95,9 +95,9 @@ const MessageDetails = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-6"></div>
-            <div className="h-64 bg-gray-200 rounded mb-6"></div>
-            <div className="h-32 bg-gray-200 rounded"></div>
+            <div className="h-8 bg-[#1A1A1A] rounded w-1/3 mb-6"></div>
+            <div className="h-64 bg-[#1A1A1A] rounded mb-6"></div>
+            <div className="h-32 bg-[#1A1A1A] rounded"></div>
           </div>
         </div>
       </div>
@@ -107,12 +107,12 @@ const MessageDetails = () => {
   if (!message) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-sm">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Message Not Found</h1>
-          <p className="text-gray-600 mb-6">The requested message could not be found or may have been deleted.</p>
+        <div className="max-w-4xl mx-auto bg-[#1A1A1A] p-6 rounded-lg shadow-lg border border-gray-800">
+          <h1 className="text-2xl font-bold text-white mb-4 font-montserrat">Message Not Found</h1>
+          <p className="text-gray-400 mb-6 font-inter">The requested message could not be found or may have been deleted.</p>
           <button 
             onClick={handleBack}
-            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-[#111111] bg-[#E8C848] hover:bg-[#E8C848]/90 transition-colors duration-300 focus:outline-none"
           >
             <ArrowLeft className="mr-2 -ml-1 h-5 w-5" />
             Back to Messages
@@ -129,19 +129,19 @@ const MessageDetails = () => {
         <div className="mb-6">
           <button 
             onClick={handleBack}
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+            className="inline-flex items-center text-[#E8C848] hover:text-[#E8C848]/80 transition-colors duration-300"
           >
             <ArrowLeft className="mr-2 h-5 w-5" />
-            <span>Back to Messages</span>
+            <span className="font-inter">Back to Messages</span>
           </button>
         </div>
         
         {/* Main content */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800 overflow-hidden">
           {/* Header */}
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <div className="px-6 py-4 bg-[#111111] border-b border-gray-800">
             <div className="flex items-center justify-between">
-              <h1 className="text-xl font-semibold text-gray-800 flex items-center">
+              <h1 className="text-xl font-semibold text-white flex items-center font-montserrat">
                 <Flag className="mr-2 text-red-500" size={20} />
                 Reported Message Details
               </h1>
@@ -163,11 +163,11 @@ const MessageDetails = () => {
           </div>
           
           {/* Message Info Section */}
-          <div className="p-6 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-800 mb-4">Message Content</h2>
+          <div className="p-6 border-b border-gray-800">
+            <h2 className="text-lg font-medium text-white mb-4 font-montserrat">Message Content</h2>
             
-            <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-4">
-              <p className="text-gray-800 whitespace-pre-wrap">{message.message}</p>
+            <div className="bg-[#111111] rounded-lg p-4 border border-gray-800 mb-4">
+              <p className="text-gray-300 whitespace-pre-wrap font-inter">{message.message}</p>
               <div className="mt-3 text-xs text-gray-500 flex items-center justify-between">
                 <div className="flex items-center">
                   <Calendar size={12} className="mr-1" />
@@ -178,7 +178,7 @@ const MessageDetails = () => {
                 </div>
                 
                 {message.reportDetails.actionTaken && message.reportDetails.actionTaken !== 'none' && (
-                  <span className="text-red-600 font-medium capitalize flex items-center">
+                  <span className="text-red-400 font-medium capitalize flex items-center">
                     <AlertTriangle size={12} className="mr-1" />
                     {message.reportDetails.actionTaken.replace(/_/g, ' ')}
                   </span>
@@ -188,8 +188,8 @@ const MessageDetails = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Sender Info */}
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+              <div className="bg-[#1A1A1A] rounded-lg p-4 border border-gray-800">
+                <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center">
                   <User size={16} className="mr-1 text-gray-500" />
                   Sender
                 </h3>
@@ -207,7 +207,7 @@ const MessageDetails = () => {
                     />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-white">
                       {message.sender?.name || 'Unknown User'}
                     </div>
                     <div className="text-xs text-gray-500 flex items-center">
@@ -230,7 +230,7 @@ const MessageDetails = () => {
                 <div className="mt-3">
                   <button 
                     onClick={() => navigate(`/moderator/user-messages/${message.senderId}`)}
-                    className="w-full flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                    className="w-full flex items-center justify-center px-3 py-1.5 border border-gray-800 rounded-md text-xs font-medium text-gray-300 bg-[#1A1A1A] hover:bg-gray-800 focus:outline-none"
                   >
                     <MessageSquare size={12} className="mr-1" />
                     View All Messages
@@ -239,8 +239,8 @@ const MessageDetails = () => {
               </div>
               
               {/* Receiver Info */}
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+              <div className="bg-[#1A1A1A] rounded-lg p-4 border border-gray-800">
+                <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center">
                   <User size={16} className="mr-1 text-gray-500" />
                   Recipient
                 </h3>
@@ -258,7 +258,7 @@ const MessageDetails = () => {
                     />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-white">
                       {message.receiver?.name || 'Unknown User'}
                     </div>
                     <div className="text-xs text-gray-500 flex items-center">
@@ -281,7 +281,7 @@ const MessageDetails = () => {
                 <div className="mt-3">
                   <button 
                     onClick={() => navigate(`/moderator/conversation/${message.senderId}/${message.receiverId}`)}
-                    className="w-full flex items-center justify-center px-3 py-1.5 border border-gray-300 rounded-md text-xs font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none"
+                    className="w-full flex items-center justify-center px-3 py-1.5 border border-gray-800 rounded-md text-xs font-medium text-gray-300 bg-[#1A1A1A] hover:bg-gray-800 focus:outline-none"
                   >
                     <MessageSquare size={12} className="mr-1" />
                     View Conversation
@@ -290,8 +290,8 @@ const MessageDetails = () => {
               </div>
               
               {/* Reporter Info */}
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <h3 className="text-sm font-medium text-gray-700 mb-3 flex items-center">
+              <div className="bg-[#1A1A1A] rounded-lg p-4 border border-gray-800">
+                <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center">
                   <Flag size={16} className="mr-1 text-red-500" />
                   Reporter
                 </h3>
@@ -309,7 +309,7 @@ const MessageDetails = () => {
                     />
                   </div>
                   <div>
-                    <div className="text-sm font-medium text-gray-900">
+                    <div className="text-sm font-medium text-white">
                       {message.reporter?.name || 'Unknown User'}
                     </div>
                     <div className="text-xs text-gray-500 flex items-center">

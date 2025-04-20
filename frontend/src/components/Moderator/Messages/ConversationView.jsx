@@ -24,11 +24,11 @@ const ConversationView = () => {
       try {
         setIsLoading(true);
         
-        const conversationResponse = await axios.get(`http://localhost:4000/api/moderator/conversation/${user1}/${user2}`);
+        const conversationResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/conversation/${user1}/${user2}`);
         setConversation(conversationResponse.data);
         
         // Fetch user details for both users
-        const usersResponse = await axios.get(`http://localhost:4000/api/moderator/messages/reported?status=all`);
+        const usersResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=all`);
         
         // Find message with either user to get their details
         const messagesWithUsers = usersResponse.data;
@@ -187,15 +187,15 @@ const ConversationView = () => {
   
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 bg-[#111111]">
         <div className="max-w-4xl mx-auto">
           <div className="animate-pulse space-y-4">
-            <div className="h-10 bg-gray-200 rounded w-1/4"></div>
-            <div className="h-24 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-[#1A1A1A] rounded w-1/4"></div>
+            <div className="h-24 bg-[#1A1A1A] rounded"></div>
             <div className="space-y-2">
-              <div className="h-12 bg-gray-200 rounded"></div>
-              <div className="h-12 bg-gray-200 rounded"></div>
-              <div className="h-12 bg-gray-200 rounded"></div>
+              <div className="h-12 bg-[#1A1A1A] rounded"></div>
+              <div className="h-12 bg-[#1A1A1A] rounded"></div>
+              <div className="h-12 bg-[#1A1A1A] rounded"></div>
             </div>
           </div>
         </div>
@@ -204,13 +204,13 @@ const ConversationView = () => {
   }
   
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-[#111111] font-inter">
       <div className="max-w-4xl mx-auto">
         {/* Header with back button */}
         <div className="mb-6">
           <button 
             onClick={() => navigate('/moderator/messages')}
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+            className="inline-flex items-center text-[#E8C848] hover:text-[#E8C848]/80 transition-colors duration-300"
           >
             <ArrowLeft className="mr-2 h-5 w-5" />
             <span>Back to Messages</span>
@@ -218,19 +218,19 @@ const ConversationView = () => {
         </div>
         
         {/* Main content */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800 overflow-hidden">
           {/* Header */}
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          <div className="px-6 py-4 bg-[#111111] border-b border-gray-800">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between">
-              <h1 className="text-xl font-semibold text-gray-800 flex items-center mb-4 sm:mb-0">
-                <MessageSquare className="mr-2 text-indigo-500" size={20} />
+              <h1 className="text-xl font-semibold text-white flex items-center mb-4 sm:mb-0 font-montserrat">
+                <MessageSquare className="mr-2 text-[#E8C848]" size={20} />
                 Conversation
               </h1>
               
               <div className="flex items-center space-x-2">
                 <button
                   onClick={exportConversation}
-                  className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="inline-flex items-center px-3 py-1.5 border border-gray-700 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-[#111111] hover:bg-[#1d1d1d] hover:border-gray-600 transition-colors duration-300"
                 >
                   <Download size={16} className="mr-1.5 -ml-0.5" />
                   Export
@@ -239,8 +239,8 @@ const ConversationView = () => {
             </div>
           </div>
           
-          {/* Users Info */}
-          <div className="px-6 py-4 bg-gray-50 border-b border-gray-200">
+          {/* Users Info - Updated with dark theme colors */}
+          <div className="px-6 py-4 bg-[#111111] border-b border-gray-800">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex items-center">
                 <div className="h-10 w-10 flex-shrink-0 mr-3">
@@ -256,7 +256,7 @@ const ConversationView = () => {
                 </div>
                 <div>
                   <div className="flex items-center">
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-gray-300">
                       {user1Data?.name || 'Unknown User'}
                     </span>
                     <span className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -274,7 +274,7 @@ const ConversationView = () => {
               </div>
               
               <div className="flex items-center justify-center w-full sm:w-auto">
-                <div className="px-3 py-1 rounded-full bg-gray-100 text-gray-600 text-sm flex items-center">
+                <div className="px-3 py-1 rounded-full bg-gray-800 text-gray-400 text-sm flex items-center">
                   <MessageSquare size={14} className="mr-1" />
                   <span>{conversation.length} messages</span>
                 </div>
@@ -294,7 +294,7 @@ const ConversationView = () => {
                 </div>
                 <div>
                   <div className="flex items-center">
-                    <span className="text-sm font-medium text-gray-900">
+                    <span className="text-sm font-medium text-gray-300">
                       {user2Data?.name || 'Unknown User'}
                     </span>
                     <span className={`ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${
@@ -314,7 +314,7 @@ const ConversationView = () => {
           </div>
           
           {/* Search bar */}
-          <div className="px-6 py-3 border-b border-gray-200 bg-white sticky top-0 z-10">
+          <div className="px-6 py-3 border-b border-gray-800 bg-[#1A1A1A] sticky top-0 z-10">
             <div className="flex items-center">
               <div className="relative flex-grow">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -323,7 +323,7 @@ const ConversationView = () => {
                 <input
                   type="text"
                   placeholder="Search in conversation..."
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-700 rounded-md leading-5 bg-[#111111] text-gray-300 placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-[#E8C848] focus:border-[#E8C848] transition-colors duration-300"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -331,12 +331,12 @@ const ConversationView = () => {
               
               {highlightedMessages.length > 0 && (
                 <div className="ml-3 flex items-center">
-                  <span className="text-sm text-gray-500 mr-2">
+                  <span className="text-sm text-gray-400 mr-2">
                     {currentHighlight + 1} of {highlightedMessages.length}
                   </span>
                   <button 
                     onClick={() => navigateHighlight('prev')}
-                    className="p-1 rounded-full hover:bg-gray-100 text-gray-600"
+                    className="p-1 rounded-full hover:bg-[#111111] text-gray-400 hover:text-gray-300 transition-colors duration-300"
                   >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -344,7 +344,7 @@ const ConversationView = () => {
                   </button>
                   <button 
                     onClick={() => navigateHighlight('next')}
-                    className="p-1 rounded-full hover:bg-gray-100 text-gray-600"
+                    className="p-1 rounded-full hover:bg-[#111111] text-gray-400 hover:text-gray-300 transition-colors duration-300"
                   >
                     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
@@ -355,8 +355,8 @@ const ConversationView = () => {
             </div>
           </div>
           
-          {/* Messages */}
-          <div className="h-[600px] overflow-y-auto p-6">
+          {/* Messages - Updated with dark theme colors */}
+          <div className="h-[600px] overflow-y-auto p-6 bg-[#111111]">
             {conversation.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-gray-500">
                 <MessageSquare size={48} className="text-gray-300 mb-3" />
@@ -381,7 +381,7 @@ const ConversationView = () => {
                     <React.Fragment key={message._id || index}>
                       {showDateSeparator && (
                         <div className="flex justify-center my-4">
-                          <div className="px-3 py-1 bg-gray-100 rounded-full text-xs text-gray-500">
+                          <div className="px-3 py-1 bg-gray-800 rounded-full text-xs text-gray-400">
                             {formatDateTime(message.createdAt).split(' ')[0]}
                           </div>
                         </div>
@@ -412,7 +412,7 @@ const ConversationView = () => {
                           
                           <div 
                             className={`relative ${
-                              isCurrentHighlight ? 'ring-2 ring-indigo-500 ring-offset-2' : ''
+                              isCurrentHighlight ? 'ring-2 ring-[#E8C848] ring-offset-2' : ''
                             }`}
                           >
                             {isReported && (
@@ -424,15 +424,15 @@ const ConversationView = () => {
                             <div 
                               className={`rounded-lg px-4 py-2 ${
                                 isUser1 
-                                  ? 'bg-gray-100 text-gray-800 rounded-tl-none' 
-                                  : 'bg-indigo-500 text-white rounded-tr-none'
+                                  ? 'bg-gray-800 text-gray-300 rounded-tl-none' 
+                                  : 'bg-[#E8C848] text-gray-900 rounded-tr-none'
                               } ${isReported ? 'border border-red-300' : ''}`}
                             >
                               <div className="text-sm whitespace-pre-wrap">
                                 {highlightSearchTerm(message.message)}
                               </div>
                               <div className={`text-xs mt-1 flex justify-end ${
-                                isUser1 ? 'text-gray-500' : 'text-indigo-100'
+                                isUser1 ? 'text-gray-500' : 'text-gray-900'
                               }`}>
                                 {formatDateTime(message.createdAt).split(' ')[1]}
                               </div>
@@ -474,15 +474,15 @@ const ConversationView = () => {
           </div>
           
           {/* Footer */}
-          <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
+          <div className="px-6 py-4 bg-[#111111] border-t border-gray-800">
             <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-500">
+              <div className="text-sm text-gray-400">
                 {conversation.length} messages | {conversation.filter(m => m.isReported).length} reported
               </div>
               
               <button 
                 onClick={() => navigate('/moderator/messages')}
-                className="inline-flex items-center px-3 py-1.5 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                className="inline-flex items-center px-3 py-1.5 border border-gray-700 rounded-md shadow-sm text-sm font-medium text-gray-300 bg-[#1A1A1A] hover:bg-[#232323] transition-colors duration-300"
               >
                 <ArrowLeft size={16} className="mr-1.5 -ml-0.5" />
                 Back to Reports

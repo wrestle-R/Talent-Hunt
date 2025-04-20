@@ -12,7 +12,7 @@ const StudentMessages = ({ statusFilter, updateMessageStatus, isLoading: parentL
     const fetchStudentMessages = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(`http://localhost:4000/api/moderator/messages/reported?status=${statusFilter}&userType=student`);
+        const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=${statusFilter}&userType=student`);
         setStudentMessages(response.data);
       } catch (error) {
         console.error('Error fetching student reported messages:', error);
@@ -28,17 +28,17 @@ const StudentMessages = ({ statusFilter, updateMessageStatus, isLoading: parentL
   if (parentLoading) return null;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
+    <div className="bg-[#1A1A1A] rounded-lg border border-gray-800 overflow-hidden font-inter">
       {isLoading ? (
         <div className="p-8 text-center">
-          <div className="animate-spin w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-500">Loading student messages...</p>
+          <div className="animate-spin w-10 h-10 border-4 border-[#E8C848] border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p className="text-gray-400">Loading student messages...</p>
         </div>
       ) : studentMessages.length === 0 ? (
         <div className="p-8 text-center">
-          <Flag size={48} className="mx-auto mb-4 text-gray-300" />
-          <h3 className="text-lg font-medium text-gray-700 mb-2">No reported student messages found</h3>
-          <p className="text-gray-500 max-w-md mx-auto">
+          <Flag size={48} className="mx-auto mb-4 text-gray-600" />
+          <h3 className="text-lg font-medium text-gray-300 mb-2 font-montserrat">No reported student messages found</h3>
+          <p className="text-gray-400 max-w-md mx-auto">
             {statusFilter === 'all' 
               ? "There are no reported student messages in the system." 
               : `There are no ${statusFilter} student reports at the moment.`}
@@ -46,22 +46,22 @@ const StudentMessages = ({ statusFilter, updateMessageStatus, isLoading: parentL
         </div>
       ) : (
         <div className="overflow-x-auto">
-          <table className="w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
+          <table className="w-full divide-y divide-gray-800">
+            <thead className="bg-[#111111]">
               <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message Content</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Student</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sent To</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Message Content</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Student</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Sent To</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Reason</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
+            <tbody className="bg-[#1A1A1A] divide-y divide-gray-800">
               {studentMessages.map((message) => (
-                <tr key={message._id} className="hover:bg-gray-50">
+                <tr key={message._id} className="hover:bg-[#111111] transition-colors duration-200">
                   <td className="px-6 py-4">
-                    <div className="text-sm text-gray-900 max-w-xs">
+                    <div className="text-sm text-gray-300 max-w-xs">
                       {message.message.length > 50 
                         ? `${message.message.substring(0, 50)}...` 
                         : message.message}
@@ -84,7 +84,7 @@ const StudentMessages = ({ statusFilter, updateMessageStatus, isLoading: parentL
                         />
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-300">
                           {message.sender?.name || 'Unknown Student'}
                         </div>
                         <div className="text-xs text-gray-500">
@@ -107,7 +107,7 @@ const StudentMessages = ({ statusFilter, updateMessageStatus, isLoading: parentL
                         />
                       </div>
                       <div>
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-300">
                           {message.receiver?.name || 'Unknown Recipient'}
                         </div>
                         <div className="text-xs text-gray-500">
@@ -155,7 +155,7 @@ const StudentMessages = ({ statusFilter, updateMessageStatus, isLoading: parentL
                     <div className="flex space-x-2">
                       <button 
                         onClick={() => navigate(`/moderator/message/${message._id}`)}
-                        className="p-1 text-emerald-600 hover:text-emerald-800 rounded-full hover:bg-emerald-50"
+                        className="p-1 text-[#E8C848] hover:text-[#E8C848]/80 rounded-full hover:bg-[#E8C848]/10 transition-colors duration-300"
                         title="View Details"
                       >
                         <Eye size={18} />
@@ -163,7 +163,7 @@ const StudentMessages = ({ statusFilter, updateMessageStatus, isLoading: parentL
                       
                       <button 
                         onClick={() => navigate(`/moderator/conversation/${message.senderId}/${message.receiverId}`)}
-                        className="p-1 text-blue-600 hover:text-blue-800 rounded-full hover:bg-blue-50"
+                        className="p-1 text-[#E8C848] hover:text-[#E8C848]/80 rounded-full hover:bg-[#E8C848]/10 transition-colors duration-300"
                         title="View Full Conversation"
                       >
                         <MessageSquare size={18} />

@@ -31,7 +31,7 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
   });
 
   // Base API URL - centralized for easier maintenance
-  const API_BASE_URL = 'http://localhost:4000/api/moderator';
+  const API_BASE_URL = `${import.meta.env.VITE_APP_BASE_URL}/api/moderator`;
 
   // Helper function to normalize status for comparison
   const normalizeStatus = (status) => {
@@ -293,12 +293,12 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-[#111111] font-inter">
       <div className="max-w-7xl mx-auto">
         <div className="mb-6">
           <button 
             onClick={() => navigate('/moderator/dashboard')}
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+            className="inline-flex items-center text-[#E8C848] hover:text-[#E8C848]/80 transition-colors duration-300"
           >
             <ArrowLeft className="mr-2 h-5 w-5" />
             <span>Back to Dashboard</span>
@@ -307,11 +307,11 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
         
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-              <Clipboard className="mr-2 text-indigo-500" size={24} />
+            <h1 className="text-2xl font-bold text-white flex items-center font-montserrat">
+              <Clipboard className="mr-2 text-[#E8C848]" size={24} />
               Project Management
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-400 mt-1">
               Review, approve, or reject student projects
             </p>
           </div>
@@ -320,7 +320,7 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
             {unreviewedNotes > 0 && (
               <button 
                 onClick={() => navigate('/moderator/notes')}
-                className="relative flex items-center gap-1 text-indigo-600 hover:text-indigo-800 px-3 py-1.5 rounded-md bg-indigo-50 hover:bg-indigo-100"
+                className="relative flex items-center gap-1 text-[#E8C848] hover:text-[#E8C848]/80 px-3 py-1.5 rounded-md bg-[#E8C848]/10 hover:bg-[#E8C848]/20 transition-colors duration-300"
               >
                 <Mail size={16} />
                 <span>Notes</span>
@@ -332,7 +332,7 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
             
             <button 
               onClick={() => fetchProjects()}
-              className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 px-3 py-1.5 rounded-md bg-indigo-50 hover:bg-indigo-100"
+              className="flex items-center gap-1 text-[#E8C848] hover:text-[#E8C848]/80 px-3 py-1.5 rounded-md bg-[#E8C848]/10 hover:bg-[#E8C848]/20 transition-colors duration-300"
             >
               <RefreshCw size={16} />
               <span>Refresh</span>
@@ -342,7 +342,7 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none bg-white border border-gray-300 rounded-md pl-10 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="appearance-none bg-[#1A1A1A] border border-gray-700 rounded-md pl-10 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C848] text-sm text-gray-300"
               >
                 <option value="all">All Projects</option>
                 <option value="Pending">Pending Review</option>
@@ -362,18 +362,18 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
         {/* Project Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div 
-            className={`bg-white p-4 rounded-lg shadow-sm border ${
-              statusFilter === 'all' ? 'border-indigo-300 ring-2 ring-indigo-100' : 'border-gray-100'
+            className={`bg-[#1A1A1A] p-4 rounded-lg shadow-sm border ${
+              statusFilter === 'all' ? 'border-[#E8C848] ring-2 ring-[#E8C848]/20' : 'border-gray-800'
             } cursor-pointer transition-all hover:shadow-md`}
             onClick={() => setStatusFilter('all')}
           >
             <div className="flex justify-between items-center">
-              <h3 className="text-sm font-medium text-gray-500">Total Projects</h3>
-              <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center">
-                <Clipboard size={14} className="text-indigo-600" />
+              <h3 className="text-sm font-medium text-gray-400">Total Projects</h3>
+              <div className="w-8 h-8 rounded-full bg-[#E8C848]/20 flex items-center justify-center">
+                <Clipboard size={14} className="text-[#E8C848]" />
               </div>
             </div>
-            <p className="text-2xl font-semibold text-gray-800 mt-2">{stats.total}</p>
+            <p className="text-2xl font-semibold text-white mt-2">{stats.total}</p>
           </div>
           
           <div 
@@ -430,24 +430,24 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search projects by name, description, or creator..."
-              className="w-full border border-gray-300 rounded-md pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-700 rounded-md pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#1A1A1A] text-gray-300 placeholder-gray-500"
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           </div>
         </div>
 
         {/* Projects Table */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-[#1A1A1A] rounded-lg shadow-sm overflow-hidden border border-gray-800">
           {isLoading ? (
             <div className="p-8 text-center">
-              <div className="animate-spin w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-              <p className="text-gray-500">Loading projects...</p>
+              <div className="animate-spin w-10 h-10 border-4 border-[#E8C848] border-t-transparent rounded-full mx-auto mb-4"></div>
+              <p className="text-gray-400">Loading projects...</p>
             </div>
           ) : filteredProjects.length === 0 ? (
             <div className="p-8 text-center">
-              <AlertCircle size={48} className="mx-auto mb-4 text-gray-300" />
-              <h3 className="text-lg font-medium text-gray-700 mb-2">No projects found</h3>
-              <p className="text-gray-500 max-w-md mx-auto">
+              <AlertCircle size={48} className="mx-auto mb-4 text-gray-600" />
+              <h3 className="text-lg font-medium text-white mb-2 font-montserrat">No projects found</h3>
+              <p className="text-gray-400 max-w-md mx-auto">
                 {searchTerm 
                   ? `No projects matching "${searchTerm}"`
                   : statusFilter !== 'all'
@@ -457,17 +457,17 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="w-full divide-y divide-gray-800">
+                <thead className="bg-[#111111]">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Creator</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Project</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Creator</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Created</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Status</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-[#1A1A1A] divide-y divide-gray-800">
                   {filteredProjects.map((project) => (
                     <tr key={project._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4">
@@ -593,13 +593,13 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
         </div>
         
         {/* Information Banner */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start space-x-3">
+        <div className="mt-6 bg-[#E8C848]/10 border border-[#E8C848]/20 rounded-lg p-4 flex items-start space-x-3">
           <div className="flex-shrink-0">
-            <Info size={20} className="text-blue-500" />
+            <Info size={20} className="text-[#E8C848]" />
           </div>
           <div>
-            <h4 className="text-sm font-medium text-blue-800">Moderation Guidelines</h4>
-            <p className="text-sm text-blue-600 mt-1">
+            <h4 className="text-sm font-medium text-[#E8C848] font-montserrat">Moderation Guidelines</h4>
+            <p className="text-sm text-gray-300 mt-1">
               Review each project carefully. You can approve, reject, or set projects back to pending status at any time.
               Use the note feature to provide feedback to students about their projects.
             </p>
@@ -610,8 +610,8 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
       {/* Note Modal */}
       {noteModalOpen && selectedProject && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
+          <div className="bg-[#1A1A1A] rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto border border-gray-800">
+            <h2 className="text-lg font-medium text-white mb-4 font-montserrat">
               Send Note to Student
             </h2>
             
@@ -704,13 +704,13 @@ const ProjectManagement = ({ statusFilter: initialStatusFilter = 'all' }) => {
                 <button
                   type="button"
                   onClick={() => setNoteModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-700 rounded-md text-sm font-medium text-gray-300 bg-[#111111] hover:bg-gray-800 transition-colors duration-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-[#111111] bg-[#E8C848] hover:bg-[#E8C848]/90 transition-colors duration-300 focus:outline-none"
                 >
                   <Send className="h-4 w-4 inline-block mr-1" />
                   Send Note

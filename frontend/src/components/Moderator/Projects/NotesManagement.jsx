@@ -31,7 +31,7 @@ const NotesManagement = () => {
   const fetchNotes = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get('http://localhost:4000/api/moderator/notes');
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/notes`);
       
       if (Array.isArray(response.data)) {
         setNotes(response.data);
@@ -111,7 +111,7 @@ const NotesManagement = () => {
   // Update note status
   const updateNoteStatus = async (noteId, newStatus) => {
     try {
-      await axios.put(`http://localhost:4000/api/moderator/notes/${noteId}/status`, {
+      await axios.put(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/notes/${noteId}/status`, {
         status: newStatus
       });
       
@@ -138,7 +138,7 @@ const NotesManagement = () => {
     }
     
     try {
-      await axios.post('http://localhost:4000/api/moderator/notes', {
+      await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/notes`, {
         recipientId: selectedNote.senderId,
         recipientType: selectedNote.senderType,
         subject: `RE: ${selectedNote.subject}`,
@@ -169,13 +169,13 @@ const NotesManagement = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-[#111111] font-inter">
       <div className="max-w-7xl mx-auto">
         {/* Header with back button */}
         <div className="mb-6">
           <button 
             onClick={() => navigate('/moderator/dashboard')}
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+            className="inline-flex items-center text-[#E8C848] hover:text-[#E8C848]/80 transition-colors duration-300"
           >
             <ArrowLeft className="mr-2 h-5 w-5" />
             <span>Back to Dashboard</span>
@@ -185,11 +185,11 @@ const NotesManagement = () => {
         {/* Main heading */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-              <MessageCircle className="mr-2 text-indigo-500" size={24} />
+            <h1 className="text-2xl font-bold text-white flex items-center font-montserrat">
+              <MessageCircle className="mr-2 text-[#E8C848]" size={24} />
               Notes Management
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-gray-400 mt-1">
               Manage communication with students and mentors
             </p>
           </div>
@@ -197,7 +197,7 @@ const NotesManagement = () => {
           <div className="mt-4 md:mt-0 flex items-center gap-3">
             <button 
               onClick={() => fetchNotes()}
-              className="flex items-center gap-1 text-indigo-600 hover:text-indigo-800 px-3 py-1.5 rounded-md bg-indigo-50 hover:bg-indigo-100"
+              className="flex items-center gap-1 text-[#E8C848] hover:text-[#E8C848]/80 px-3 py-1.5 rounded-md bg-[#E8C848]/10 hover:bg-[#E8C848]/20 transition-colors duration-300"
             >
               <RefreshCw size={16} />
               <span>Refresh</span>
@@ -207,7 +207,7 @@ const NotesManagement = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="appearance-none bg-white border border-gray-300 rounded-md pl-10 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                className="appearance-none bg-[#1A1A1A] border border-gray-700 rounded-md pl-10 pr-8 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C848] text-sm text-gray-300"
               >
                 <option value="all">All Status</option>
                 <option value="Unread">Unread</option>
@@ -228,74 +228,74 @@ const NotesManagement = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-2 md:grid-cols-7 gap-4 mb-6">
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="bg-[#1A1A1A] p-4 rounded-lg shadow-sm border border-gray-800">
             <div className="flex justify-between items-center">
               <h3 className="text-xs font-medium text-gray-500">Total</h3>
-              <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center">
-                <MessageCircle size={14} className="text-indigo-600" />
+              <div className="w-7 h-7 rounded-full bg-[#E8C848]/10 flex items-center justify-center">
+                <MessageCircle size={14} className="text-[#E8C848]" />
               </div>
             </div>
-            <p className="text-xl font-semibold text-gray-800 mt-2">{stats.total}</p>
+            <p className="text-xl font-semibold text-gray-300 mt-2">{stats.total}</p>
           </div>
           
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="bg-[#1A1A1A] p-4 rounded-lg shadow-sm border border-gray-800">
             <div className="flex justify-between items-center">
               <h3 className="text-xs font-medium text-gray-500">Unread</h3>
               <div className="w-7 h-7 rounded-full bg-blue-100 flex items-center justify-center">
                 <MessageCircle size={14} className="text-blue-600" />
               </div>
             </div>
-            <p className="text-xl font-semibold text-gray-800 mt-2">{stats.unread}</p>
+            <p className="text-xl font-semibold text-gray-300 mt-2">{stats.unread}</p>
           </div>
           
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="bg-[#1A1A1A] p-4 rounded-lg shadow-sm border border-gray-800">
             <div className="flex justify-between items-center">
               <h3 className="text-xs font-medium text-gray-500">Read</h3>
               <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
                 <CheckCircle size={14} className="text-gray-600" />
               </div>
             </div>
-            <p className="text-xl font-semibold text-gray-800 mt-2">{stats.read}</p>
+            <p className="text-xl font-semibold text-gray-300 mt-2">{stats.read}</p>
           </div>
           
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="bg-[#1A1A1A] p-4 rounded-lg shadow-sm border border-gray-800">
             <div className="flex justify-between items-center">
               <h3 className="text-xs font-medium text-gray-500">Responded</h3>
               <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center">
                 <CheckCircle size={14} className="text-green-600" />
               </div>
             </div>
-            <p className="text-xl font-semibold text-gray-800 mt-2">{stats.responded}</p>
+            <p className="text-xl font-semibold text-gray-300 mt-2">{stats.responded}</p>
           </div>
           
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="bg-[#1A1A1A] p-4 rounded-lg shadow-sm border border-gray-800">
             <div className="flex justify-between items-center">
               <h3 className="text-xs font-medium text-gray-500">Closed</h3>
               <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
                 <XCircle size={14} className="text-gray-600" />
               </div>
             </div>
-            <p className="text-xl font-semibold text-gray-800 mt-2">{stats.closed}</p>
+            <p className="text-xl font-semibold text-gray-300 mt-2">{stats.closed}</p>
           </div>
           
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="bg-[#1A1A1A] p-4 rounded-lg shadow-sm border border-gray-800">
             <div className="flex justify-between items-center">
               <h3 className="text-xs font-medium text-gray-500">Action Needed</h3>
               <div className="w-7 h-7 rounded-full bg-yellow-100 flex items-center justify-center">
                 <AlertCircle size={14} className="text-yellow-600" />
               </div>
             </div>
-            <p className="text-xl font-semibold text-gray-800 mt-2">{stats.actionRequired}</p>
+            <p className="text-xl font-semibold text-gray-300 mt-2">{stats.actionRequired}</p>
           </div>
           
-          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
+          <div className="bg-[#1A1A1A] p-4 rounded-lg shadow-sm border border-gray-800">
             <div className="flex justify-between items-center">
               <h3 className="text-xs font-medium text-gray-500">Overdue</h3>
               <div className="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center">
                 <Clock size={14} className="text-red-600" />
               </div>
             </div>
-            <p className="text-xl font-semibold text-gray-800 mt-2">{stats.overdue}</p>
+            <p className="text-xl font-semibold text-gray-300 mt-2">{stats.overdue}</p>
           </div>
         </div>
 
@@ -307,17 +307,17 @@ const NotesManagement = () => {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="Search notes by subject, content, or recipient..."
-              className="w-full border border-gray-300 rounded-md pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full border border-gray-700 rounded-md pl-10 pr-4 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#1A1A1A] text-gray-300 placeholder-gray-500"
             />
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
           </div>
         </div>
 
         {/* Notes List */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+        <div className="bg-[#1A1A1A] rounded-lg shadow-sm overflow-hidden border border-gray-800">
           {isLoading ? (
             <div className="p-8 text-center">
-              <div className="animate-spin w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+              <div className="animate-spin w-10 h-10 border-4 border-[#E8C848] border-t-transparent rounded-full mx-auto mb-4"></div>
               <p className="text-gray-500">Loading notes...</p>
             </div>
           ) : filteredNotes.length === 0 ? (
@@ -334,8 +334,8 @@ const NotesManagement = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="w-full divide-y divide-gray-700">
+                <thead className="bg-[#1A1A1A]">
                   <tr>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Recipient</th>
@@ -345,9 +345,9 @@ const NotesManagement = () => {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-[#1A1A1A] divide-y divide-gray-700">
                   {filteredNotes.map((note) => (
-                    <tr key={note._id} className={`hover:bg-gray-50 ${
+                    <tr key={note._id} className={`hover:bg-gray-800 ${
                       note.isImportant ? 'bg-red-50' : ''
                     }`}>
                       <td className="px-6 py-4">
@@ -358,7 +358,7 @@ const NotesManagement = () => {
                             </span>
                           )}
                           <div>
-                            <div className="text-sm font-medium text-gray-900">{note.subject}</div>
+                            <div className="text-sm font-medium text-gray-300">{note.subject}</div>
                             <div className="text-sm text-gray-500 mt-1 max-w-md line-clamp-2">
                               {note.content}
                             </div>
@@ -366,7 +366,7 @@ const NotesManagement = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm text-gray-900">
+                        <div className="text-sm text-gray-300">
                           {note.recipientType === 'Student' ? (
                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
                               Student
@@ -431,7 +431,7 @@ const NotesManagement = () => {
                         <div className="flex space-x-2">
                           <button 
                             onClick={() => navigate(`/moderator/note/${note._id}`)}
-                            className="p-1 text-indigo-600 hover:text-indigo-800 rounded-full hover:bg-indigo-50"
+                            className="p-1 text-[#E8C848] hover:text-[#E8C848]/80 rounded-full hover:bg-[#E8C848]/10"
                             title="View Note Details"
                           >
                             <Eye size={18} />
@@ -487,13 +487,13 @@ const NotesManagement = () => {
         </div>
         
         {/* Information Banner */}
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-start space-x-3">
+        <div className="mt-6 bg-[#E8C848]/10 border border-[#E8C848]/20 rounded-lg p-4 flex items-start space-x-3">
           <div className="flex-shrink-0">
-            <Info size={20} className="text-blue-500" />
+            <Info size={20} className="text-[#E8C848]" />
           </div>
           <div>
-            <h4 className="text-sm font-medium text-blue-800">Note Management Guidelines</h4>
-            <p className="text-sm text-blue-600 mt-1">
+            <h4 className="text-sm font-medium text-[#E8C848] font-montserrat">Note Management Guidelines</h4>
+            <p className="text-sm text-gray-300 mt-1">
               Respond to all notes promptly, especially those marked as important. Set appropriate deadlines for responses and follow up 
               if needed. Make sure to address all concerns raised by students and mentors.
             </p>
@@ -504,18 +504,18 @@ const NotesManagement = () => {
       {/* Reply Modal */}
       {replyModalOpen && selectedNote && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
+          <div className="bg-[#1A1A1A] rounded-lg max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto border border-gray-800">
+            <h2 className="text-lg font-medium text-white mb-4 font-montserrat">
               Reply to Note
             </h2>
             
-            <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+            <div className="mb-4 p-4 bg-gray-800 rounded-lg">
               <div className="flex justify-between mb-2">
-                <span className="text-sm font-medium text-gray-600">Original Note</span>
+                <span className="text-sm font-medium text-gray-400">Original Note</span>
                 <span className="text-xs text-gray-500">{formatDate(selectedNote.createdAt)}</span>
               </div>
-              <h3 className="text-sm font-medium mb-1">{selectedNote.subject}</h3>
-              <p className="text-sm text-gray-700">{selectedNote.content}</p>
+              <h3 className="text-sm font-medium mb-1 text-gray-300">{selectedNote.subject}</h3>
+              <p className="text-sm text-gray-400">{selectedNote.content}</p>
               
               <div className="mt-2 text-xs text-gray-500">
                 From: {selectedNote.senderType} ({selectedNote.senderId.substring(0, 8)}...)
@@ -524,14 +524,14 @@ const NotesManagement = () => {
             
             <form onSubmit={sendReply}>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-300 mb-1">
                   Your Reply
                 </label>
                 <textarea
                   value={replyContent}
                   onChange={(e) => setReplyContent(e.target.value)}
                   rows={6}
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  className="w-full border border-gray-700 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#1A1A1A] text-gray-300 placeholder-gray-500"
                   placeholder="Type your response here..."
                   required
                 ></textarea>
@@ -541,13 +541,13 @@ const NotesManagement = () => {
                 <button
                   type="button"
                   onClick={() => setReplyModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-700 rounded-md text-sm font-medium text-gray-300 bg-[#111111] hover:bg-gray-800 transition-colors duration-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-[#111111] bg-[#E8C848] hover:bg-[#E8C848]/90 transition-colors duration-300 focus:outline-none"
                 >
                   <Send className="h-4 w-4 inline-block mr-1" />
                   Send Reply
