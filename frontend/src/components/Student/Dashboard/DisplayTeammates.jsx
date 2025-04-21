@@ -37,7 +37,7 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
   
   // Function to handle opening teammate profile
   const handleViewProfile = (teammateId) => {
-    navigate(`/student/teammate/${teammateId}`);
+    navigate(`/student/teammate/${teammateId.$oid}`);
   };
 
   // Function to handle opening chat
@@ -266,7 +266,7 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
         // Determine which endpoint to use
         let endpoint;
         if (isRecommendations) {
-          endpoint = `http://localhost:4000/api/student/recommended-teammates/${uid}`;
+          endpoint = `http://localhost:8000/api/recommend_students/`;
         } else {
           endpoint = `http://localhost:4000/api/student/teammates/${uid}`;
         }
@@ -275,12 +275,23 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
         if (queryParams.toString()) {
           endpoint += `?${queryParams.toString()}`;
         }
+  
+        let response;
+        if (isRecommendations) {
+          response = await axios.post(endpoint, {
+            userData: userData
+          });
+        } else {
+          response = await axios.get(endpoint);
+        }
         
-        const response = await axios.get(endpoint);
-        console.log(response)
+        console.log(response);
+        
         // Process the response based on its structure
-        if (response.data && response.data.success && Array.isArray(response.data.teammates)) {
+        if (Array.isArray(response.data?.teammates)) {
           setTeammates(response.data.teammates);
+        } else if (Array.isArray(response.data)) {
+          setTeammates(response.data); // Handle case where array is at root
         } else {
           console.warn("Unexpected response format:", response.data);
           setTeammates([]);
@@ -632,186 +643,150 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
       )}
       
       {/* Teammates list - in a row for recommendations, grid for full page */}
-      {filteredTeammates.length > 0 ? (
-        <div className={`${isRecommendations 
-          ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4' 
-          : isFullPage 
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' 
-            : 'grid grid-cols-1 md:grid-cols-2 gap-4'
-        }`}>
-          {filteredTeammates
-            .filter(teammate => {
-              if (purposeFilter === 'all') return true;
-              return teammate.lookingFor?.purpose === purposeFilter;
-            })
-            .slice(0, isRecommendations ? 4 : undefined)
-            .map(teammate => {
-              const purposeDisplay = getPurposeDisplay(teammate.lookingFor?.purpose);
-              const isInvited = hasAnyInvitation(teammate._id);
-              
-              return (
-                <div 
-                  key={teammate._id} 
-                  className="flex flex-col bg-[#121212] rounded-lg border border-gray-800 overflow-hidden h-[300px] hover:shadow-lg cursor-pointer transition-shadow"
-                  onClick={() => handleViewProfile(teammate._id)}
-                >
-                  <div className="p-4 flex items-start space-x-3 flex-1">
-                    <img 
-                      src={teammate.profile_picture || StudentPlaceholder} 
-                      alt={teammate.name} 
-                      className="w-16 h-16 rounded-full object-cover"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/64?text=👤';
-                      }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-white">{teammate.name}</p>
-                      <p className="text-sm text-gray-400 truncate">
-                        {teammate.education?.institution || 'Student'}
-                      </p>
-                      
-                      {/* What they're looking for */}
-                      <div className={`flex items-center ${purposeDisplay.bgColor} ${purposeDisplay.textColor} text-xs px-2 py-0.5 rounded-full mt-2 w-fit`}>
-                        {purposeDisplay.icon}
-                        <span>{purposeDisplay.text}</span>
-                      </div>
+      {teammates.length > 0 ? (
+  <div className={`${isRecommendations 
+    ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3' 
+    : isFullPage 
+      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3' 
+      : 'grid grid-cols-1 md:grid-cols-2 gap-3'
+  }`}>
+    {teammates.map(teammate => {
+      const teammateData = teammate.teammate || teammate;
+      const purpose = teammateData.teammate_search?.purpose || 'Both';
+      
+      const purposeDisplay = purpose === 'Project' 
+        ? { text: 'Project', bgColor: 'bg-indigo-500/10', textColor: 'text-indigo-500', icon: <Code size={10} className="mr-1" /> }
+        : purpose === 'Hackathon'
+          ? { text: 'Hackathon', bgColor: 'bg-purple-500/10', textColor: 'text-purple-500', icon: <Calendar size={10} className="mr-1" /> }
+          : { text: 'Both', bgColor: 'bg-blue-500/10', textColor: 'text-blue-500', icon: <Users size={10} className="mr-1" /> };
 
-                      {/* Additional badges for "Both" type */}
-                      {teammate.lookingFor?.purpose === 'Both' && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          <span className="bg-indigo-500/10 text-indigo-500 text-xs px-2 py-0.5 rounded-full flex items-center">
-                            <Code size={12} className="mr-1" /> Projects
-                          </span>
-                          <span className="bg-purple-500/10 text-purple-500 text-xs px-2 py-0.5 rounded-full flex items-center">
-                            <Calendar size={12} className="mr-1" /> Hackathons
-                          </span>
-                        </div>
-                      )}
-                      
-                      {/* Urgency indicator if they have one */}
-                      {teammate.lookingFor?.urgencyLevel && (
-                        <div className={`flex items-center mt-2 text-xs ${
-                          teammate.lookingFor.urgencyLevel === 'High' 
-                            ? 'text-red-400' 
-                            : teammate.lookingFor.urgencyLevel === 'Medium'
-                              ? 'text-orange-400'
-                              : 'text-blue-400'
-                        }`}>
-                          <Clock size={12} className="mr-1" />
-                          <span>
-                            {teammate.lookingFor.urgencyLevel === 'High' 
-                              ? 'Urgent - needs teammates soon'
-                              : teammate.lookingFor.urgencyLevel === 'Medium'
-                                ? 'Looking for teammates soon'
-                                : 'No rush - open to collaborate'
-                            }
-                          </span>
-                        </div>
-                      )}
-                      
-                      {Array.isArray(teammate.skills) && teammate.skills.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {teammate.skills.slice(0, 3).map((skill, i) => (
-                            <span key={i} className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
-                              {skill}
-                            </span>
-                          ))}
-                          {teammate.skills.length > 3 && (
-                            <span className="text-xs text-gray-400">+{teammate.skills.length - 3} more</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="p-4 border-t border-gray-800 bg-[#121212]">
-                    {/* Desired skills */}
-                    {teammate.lookingFor?.desiredSkills && teammate.lookingFor.desiredSkills.length > 0 && (
-                      <div className="flex items-start mt-1 text-xs text-gray-400 mb-2">
-                        <Award size={12} className="mr-1 mt-0.5 flex-shrink-0" />
-                        <span>
-                          <span className="font-medium">Looking for: </span>
-                          {teammate.lookingFor.desiredSkills.slice(0, 3).join(', ')}
-                          {teammate.lookingFor.desiredSkills.length > 3 && ' + more'}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {/* Location */}
-                    {teammate.location && (
-                      <div className="flex items-center mt-1 text-xs text-gray-400 mb-2">
-                        <MapPin size={12} className="mr-1" />
-                        <span>{typeof teammate.location === 'string' ? teammate.location : `${teammate.location.city || ''} ${teammate.location.country || ''}`}</span>
-                      </div>
-                    )}
-                    
-                    <div className="flex gap-2 mt-2" onClick={e => e.stopPropagation()}>
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleOpenChat(teammate);
-                        }} 
-                        className="bg-gray-800 text-gray-400 px-3 py-1 rounded-lg text-sm flex items-center justify-center hover:bg-gray-700 hover:text-white transition-all duration-300"
-                      >
-                        <MessageCircle size={14} className="mr-1" /> Chat
-                      </button>
-                      
-                      {/* Conditionally render invite button or "Already Invited" label */}
-                      {teamsList.length > 0 && (
-                        isInvited ? (
-                          <button
-                            disabled
-                            className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm flex items-center justify-center cursor-default"
-                          >
-                            <Check size={14} className="mr-1" /> Invited
-                          </button>
-                        ) : (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleOpenInviteModal(teammate);
-                            }}
-                            className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm flex items-center justify-center hover:bg-[#E8C848]/20 transition-all duration-300"
-                          >
-                            <UserPlus size={14} className="mr-1" /> Invite
-                          </button>
-                        )
-                      )}
-                      
-                      <button 
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleViewProfile(teammate._id);
-                        }}
-                        className="bg-[#E8C848]/10 text-[#E8C848] px-3 py-1 rounded-lg text-sm flex-1 hover:bg-[#E8C848]/20 transition-all duration-300"
-                      >
-                        View Profile
-                      </button>
-                    </div>
-                  </div>
+      const isInvited = hasAnyInvitation(teammateData._id);
+      
+      return (
+        <div 
+          key={teammateData._id} 
+          className="flex flex-col bg-[#121212] rounded-lg border border-gray-800 overflow-hidden h-[220px] hover:shadow-lg cursor-pointer transition-shadow text-xs"
+          onClick={() => handleViewProfile(teammateData._id)}
+        >
+          <div className="p-3 flex items-start space-x-2 flex-1">
+            <img 
+              src={teammateData.profile_picture || StudentPlaceholder} 
+              alt={teammateData.name} 
+              className="w-10 h-10 rounded-full object-cover"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'https://via.placeholder.com/40?text=👤';
+              }}
+            />
+            <div className="flex-1 min-w-0 space-y-1">
+              <p className="font-semibold text-white truncate">{teammateData.name}</p>
+              <p className="text-gray-400 truncate">
+                {teammateData.education?.degree || 'Student'} at {teammateData.education?.institution || 'Unknown'}
+              </p>
+              
+              <div className={`flex items-center ${purposeDisplay.bgColor} ${purposeDisplay.textColor} px-2 py-0.5 rounded-full w-fit`}>
+                {purposeDisplay.icon}
+                <span>{purposeDisplay.text}</span>
+              </div>
+
+              {teammate.score && (
+                <div className="flex items-center text-[#E8C848]">
+                  <span className="font-medium">Match: </span>
+                  <span>{Math.round(teammate.score * 100)}%</span>
                 </div>
-              );
-            })}
+              )}
+
+              {Array.isArray(teammateData.skills) && teammateData.skills.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {teammateData.skills.slice(0, 2).map((skill, i) => (
+                    <span key={i} className="bg-[#E8C848]/10 text-[#E8C848] px-1.5 py-0.5 rounded-full">
+                      {skill}
+                    </span>
+                  ))}
+                  {teammateData.skills.length > 2 && (
+                    <span className="text-gray-400">+{teammateData.skills.length - 2}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="p-2 border-t border-gray-800 bg-[#121212]">
+            {teammateData.teammate_search?.desired_skills && teammateData.teammate_search.desired_skills.length > 0 && (
+              <div className="flex items-start text-gray-400 mb-1 truncate">
+                <Award size={10} className="mr-1 mt-0.5 flex-shrink-0" />
+                <span className="truncate">
+                  Needs: {teammateData.teammate_search.desired_skills.slice(0, 2).join(', ')}
+                  {teammateData.teammate_search.desired_skills.length > 2 && '...'}
+                </span>
+              </div>
+            )}
+            
+            <div className="flex gap-1.5" onClick={e => e.stopPropagation()}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenChat(teammateData);
+                }} 
+                className="bg-gray-800 text-gray-400 px-2 py-1 rounded text-xs flex items-center hover:bg-gray-700 hover:text-white transition-all duration-300"
+              >
+                <MessageCircle size={12} className="mr-1" />
+              </button>
+              
+              {teamsList.length > 0 && (
+                isInvited ? (
+                  <button
+                    disabled
+                    className="bg-[#E8C848]/10 text-[#E8C848] px-2 py-1 rounded text-xs flex items-center cursor-default"
+                  >
+                    <Check size={12} className="mr-1" />
+                  </button>
+                ) : (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleOpenInviteModal(teammateData);
+                    }}
+                    className="bg-[#E8C848]/10 text-[#E8C848] px-2 py-1 rounded text-xs flex items-center hover:bg-[#E8C848]/20 transition-all duration-300"
+                  >
+                    <UserPlus size={12} className="mr-1" />
+                  </button>
+                )
+              )}
+              
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewProfile(teammateData._id);
+                }}
+                className="bg-[#E8C848]/10 text-[#E8C848] px-2 py-1 rounded text-xs flex-1 hover:bg-[#E8C848]/20 transition-all duration-300"
+              >
+                Profile
+              </button>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="text-center py-10">
-          <User size={48} className="mx-auto text-gray-800 mb-3" />
-          <h4 className="text-lg font-medium text-gray-400 mb-1">No teammates found</h4>
-          <p className="text-gray-400 text-sm">
-            {isFullPage 
-              ? purposeFilter !== 'all'
-                ? purposeFilter === 'Both'
-                  ? "No one is currently looking for both project and hackathon teammates."
-                  : `No one is currently looking for ${purposeFilter.toLowerCase()} teammates.`
-                : "Try adjusting your search or filter criteria."
-              : "We're adding more teammate suggestions soon."}
-          </p>
-        </div>
-      )}
+      );
+    })}
+  </div>
+) : (
+  <div className="text-center py-10">
+    <User size={48} className="mx-auto text-gray-800 mb-3" />
+    <h4 className="text-lg font-medium text-gray-400 mb-1">No teammates found</h4>
+    <p className="text-gray-400 text-sm">
+      {isFullPage 
+        ? purposeFilter !== 'all'
+          ? purposeFilter === 'Both'
+            ? "No one is currently looking for both project and hackathon teammates."
+            : `No one is currently looking for ${purposeFilter.toLowerCase()} teammates.`
+          : "Try adjusting your search or filter criteria."
+        : "We're adding more teammate suggestions soon."}
+    </p>
+  </div>
+)}
       
       {/* Pagination or more teammates button - only in full page view */}
-      {isFullPage && filteredTeammates.length > 8 && (
+      {isFullPage && teammates.length > 8 && (
         <div className="mt-6 flex justify-center">
           <button className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/20 transition-all duration-300">
             Load More Teammates
