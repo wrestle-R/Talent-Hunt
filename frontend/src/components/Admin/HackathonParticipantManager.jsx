@@ -140,7 +140,7 @@ const HackathonParticipantManager = () => {
   const handleCreateTempTeam = async () => {
     try {
       const response = await axios.post(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/temp-teams`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/temp-teams`,
         {
           teamName,
           leaderId: teamLeader._id,

@@ -87,7 +87,7 @@ const ManageHackathonParticipants = () => {
       }));
       
       await axios.post(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/temp-teams`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/temp-teams`,
         {
           teamName,
           members: memberData,
@@ -123,7 +123,7 @@ const ManageHackathonParticipants = () => {
     try {
       const token = localStorage.getItem('token');
       await axios.delete(
-        `http://localhost:4000/api/admin/hackathons/${hackathonId}/temp-teams/${tempTeamId}`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/temp-teams/${tempTeamId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 

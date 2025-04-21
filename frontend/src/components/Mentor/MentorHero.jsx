@@ -92,7 +92,7 @@ const MentorHero = () => {
       setLoading(true);
       
       // Fetch profile data from API
-      const response = await axios.get(`http://localhost:4000/api/mentor/profile/${uid}`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/profile/${uid}`);
       
       if (response.data) {
         console.log("Raw mentor data:", response.data);
@@ -177,16 +177,16 @@ const MentorHero = () => {
     
     try {
       // Fetch team applications
-      const applicationsResponse = await axios.get(`http://localhost:4000/api/mentor/${mentorId}/applications`);
+      const applicationsResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/${mentorId}/applications`);
       
       // Fetch active mentorships
-      const mentorshipsResponse = await axios.get(`http://localhost:4000/api/mentor/${mentorId}/mentorships`);
+      const mentorshipsResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/${mentorId}/mentorships`);
       
       // Fetch recent conversations
-      const conversationsResponse = await axios.get(`http://localhost:4000/api/mentor/${mentorId}/conversations`);
+      const conversationsResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/${mentorId}/conversations`);
       
       // Fetch upcoming hackathons
-      const hackathonsResponse = await axios.get(`http://localhost:4000/api/hackathons/upcoming`);
+      const hackathonsResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/hackathons/upcoming`);
       
       // Calculate basic stats
       const stats = {
@@ -217,7 +217,7 @@ const MentorHero = () => {
   // Fetch profile completion data from backend
   const fetchProfileCompletion = async (uid) => {
     try {
-      const response = await axios.get(`http://localhost:4000/api/mentor/profile-completion/${uid}`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/profile-completion/${uid}`);
       
       if (response.data) {
         setProfileCompletion(response.data.completionPercentage);

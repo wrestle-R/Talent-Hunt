@@ -30,7 +30,7 @@ const ProjectDetail = () => {
     const fetchProjectData = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(`http://localhost:4000/api/moderator/projects/${projectId}`);
+        const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/projects/${projectId}`);
         setProject(response.data);
         
         // Set initial note subject
@@ -56,7 +56,7 @@ const ProjectDetail = () => {
   const fetchNotes = async () => {
     try {
       setIsNotesLoading(true);
-      const response = await axios.get(`http://localhost:4000/api/moderator/projects/${projectId}/notes`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/projects/${projectId}/notes`);
       setNotes(response.data || []);
     } catch (error) {
       console.error('Error fetching notes:', error);
@@ -68,14 +68,14 @@ const ProjectDetail = () => {
   // Update project status
   const updateProjectStatus = async (status, moderatorNotes = '') => {
     try {
-      await axios.put(`http://localhost:4000/api/moderator/projects/${projectId}`, {
+      await axios.put(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/projects/${projectId}`, {
         status,
         moderatorNotes,
         moderatorId: 'moderator123' // This should be the actual moderator ID
       });
       
       // Refresh project data
-      const response = await axios.get(`http://localhost:4000/api/moderator/projects/${projectId}`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/projects/${projectId}`);
       setProject(response.data);
     } catch (error) {
       console.error('Error updating project status:', error);
@@ -89,7 +89,7 @@ const ProjectDetail = () => {
     if (!reason) return; // User cancelled
     
     try {
-      await axios.delete(`http://localhost:4000/api/moderator/projects/${projectId}`, {
+      await axios.delete(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/projects/${projectId}`, {
         data: {
           reason,
           notifyStudent: true,
@@ -120,7 +120,7 @@ const ProjectDetail = () => {
     if (!project) return;
     
     try {
-      await axios.post('http://localhost:4000/api/moderator/notes', {
+      await axios.post(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/notes`, {
         recipientId: project.creator.studentId,
         recipientType: 'Student',
         subject: noteForm.subject,
@@ -163,20 +163,20 @@ const ProjectDetail = () => {
   // Loading state
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 bg-[#111111] font-inter">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <button 
               onClick={() => navigate('/moderator/projects')}
-              className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+              className="inline-flex items-center text-[#E8C848] hover:text-[#E8C848]/80 transition-colors duration-300"
             >
               <ArrowLeft className="mr-2 h-5 w-5" />
               <span>Back to Projects</span>
             </button>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
-            <div className="animate-spin w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-500">Loading project details...</p>
+          <div className="bg-[#1A1A1A] rounded-lg shadow-sm p-8 text-center border border-gray-800">
+            <div className="animate-spin w-10 h-10 border-4 border-[#E8C848] border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-gray-400">Loading project details...</p>
           </div>
         </div>
       </div>
@@ -186,24 +186,24 @@ const ProjectDetail = () => {
   // Error state
   if (error) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 bg-[#111111] font-inter">
         <div className="max-w-4xl mx-auto">
           <div className="mb-6">
             <button 
               onClick={() => navigate('/moderator/projects')}
-              className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+              className="inline-flex items-center text-[#E8C848] hover:text-[#E8C848]/80 transition-colors duration-300"
             >
               <ArrowLeft className="mr-2 h-5 w-5" />
               <span>Back to Projects</span>
             </button>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-8 text-center">
+          <div className="bg-[#1A1A1A] rounded-lg shadow-sm p-8 text-center border border-gray-800">
             <AlertTriangle size={48} className="mx-auto mb-4 text-red-500" />
-            <h3 className="text-lg font-medium text-gray-700 mb-2">Error Loading Project</h3>
-            <p className="text-gray-500 mb-4">{error}</p>
+            <h3 className="text-lg font-medium text-white mb-2 font-montserrat">Error Loading Project</h3>
+            <p className="text-gray-400 mb-4">{error}</p>
             <button 
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700"
+              className="px-4 py-2 bg-[#E8C848] text-[#111111] rounded-md hover:bg-[#E8C848]/90 transition-colors duration-300"
             >
               <RefreshCw className="inline-block mr-2 h-4 w-4" />
               Retry
@@ -238,13 +238,13 @@ const ProjectDetail = () => {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-[#111111] font-inter">
       <div className="max-w-4xl mx-auto">
         {/* Header with back button */}
         <div className="mb-6">
           <button 
             onClick={() => navigate('/moderator/projects')}
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+            className="inline-flex items-center text-[#E8C848] hover:text-[#E8C848]/80 transition-colors duration-300"
           >
             <ArrowLeft className="mr-2 h-5 w-5" />
             <span>Back to Projects</span>
@@ -252,13 +252,13 @@ const ProjectDetail = () => {
         </div>
         
         {/* Main content */}
-        <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+        <div className="bg-[#1A1A1A] rounded-lg shadow-sm overflow-hidden mb-6 border border-gray-800">
           {/* Project header */}
-          <div className="p-6 border-b border-gray-200">
+          <div className="p-6 border-b border-gray-800">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-800 flex items-center">
-                  <Clipboard className="mr-2 text-indigo-500" size={24} />
+                <h1 className="text-2xl font-bold text-white flex items-center font-montserrat">
+                  <Clipboard className="mr-2 text-[#E8C848]" size={24} />
                   {project.name}
                 </h1>
                 <div className="flex items-center mt-2">
@@ -336,7 +336,7 @@ const ProjectDetail = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {/* Left column - Project info */}
               <div className="md:col-span-2">
-                <h2 className="text-lg font-medium text-gray-900 mb-4">Project Details</h2>
+                <h2 className="text-lg font-medium text-white mb-4 font-montserrat">Project Details</h2>
                 
                 <div className="mb-6">
                   <h3 className="text-sm font-medium text-gray-500 mb-2">Description</h3>
@@ -437,8 +437,8 @@ const ProjectDetail = () => {
               
               {/* Right column - Creator info */}
               <div className="md:col-span-1">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h2 className="text-lg font-medium text-gray-900 mb-4">Creator</h2>
+                <div className="bg-[#111111] p-4 rounded-lg border border-gray-800">
+                  <h2 className="text-lg font-medium text-white mb-4 font-montserrat">Creator</h2>
                   
                   <div className="flex items-center mb-4">
                     <div className="mr-3">
@@ -482,9 +482,9 @@ const ProjectDetail = () => {
                 </div>
                 
                 {/* Notes section */}
-                <div className="mt-6 bg-gray-50 p-4 rounded-lg">
+                <div className="mt-6 bg-[#111111] p-4 rounded-lg border border-gray-800">
                   <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-medium text-gray-900">Recent Notes</h2>
+                    <h2 className="text-lg font-medium text-white">Recent Notes</h2>
                     <button
                       onClick={() => setNoteModalOpen(true)}
                       className="text-indigo-600 text-sm hover:text-indigo-800 flex items-center"
@@ -550,8 +550,8 @@ const ProjectDetail = () => {
       {/* Note Modal */}
       {noteModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-lg font-medium text-gray-900 mb-4">
+          <div className="bg-[#1A1A1A] rounded-lg max-w-md w-full p-6 max-h-[90vh] overflow-y-auto border border-gray-800">
+            <h2 className="text-lg font-medium text-white mb-4 font-montserrat">
               Send Note to Student
             </h2>
             
@@ -644,13 +644,13 @@ const ProjectDetail = () => {
                 <button
                   type="button"
                   onClick={() => setNoteModalOpen(false)}
-                  className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                  className="px-4 py-2 border border-gray-700 rounded-md text-sm font-medium text-gray-300 bg-[#111111] hover:bg-gray-800 transition-colors duration-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  className="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-[#111111] bg-[#E8C848] hover:bg-[#E8C848]/90 transition-colors duration-300 focus:outline-none"
                 >
                   Send Note
                 </button>

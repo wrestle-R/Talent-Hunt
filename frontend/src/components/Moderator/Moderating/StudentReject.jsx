@@ -17,7 +17,7 @@ const StudentReject = () => {
     const fetchRejectedStudents = async () => {
       try {
         setLoading(true);
-        const response = await axios.get('http://localhost:4000/api/admin/students?status=rejected');
+        const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/admin/students?status=rejected`);
         setStudents(response.data.students || []);
       } catch (err) {
         console.error('Error fetching rejected students:', err);
@@ -35,7 +35,7 @@ const StudentReject = () => {
     if (!studentToRestore) return;
     
     try {
-      await axios.put(`http://localhost:4000/api/admin/students/${studentToRestore._id}/restore`);
+      await axios.put(`${import.meta.env.VITE_APP_BASE_URL}/api/admin/students/${studentToRestore._id}/restore`);
       
       // Remove restored student from list
       setStudents(students.filter(student => student._id !== studentToRestore._id));
@@ -67,11 +67,11 @@ const StudentReject = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
+      <div className="flex justify-center items-center h-64 bg-[#111111]">
         <div className="animate-pulse flex flex-col items-center">
-          <div className="h-12 w-12 bg-red-100 rounded-full mb-4"></div>
-          <div className="h-4 w-32 bg-gray-200 rounded mb-2"></div>
-          <div className="h-3 w-24 bg-gray-200 rounded"></div>
+          <div className="h-12 w-12 bg-[#E8C848]/20 rounded-full mb-4"></div>
+          <div className="h-4 w-32 bg-[#1A1A1A] rounded mb-2"></div>
+          <div className="h-3 w-24 bg-[#1A1A1A] rounded"></div>
         </div>
       </div>
     );
@@ -79,8 +79,8 @@ const StudentReject = () => {
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+      <div className="flex justify-center items-center h-64 bg-[#111111]">
+        <div className="bg-[#1A1A1A] border border-red-800 text-red-400 px-4 py-3 rounded-lg">
           <div className="flex items-center mb-2">
             <AlertCircle size={20} className="mr-2" />
             <span className="font-medium">Error</span>
@@ -88,7 +88,7 @@ const StudentReject = () => {
           <p>{error}</p>
           <button 
             onClick={() => window.location.reload()}
-            className="mt-2 bg-white text-red-600 border border-red-600 px-4 py-1 rounded-md text-sm hover:bg-red-50"
+            className="mt-2 bg-[#1A1A1A] text-[#E8C848] border border-[#E8C848] px-4 py-1 rounded-md text-sm hover:bg-[#E8C848]/10 transition-colors duration-300"
           >
             Try Again
           </button>
@@ -98,10 +98,10 @@ const StudentReject = () => {
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-      <div className="p-6 border-b border-gray-200">
-        <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-          <UserX className="text-red-600" />
+    <div className="bg-[#1A1A1A] rounded-xl shadow-lg border border-gray-800">
+      <div className="p-6 border-b border-gray-800">
+        <h2 className="text-xl font-bold text-white flex items-center gap-2 font-montserrat">
+          <UserX className="text-[#E8C848]" />
           Rejected Students ({filteredStudents.length})
         </h2>
         
@@ -112,7 +112,7 @@ const StudentReject = () => {
             <input
               type="text"
               placeholder="Search by name, email, or institution..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+              className="w-full pl-10 pr-4 py-2 border border-gray-700 rounded-lg bg-[#111111] text-gray-300 focus:outline-none focus:ring-2 focus:ring-[#E8C848] focus:border-[#E8C848] transition-colors duration-300"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -327,4 +327,3 @@ const StudentReject = () => {
             };
             
             export default StudentReject;
-            

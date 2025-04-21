@@ -26,12 +26,12 @@ const UserMessages = () => {
         setIsLoading(true);
         
         // Fetch all messages to find user data and contacts
-        const response = await axios.get(`http://localhost:4000/api/moderator/messages/user/${userId}`);
+        const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/user/${userId}`);
         const userMessages = response.data;
         setMessages(userMessages);
         
         // Get all reported messages to find user data
-        const reportedResponse = await axios.get(`http://localhost:4000/api/moderator/messages/reported?status=all`);
+        const reportedResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=all`);
         const reportedMessages = reportedResponse.data;
         
         // Find user data
@@ -217,12 +217,12 @@ const UserMessages = () => {
   
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 bg-[#111111]">
         <div className="max-w-6xl mx-auto">
           <div className="animate-pulse space-y-4">
-            <div className="h-10 bg-gray-200 rounded w-1/4"></div>
-            <div className="h-24 bg-gray-200 rounded"></div>
-            <div className="h-96 bg-gray-200 rounded"></div>
+            <div className="h-10 bg-[#1A1A1A] rounded w-1/4"></div>
+            <div className="h-24 bg-[#1A1A1A] rounded"></div>
+            <div className="h-96 bg-[#1A1A1A] rounded"></div>
           </div>
         </div>
       </div>
@@ -230,13 +230,13 @@ const UserMessages = () => {
   }
   
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-[#111111] font-inter">
       <div className="max-w-6xl mx-auto">
         {/* Header with back button */}
         <div className="mb-6">
           <button 
             onClick={() => navigate('/moderator/messages')}
-            className="inline-flex items-center text-indigo-600 hover:text-indigo-800"
+            className="inline-flex items-center text-[#E8C848] hover:text-[#E8C848]/80 transition-colors duration-300"
           >
             <ArrowLeft className="mr-2 h-5 w-5" />
             <span>Back to Messages</span>
@@ -247,11 +247,11 @@ const UserMessages = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Sidebar with user info and contacts */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-6">
+            <div className="bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800 overflow-hidden mb-6">
               {/* User Info */}
-              <div className="p-6 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
-                  <User className="mr-2 text-indigo-500" size={20} />
+              <div className="p-6 border-b border-gray-800">
+                <h2 className="text-lg font-medium text-white mb-4 flex items-center font-montserrat">
+                  <User className="mr-2 text-[#E8C848]" size={20} />
                   User Profile
                 </h2>
                 
@@ -266,10 +266,10 @@ const UserMessages = () => {
                     }}
                   />
                   <div>
-                    <h3 className="text-lg font-medium text-gray-900">
+                    <h3 className="text-lg font-medium text-white">
                       {userData?.name || 'Unknown User'}
                     </h3>
-                    <p className="text-sm text-gray-500 flex items-center">
+                    <p className="text-sm text-gray-400 flex items-center">
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         userData?.type === 'student' 
                           ? 'bg-emerald-100 text-emerald-800' 
@@ -288,31 +288,31 @@ const UserMessages = () => {
                 </div>
                 
                 {userData?.email && (
-                  <div className="flex items-center text-sm text-gray-500 mb-2">
+                  <div className="flex items-center text-sm text-gray-400 mb-2">
                     <Mail className="mr-2 h-4 w-4 text-gray-400" />
                     <span>{userData.email}</span>
                   </div>
                 )}
                 
                 <div className="mt-4 grid grid-cols-2 gap-4 text-center">
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-xl font-medium text-gray-900">
+                  <div className="bg-[#111111] rounded-lg p-3">
+                    <div className="text-xl font-medium text-white">
                       {messages.filter(m => m.senderId === userId).length}
                     </div>
-                    <div className="text-xs text-gray-500">Sent</div>
+                    <div className="text-xs text-gray-400">Sent</div>
                   </div>
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <div className="text-xl font-medium text-gray-900">
+                  <div className="bg-[#111111] rounded-lg p-3">
+                    <div className="text-xl font-medium text-white">
                       {messages.filter(m => m.receiverId === userId).length}
                     </div>
-                    <div className="text-xs text-gray-500">Received</div>
+                    <div className="text-xs text-gray-400">Received</div>
                   </div>
                 </div>
               </div>
               
               {/* User Contacts */}
               <div className="p-4">
-                <h3 className="text-sm font-medium text-gray-500 mb-3 flex items-center">
+                <h3 className="text-sm font-medium text-gray-400 mb-3 flex items-center">
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Conversations With
                 </h3>
@@ -327,7 +327,7 @@ const UserMessages = () => {
                       <div 
                         key={contact._id}
                         onClick={() => navigate(`/moderator/conversation/${userId}/${contact._id}`)}
-                        className="flex items-center p-2 hover:bg-gray-50 rounded-lg cursor-pointer"
+                        className="flex items-center p-2 hover:bg-[#111111] rounded-lg cursor-pointer transition-colors duration-200"
                       >
                         <div className="relative">
                           <img 
@@ -340,7 +340,7 @@ const UserMessages = () => {
                             }}
                           />
                           {contact.type && (
-                            <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-2 ring-white ${
+                            <span className={`absolute bottom-0 right-0 h-3 w-3 rounded-full ring-2 ring-[#1A1A1A] ${
                               contact.type === 'student' 
                                 ? 'bg-emerald-400' 
                                 : contact.type === 'mentor'
@@ -350,8 +350,8 @@ const UserMessages = () => {
                           )}
                         </div>
                         <div className="ml-3">
-                          <p className="text-sm font-medium text-gray-900">{contact.name}</p>
-                          <p className="text-xs text-gray-500">
+                          <p className="text-sm font-medium text-white">{contact.name}</p>
+                          <p className="text-xs text-gray-400">
                             {contact.messageCount} messages · Last: {new Date(contact.lastMessageDate).toLocaleDateString()}
                           </p>
                         </div>
@@ -362,27 +362,27 @@ const UserMessages = () => {
               </div>
             </div>
             
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="p-4 flex justify-between items-center border-b border-gray-200">
-                <h3 className="text-sm font-medium text-gray-500">Message Statistics</h3>
+            <div className="bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800 overflow-hidden">
+              <div className="p-4 flex justify-between items-center border-b border-gray-800">
+                <h3 className="text-sm font-medium text-gray-400">Message Statistics</h3>
               </div>
               <div className="p-4">
                 <div className="space-y-4">
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-500">Total Messages</span>
-                      <span className="font-medium text-gray-900">{messages.length}</span>
+                      <span className="text-gray-400">Total Messages</span>
+                      <span className="font-medium text-white">{messages.length}</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div className="bg-indigo-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                    <div className="w-full bg-gray-700 rounded-full h-2">
+                      <div className="bg-[#E8C848] h-2 rounded-full" style={{ width: '100%' }}></div>
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-500">Reported Messages</span>
-                      <span className="font-medium text-gray-900">{messages.filter(m => m.isReported).length}</span>
+                      <span className="text-gray-400">Reported Messages</span>
+                      <span className="font-medium text-white">{messages.filter(m => m.isReported).length}</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-700 rounded-full h-2">
                       <div 
                         className="bg-red-500 h-2 rounded-full" 
                         style={{ width: `${(messages.filter(m => m.isReported).length / messages.length) * 100}%` }}
@@ -391,10 +391,10 @@ const UserMessages = () => {
                   </div>
                   <div>
                     <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-500">Sent Messages</span>
-                      <span className="font-medium text-gray-900">{messages.filter(m => m.senderId === userId).length}</span>
+                      <span className="text-gray-400">Sent Messages</span>
+                      <span className="font-medium text-white">{messages.filter(m => m.senderId === userId).length}</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-700 rounded-full h-2">
                       <div 
                         className="bg-blue-500 h-2 rounded-full" 
                         style={{ width: `${(messages.filter(m => m.senderId === userId).length / messages.length) * 100}%` }}
@@ -406,7 +406,7 @@ const UserMessages = () => {
                 <div className="mt-6">
                   <button
                     onClick={exportMessages}
-                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
+                    className="w-full flex items-center justify-center px-4 py-2 border border-gray-700 rounded-md shadow-sm text-sm font-medium text-white bg-[#111111] hover:bg-gray-700 transition-colors duration-200"
                   >
                     <Download className="mr-2 h-4 w-4" />
                     Export Messages
@@ -418,11 +418,11 @@ const UserMessages = () => {
           
           {/* Message List */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-              <div className="p-4 border-b border-gray-200">
+            <div className="bg-[#1A1A1A] rounded-lg shadow-lg border border-gray-800 overflow-hidden">
+              <div className="p-4 border-b border-gray-800">
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <h2 className="text-lg font-medium text-gray-900 flex items-center">
-                    <MessageSquare className="mr-2 text-indigo-500" size={20} />
+                  <h2 className="text-lg font-medium text-white flex items-center">
+                    <MessageSquare className="mr-2 text-[#E8C848]" size={20} />
                     Message History
                   </h2>
                   
@@ -434,7 +434,7 @@ const UserMessages = () => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                         placeholder="Search messages..."
-                        className="border border-gray-300 rounded-md pl-9 pr-4 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        className="border border-gray-700 rounded-md pl-9 pr-4 py-2 text-sm w-full focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#111111] text-white placeholder-gray-400"
                       />
                       <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     </div>
@@ -445,7 +445,7 @@ const UserMessages = () => {
                       className={`inline-flex items-center px-3 py-2 border rounded-md text-sm font-medium ${
                         filterReported
                           ? 'bg-red-50 text-red-700 border-red-300'
-                          : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                          : 'bg-[#111111] text-gray-400 border-gray-700 hover:bg-gray-700 transition-colors duration-200'
                       }`}
                     >
                       <Flag className={`mr-2 h-4 w-4 ${filterReported ? 'text-red-500' : 'text-gray-400'}`} />
@@ -455,7 +455,7 @@ const UserMessages = () => {
                     {/* Sort Direction */}
                     <button
                       onClick={toggleSortDirection}
-                      className="inline-flex items-center px-3 py-2 border border-gray-300 bg-white rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+                      className="inline-flex items-center px-3 py-2 border border-gray-700 bg-[#111111] rounded-md text-sm font-medium text-gray-400 hover:bg-gray-700 transition-colors duration-200"
                     >
                       <Calendar className="mr-2 h-4 w-4 text-gray-400" />
                       {sortDirection === 'desc' ? 'Newest First' : 'Oldest First'}
@@ -466,9 +466,9 @@ const UserMessages = () => {
               
               {filteredMessages.length === 0 ? (
                 <div className="p-8 text-center">
-                  <AlertCircle size={48} className="mx-auto mb-4 text-gray-300" />
-                  <h3 className="text-lg font-medium text-gray-700 mb-2">No messages found</h3>
-                  <p className="text-gray-500 max-w-md mx-auto">
+                  <AlertCircle size={48} className="mx-auto mb-4 text-gray-700" />
+                  <h3 className="text-lg font-medium text-white mb-2">No messages found</h3>
+                  <p className="text-gray-400 max-w-md mx-auto">
                     {searchTerm 
                       ? `No messages matching "${searchTerm}"`
                       : filterReported
@@ -477,19 +477,19 @@ const UserMessages = () => {
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-gray-200">
+                <div className="divide-y divide-gray-800">
                   {filteredMessages.map((message) => {
                     const isSender = message.senderId === userId;
                     return (
-                      <div key={message._id} className={`p-4 hover:bg-gray-50 ${message.isReported ? 'bg-red-50' : ''}`}>
+                      <div key={message._id} className={`p-4 hover:bg-[#111111] ${message.isReported ? 'bg-red-50' : ''}`}>
                         <div className="flex items-start">
                           <div className={`flex-shrink-0 ${isSender ? 'mr-4' : 'ml-auto order-last mr-0'}`}>
                             {isSender ? (
-                              <div className="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500">
+                              <div className="h-10 w-10 rounded-full bg-[#E8C848]/20 flex items-center justify-center text-[#E8C848]">
                                 <User size={20} />
                               </div>
                             ) : (
-                              <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center text-gray-500">
+                              <div className="h-10 w-10 rounded-full bg-gray-700 flex items-center justify-center text-gray-400">
                                 <User size={20} />
                               </div>
                             )}
@@ -497,10 +497,10 @@ const UserMessages = () => {
                           
                           <div className={`flex-grow ${isSender ? '' : 'text-right pr-4'}`}>
                             <div className="flex items-center mb-1">
-                              <span className="text-sm font-medium text-gray-900">
+                              <span className="text-sm font-medium text-white">
                                 {isSender ? userData?.name || 'This User' : 'To: Contact'}
                               </span>
-                              <span className="ml-2 text-xs text-gray-500">
+                              <span className="ml-2 text-xs text-gray-400">
                                 {formatDateTime(message.createdAt)}
                               </span>
                               
@@ -512,7 +512,7 @@ const UserMessages = () => {
                               )}
                             </div>
                             
-                            <div className="text-sm text-gray-500 mb-1">
+                            <div className="text-sm text-gray-400 mb-1">
                               {isSender 
                                 ? `To: ${message.receiverId.substring(0, 8)}...` 
                                 : `From: ${message.senderId.substring(0, 8)}...`}
@@ -520,8 +520,8 @@ const UserMessages = () => {
                             
                             <div className={`inline-block px-4 py-2 rounded-lg max-w-lg text-sm ${
                               isSender 
-                                ? 'bg-indigo-100 text-indigo-800' 
-                                : 'bg-gray-100 text-gray-800'
+                                ? 'bg-[#E8C848]/20 text-[#E8C848]' 
+                                : 'bg-gray-700 text-gray-400'
                             }`}>
                               {typeof message.message === 'string' 
                                 ? highlightSearchTerm(message.message)
@@ -536,27 +536,27 @@ const UserMessages = () => {
                                 </div>
                                 <div className="grid grid-cols-2 gap-2 text-xs">
                                   <div>
-                                    <span className="text-gray-500">Reason:</span>{' '}
+                                    <span className="text-gray-400">Reason:</span>{' '}
                                     <span className="font-medium capitalize">{message.reportDetails.reason.replace(/_/g, ' ')}</span>
                                   </div>
                                   <div>
-                                    <span className="text-gray-500">Status:</span>{' '}
+                                    <span className="text-gray-400">Status:</span>{' '}
                                     <span className="font-medium capitalize">{message.reportDetails.status.replace(/_/g, ' ')}</span>
                                   </div>
                                   <div>
-                                    <span className="text-gray-500">Reported On:</span>{' '}
+                                    <span className="text-gray-400">Reported On:</span>{' '}
                                     <span>{new Date(message.reportDetails.reportedAt).toLocaleDateString()}</span>
                                   </div>
                                   {message.reportDetails.reviewedAt && (
                                     <div>
-                                      <span className="text-gray-500">Reviewed On:</span>{' '}
+                                      <span className="text-gray-400">Reviewed On:</span>{' '}
                                       <span>{new Date(message.reportDetails.reviewedAt).toLocaleDateString()}</span>
                                     </div>
                                   )}
                                 </div>
                                 {message.reportDetails.additionalInfo && (
                                   <div className="mt-1 text-xs">
-                                    <span className="text-gray-500">Additional Info:</span>{' '}
+                                    <span className="text-gray-400">Additional Info:</span>{' '}
                                     <span className="italic">"{message.reportDetails.additionalInfo}"</span>
                                   </div>
                                 )}
@@ -566,7 +566,7 @@ const UserMessages = () => {
                             <div className="mt-2">
                               <button
                                 onClick={() => navigate(`/moderator/conversation/${message.senderId}/${message.receiverId}`)}
-                                className="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-800"
+                                className="inline-flex items-center text-xs text-[#E8C848] hover:text-[#E8C848]/80 transition-colors duration-200"
                               >
                                 <MessageSquare className="mr-1 h-3 w-3" />
                                 View Conversation
@@ -582,18 +582,18 @@ const UserMessages = () => {
               
               {/* Pagination placeholder */}
               {filteredMessages.length > 0 && (
-                <div className="px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
+                <div className="px-4 py-3 flex items-center justify-between border-t border-gray-800 sm:px-6">
                   <div className="flex-1 flex justify-between sm:hidden">
-                    <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <button className="relative inline-flex items-center px-4 py-2 border border-gray-700 text-sm font-medium rounded-md text-gray-400 bg-[#111111] hover:bg-gray-700 transition-colors duration-200">
                       Previous
                     </button>
-                    <button className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <button className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-700 text-sm font-medium rounded-md text-gray-400 bg-[#111111] hover:bg-gray-700 transition-colors duration-200">
                       Next
                     </button>
                   </div>
                   <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-sm text-gray-700">
+                      <p className="text-sm text-gray-400">
                         Showing{' '}
                         <span className="font-medium">1</span>
                         {' '}to{' '}
@@ -605,14 +605,14 @@ const UserMessages = () => {
                     </div>
                     <div>
                       <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                        <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <button className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-700 bg-[#111111] text-sm font-medium text-gray-400 hover:bg-gray-700 transition-colors duration-200">
                           <span className="sr-only">Previous</span>
                           <ChevronDown className="h-5 w-5 rotate-90" />
                         </button>
-                        <button className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                        <button className="relative inline-flex items-center px-4 py-2 border border-gray-700 bg-[#111111] text-sm font-medium text-gray-400 hover:bg-gray-700 transition-colors duration-200">
                           1
                         </button>
-                        <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                        <button className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-700 bg-[#111111] text-sm font-medium text-gray-400 hover:bg-gray-700 transition-colors duration-200">
                           <span className="sr-only">Next</span>
                           <ChevronDown className="h-5 w-5 -rotate-90" />
                         </button>
