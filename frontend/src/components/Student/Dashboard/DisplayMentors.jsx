@@ -334,7 +334,10 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
         <div 
           key={mentorId} 
           className="flex flex-col bg-[#121212] rounded-lg border border-gray-800 overflow-hidden h-[220px] hover:shadow-lg cursor-pointer transition-shadow text-xs"
-          onClick={() => handleViewProfile(mentorId)}
+          onClick={() => {
+            console.log('Mentor clicked:', mentor);
+            handleViewProfile('68066ed669957410d3f56074');
+          }}
         >
           <div className="p-3 flex items-start space-x-2 flex-1">
             <img 
@@ -431,7 +434,7 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
               <button 
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleViewProfile(mentorId);
+                  handleViewProfile('68066ed669957410d3f56074');
                 }}
                 className="bg-[#E8C848]/10 text-[#E8C848] px-2 py-1 rounded text-xs flex-1 hover:bg-[#E8C848]/20 transition-all duration-300"
               >

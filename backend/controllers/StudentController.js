@@ -942,86 +942,20 @@ const getAllTeammates = async (req, res) => {
       goals: 1
     });
 
-    // Filter students by profile completion percentage
-    const eligibleTeammates = [];
-
-    for (const teammate of potentialTeammates) {
-      // Define the specific fields to check with equal weight
-      const fields = [
-        // Basic information
-        { name: 'name', check: () => !!teammate.name },
-        { name: 'email', check: () => !!teammate.email },
-        { name: 'phone', check: () => !!teammate.phone },
-        { name: 'profile_picture', check: () => !!teammate.profile_picture },
-        
-        // Location
-        { name: 'location', check: () => !!teammate.location?.city || !!teammate.location?.country },
-        
-        // Education
-        { name: 'education', check: () => !!teammate.education?.institution || !!teammate.education?.degree },
-        
-        // Skills & Interests
-        { name: 'skills', check: () => Array.isArray(teammate.skills) && teammate.skills.length > 0 },
-        { name: 'interests', check: () => Array.isArray(teammate.interests) && teammate.interests.length > 0 },
-        
-        // Social Links
-        { name: 'social_links', check: () => 
-          !!teammate.social_links?.github || 
-          !!teammate.social_links?.linkedin || 
-          !!teammate.social_links?.portfolio 
-        },
-        
-        // Mentorship
-        { name: 'mentorship_interests', check: () => 
-          teammate.mentorship_interests?.seeking_mentor !== undefined &&
-          (
-            !teammate.mentorship_interests.seeking_mentor || 
-            (teammate.mentorship_interests.seeking_mentor && 
-             Array.isArray(teammate.mentorship_interests.mentor_topics) && 
-             teammate.mentorship_interests.mentor_topics.length > 0)
-          )
-        },
-        
-        // Working Hours
-        { name: 'preferred_working_hours', check: () => 
-          !!teammate.preferred_working_hours?.start_time && 
-          !!teammate.preferred_working_hours?.end_time 
-        },
-        
-        // Goals
-        { name: 'goals', check: () => Array.isArray(teammate.goals) && teammate.goals.length > 0 }
-      ];
-
-      // Calculate completion percentage
-      let completedFields = 0;
-      fields.forEach(field => {
-        if (field.check()) {
-          completedFields++;
-        }
-      });
-
-      const completionPercentage = Math.round((completedFields / fields.length) * 100);
-
-      // Only include if profile completion is at least 75%
-      if (completionPercentage >= 75) {
-        // Remove fields used only for calculation before sending to client
-        const cleanedTeammate = {
-          _id: teammate._id,
-          firebaseUID: teammate.firebaseUID,
-          name: teammate.name,
-          email: teammate.email,
-          profile_picture: teammate.profile_picture,
-          education: teammate.education,
-          skills: teammate.skills,
-          interests: teammate.interests,
-          location: teammate.location,
-          projects: teammate.projects,
-          bio: teammate.bio
-        };
-        
-        eligibleTeammates.push(cleanedTeammate);
-      }
-    }
+    // Remove profile completion percentage validation, just return all teammates
+    const eligibleTeammates = potentialTeammates.map(teammate => ({
+      _id: teammate._id,
+      firebaseUID: teammate.firebaseUID,
+      name: teammate.name,
+      email: teammate.email,
+      profile_picture: teammate.profile_picture,
+      education: teammate.education,
+      skills: teammate.skills,
+      interests: teammate.interests,
+      location: teammate.location,
+      projects: teammate.projects,
+      bio: teammate.bio
+    }));
 
     res.status(200).json({
       success: true,
@@ -1873,7 +1807,7 @@ const registerForHackathon = async (req, res) => {
     }
 
     // Find hackathon and populate necessary fields
-    const hackathonQuery = Hackathon.findById(hackathonId)
+    const hackathon = await Hackathon.findById(hackathonId)
       .populate({
         path: 'teamApplicants.team',
         populate: {
@@ -1882,14 +1816,8 @@ const registerForHackathon = async (req, res) => {
         },
       })
       .populate('individualApplicants.student')
-      .populate('registeredTeams');
-
-    // Conditionally populate `registeredStudents` only if it exists
-    if (Hackathon.schema.paths.registeredStudents) {
-      hackathonQuery.populate('registeredStudents');
-    }
-
-    const hackathon = await hackathonQuery.exec();
+      .populate('registeredTeams')
+      .exec();
 
     if (!hackathon) {
       return res.status(404).json({
@@ -1919,15 +1847,11 @@ const registerForHackathon = async (req, res) => {
     const isStudentRegistered = (studentId) => {
       return (
         hackathon.individualApplicants.some(
-          (app) => app.student._id.toString() === studentId.toString()
+          (app) => app.student && app.student._id && app.student._id.toString() === studentId.toString()
         ) ||
         hackathon.teamApplicants.some((app) =>
-          app.members.some((member) => member.toString() === studentId.toString())
-        ) ||
-        (hackathon.registeredStudents &&
-          hackathon.registeredStudents.some(
-            (regStudent) => regStudent.toString() === studentId.toString()
-          ))
+          app.members.some((member) => member && member.toString() === studentId.toString())
+        )
       );
     };
 
