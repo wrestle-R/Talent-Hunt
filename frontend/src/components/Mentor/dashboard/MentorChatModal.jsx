@@ -31,7 +31,16 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
   // Initialize socket connection once
   useEffect(() => {
     if (!socket) {
-      socket = io(import.meta.env.VITE_APP_BASE_URL);
+      const SOCKET_URL = import.meta.env.VITE_APP_BASE_URL || 'http://localhost:4000';
+      
+      // Configure socket with more options for better reliability
+      socket = io(SOCKET_URL, {
+        reconnectionAttempts: 5,
+        reconnectionDelay: 1000,
+        timeout: 10000,
+        transports: ['websocket', 'polling'], // Try WebSocket first, then fall back to polling
+        forceNew: false
+      });
       
       socket.on('connect', () => {
         console.log('Connected to socket server');
@@ -40,6 +49,15 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
       
       socket.on('connect_error', (error) => {
         console.error('Socket connection error:', error);
+        setSocketConnected(false);
+        
+        // Disable chat functionality gracefully instead of showing errors
+        // toast.error("Chat service is currently unavailable. Please try again later.");
+      });
+      
+      // Add a disconnect handler
+      socket.on('disconnect', (reason) => {
+        console.log('Socket disconnected:', reason);
         setSocketConnected(false);
       });
     }
@@ -257,7 +275,7 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
 
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!message.trim() || !socketConnected) return;
+    if (!message.trim()) return;
 
     // Extract proper IDs
     const mentorId = getUserId(mentorData);
@@ -268,30 +286,52 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
       return;
     }
 
-    console.log("Sending message:", {
+    // Create message object
+    const messageObj = {
       senderId: mentorId,
       receiverId: studentId,
       message: message.trim()
-    });
+    };
 
-    // Send message through socket
-    socket.emit('sendMessage', {
-      senderId: mentorId,
-      receiverId: studentId,
-      message: message.trim()
-    });
-    
-    // Add message to local state immediately for instant feedback
+    console.log("Sending message:", messageObj);
+
+    // Add temporary message to UI immediately
     const tempMessage = {
       _id: `temp-${Date.now()}`,
-      senderId: mentorId,
-      receiverId: studentId,
-      message: message.trim(),
+      ...messageObj,
       createdAt: new Date().toISOString(),
-      temp: true // Flag to identify temporary messages
+      temp: true, // Flag to identify temporary messages
+      pending: !socketConnected // Mark as pending if socket is disconnected
     };
     
     addMessageSafely(tempMessage);
+    
+    // Try to send message through socket if connected
+    if (socketConnected) {
+      socket.emit('sendMessage', messageObj);
+    } else {
+      // Fallback to REST API if socket is not connected
+      axios.post(`${import.meta.env.VITE_APP_BASE_URL || 'http://localhost:4000'}/api/chat/messages`, messageObj)
+        .then(response => {
+          console.log("Message sent via REST API:", response.data);
+          // Replace the temporary message with the real one
+          if (response.data._id) {
+            setMessages(prev => prev.map(msg => 
+              (msg._id === tempMessage._id) ? { ...response.data, temp: false, pending: false } : msg
+            ));
+            // Add to processed IDs
+            processedMessageIds.current.add(response.data._id);
+          }
+        })
+        .catch(error => {
+          console.error("Error sending message via REST API:", error);
+          toast.error("Failed to send message. Please try again.");
+          // Mark message as failed
+          setMessages(prev => prev.map(msg => 
+            (msg._id === tempMessage._id) ? { ...msg, failed: true, pending: false } : msg
+          ));
+        });
+    }
     
     // Clear input
     setMessage('');
@@ -299,10 +339,12 @@ const MentorChatModal = ({ isOpen, onClose, student, mentorData }) => {
     // Clear typing timeout and indicator
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
-      socket.emit('stopTyping', {
-        senderId: mentorId,
-        receiverId: studentId
-      });
+      if (socketConnected) {
+        socket.emit('stopTyping', {
+          senderId: mentorId,
+          receiverId: studentId
+        });
+      }
     }
   };
 

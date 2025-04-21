@@ -87,12 +87,15 @@ const MentorHero = () => {
     return () => unsubscribe();
   }, [navigate]);
 
+  // Replace Vite environment variable with direct localhost URL
+  const API_BASE_URL = "http://localhost:4000";
+
   const fetchMentorProfile = async (uid) => {
     try {
       setLoading(true);
       
-      // Fetch profile data from API
-      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/profile/${uid}`);
+      // Fetch profile data from API using direct localhost URL
+      const response = await axios.get(`${API_BASE_URL}/api/mentor/profile/${uid}`);
       
       if (response.data) {
         console.log("Raw mentor data:", response.data);
@@ -176,36 +179,60 @@ const MentorHero = () => {
     if (!mentorId) return;
     
     try {
-      // Fetch team applications
-      const applicationsResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/${mentorId}/applications`);
+      // Use try/catch for individual requests to prevent one failure from stopping all data fetching
+      let mentorships = [];
+      let applications = [];
+      let conversations = [];
+      let hackathons = [];
       
-      // Fetch active mentorships
-      const mentorshipsResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/${mentorId}/mentorships`);
+      try {
+        const mentorshipsResponse = await axios.get(`${API_BASE_URL}/api/mentor/active-mentorships/${mentorId}`);
+        mentorships = Array.isArray(mentorshipsResponse.data) ? mentorshipsResponse.data : [];
+        console.log("Successfully fetched mentorships:", mentorships);
+      } catch (error) {
+        console.warn("Failed to fetch mentorships:", error.message);
+      }
       
-      // Fetch recent conversations
-      const conversationsResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/${mentorId}/conversations`);
+      try {
+        const applicationsResponse = await axios.get(`${API_BASE_URL}/api/mentor/team-applications/${mentorId}`);
+        applications = applicationsResponse.data?.applications || [];
+        console.log("Successfully fetched applications:", applications);
+      } catch (error) {
+        console.warn("Failed to fetch applications:", error.message);
+      }
       
-      // Fetch upcoming hackathons
-      const hackathonsResponse = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/hackathons/upcoming`);
+      try {
+        const conversationsResponse = await axios.get(`${API_BASE_URL}/api/mentor/conversations/${mentorId}`);
+        conversations = Array.isArray(conversationsResponse.data) ? conversationsResponse.data : [];
+        console.log("Successfully fetched conversations:", conversations);
+      } catch (error) {
+        console.warn("Failed to fetch conversations:", error.message);
+      }
+      
+      try {
+        const hackathonsResponse = await axios.get(`${API_BASE_URL}/api/student/hackathons/upcoming`);
+        hackathons = hackathonsResponse.data?.hackathons || [];
+        console.log("Successfully fetched hackathons:", hackathons);
+      } catch (error) {
+        console.warn("Failed to fetch hackathons:", error.message);
+      }
       
       // Calculate basic stats
       const stats = {
-        studentsReached: mentorshipsResponse.data ? 
-          mentorshipsResponse.data.reduce((total, team) => total + team.members.length, 0) : 0,
-        activeProjects: mentorshipsResponse.data ? 
-          mentorshipsResponse.data.reduce((total, team) => total + (team.projectsCount || 0), 0) : 0,
-        mentorshipHours: mentorshipsResponse.data ? mentorshipsResponse.data.length * 5 : 0, // Estimate 5 hours per team
+        studentsReached: mentorships.reduce((total, team) => total + (team.members?.length || 0), 0),
+        activeProjects: mentorships.reduce((total, team) => total + (team.projectsCount || 0), 0),
+        mentorshipHours: mentorships.length * 5, // Estimate 5 hours per team
         completedMentorships: 0 // This would need a separate endpoint to track completed mentorships
       };
       
       // Update dashboard data state
       setDashboardData({
         stats,
-        applications: applicationsResponse.data || [],
-        mentorships: mentorshipsResponse.data || [],
-        conversations: conversationsResponse.data || [],
+        applications,
+        mentorships,
+        conversations,
         reachouts: [], // This would need a separate API endpoint
-        upcomingHackathons: hackathonsResponse.data || [],
+        upcomingHackathons: hackathons,
         upcomingSessions: [] // This would need a separate API endpoint
       });
       
@@ -217,7 +244,8 @@ const MentorHero = () => {
   // Fetch profile completion data from backend
   const fetchProfileCompletion = async (uid) => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/profile-completion/${uid}`);
+      // Update API call to use direct localhost URL
+      const response = await axios.get(`${API_BASE_URL}/api/mentor/profile-completion/${uid}`);
       
       if (response.data) {
         setProfileCompletion(response.data.completionPercentage);

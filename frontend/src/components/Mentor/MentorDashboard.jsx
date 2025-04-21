@@ -13,6 +13,9 @@ import { toast } from 'react-hot-toast';
 import StudentPlaceholder from '../../public/student_placeholder.png';
 import MentorPlaceholder from '../../public/mentor_placeholder.png';
 
+// Define a consistent API base URL
+const API_BASE_URL = "http://localhost:4000";
+
 const MentorDashboard = ({ userData, refreshUserData }) => {
   // States
   const [conversations, setConversations] = useState([]);
@@ -68,6 +71,7 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
     fetchActiveMentorships();
     fetchTeamApplications();
     fetchConversations();
+    fetchHackathons(); // Add this line
   };
 
   // Fetch active mentorships
@@ -79,9 +83,18 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
     
     try {
       setMentorshipLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/active-mentorships/${userData._id}`);
+      const response = await axios.get(`${API_BASE_URL}/api/mentor/active-mentorships/${userData._id}`);
       console.log("Mentorships data:", response.data);
-      setActiveMentorships(Array.isArray(response.data) ? response.data : []);
+      
+      // Handle different response formats
+      if (Array.isArray(response.data)) {
+        setActiveMentorships(response.data);
+      } else if (response.data && Array.isArray(response.data.mentorships)) {
+        setActiveMentorships(response.data.mentorships);
+      } else {
+        console.warn("Unexpected mentorships data format:", response.data);
+        setActiveMentorships([]);
+      }
     } catch (error) {
       console.error("Error fetching active mentorships:", error);
       setActiveMentorships([]);
@@ -99,9 +112,18 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
     
     try {
       setApplicationsLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team-applications/${userData._id}`);
+      const response = await axios.get(`${API_BASE_URL}/api/mentor/team-applications/${userData._id}`);
       console.log("Applications data:", response.data);
-      setTeamApplications(Array.isArray(response.data) ? response.data : []);
+      
+      // Handle different response formats
+      if (response.data && Array.isArray(response.data.applications)) {
+        setTeamApplications(response.data.applications);
+      } else if (Array.isArray(response.data)) {
+        setTeamApplications(response.data);
+      } else {
+        console.warn("Unexpected applications data format:", response.data);
+        setTeamApplications([]);
+      }
     } catch (error) {
       console.error("Error fetching team applications:", error);
       setTeamApplications([]);
@@ -119,9 +141,18 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
     
     try {
       setConversationsLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/conversations/${userData._id}`);
+      const response = await axios.get(`${API_BASE_URL}/api/mentor/conversations/${userData._id}`);
       console.log("Conversations data:", response.data);
-      setConversations(Array.isArray(response.data) ? response.data : []);
+      
+      // Handle different response formats
+      if (Array.isArray(response.data)) {
+        setConversations(response.data);
+      } else if (response.data && Array.isArray(response.data.conversations)) {
+        setConversations(response.data.conversations);
+      } else {
+        console.warn("Unexpected conversations data format:", response.data);
+        setConversations([]);
+      }
     } catch (error) {
       console.error("Error fetching conversations:", error);
       setConversations([]);
@@ -130,11 +161,40 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
     }
   };
 
+  // Also add a function to fetch hackathons
+  const fetchHackathons = async () => {
+    if (!userData?._id) {
+      setHackathonLoading(false);
+      return;
+    }
+    
+    try {
+      setHackathonLoading(true);
+      const response = await axios.get(`${API_BASE_URL}/api/student/hackathons/upcoming`);
+      console.log("Hackathons data:", response.data);
+      
+      // Handle different response formats
+      if (response.data && Array.isArray(response.data.hackathons)) {
+        setHackathonData(response.data.hackathons);
+      } else if (Array.isArray(response.data)) {
+        setHackathonData(response.data);
+      } else {
+        console.warn("Unexpected hackathon data format:", response.data);
+        setHackathonData([]);
+      }
+    } catch (error) {
+      console.error("Error fetching hackathons:", error);
+      setHackathonData([]);
+    } finally {
+      setHackathonLoading(false);
+    }
+  };
+
   // Team and member actions
   const handleViewTeam = async (team) => {
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team/${team._id}?mentorId=${userData._id}`
+        `${API_BASE_URL}/api/mentor/team/${team._id}?mentorId=${userData._id}`
       );
       
       if (response.data && response.data.success) {
@@ -172,7 +232,7 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
       
       // Now fetch detailed profile
       const response = await axios.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/mentor/student-profile/${memberId}?mentorId=${userData._id}`
+        `${API_BASE_URL}/api/mentor/student-profile/${memberId}?mentorId=${userData._id}`
       );
       
       if (response.data && response.data.success) {
@@ -222,6 +282,9 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E8C848] mb-4"></div>
           <p className="text-gray-400">Loading mentor dashboard...</p>
+          <p className="text-gray-500 text-sm mt-2">
+            {userData ? `User data present but no ID (${JSON.stringify(userData)})` : 'User data is null or undefined'}
+          </p>
         </div>
       </div>
     );
@@ -313,6 +376,7 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
                   gridCols="grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
                   customData={hackathonData}
                   isLoading={hackathonLoading}
+                  baseUrl={API_BASE_URL} // Add this to override the base URL
                 />
               </div>
             </section>

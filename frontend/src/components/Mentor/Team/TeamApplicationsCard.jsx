@@ -9,6 +9,10 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
   const [expandedApp, setExpandedApp] = useState(null);
+  console.log("Mentor Data:", mentorData);
+
+  // Define direct localhost URL instead of using environment variables
+  const API_BASE_URL = "http://localhost:4000";
 
   useEffect(() => {
     if (mentorData?._id) {
@@ -19,15 +23,28 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
   const fetchApplications = async () => {
     try {
       setLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team-applications/${mentorData._id}`);
+      const response = await axios.get(`${API_BASE_URL}/api/mentor/team-applications/${mentorData._id}`);
       
+      // Log the raw response to help with debugging
+      console.log("Raw applications:", response.data);
+      
+      // Handle different response structures
+      let apps = [];
       if (response.data?.success && Array.isArray(response.data.applications)) {
-        console.log("Applications data:", response.data);
-        setApplications(response.data.applications);
-      } else {
-        console.warn("Unexpected response format:", response.data);
-        setApplications([]);
+        apps = response.data.applications;
+      } else if (Array.isArray(response.data)) {
+        apps = response.data;
+      } else if (response.data && typeof response.data === 'object') {
+        // Try to extract applications from any field that might contain them
+        const possibleArrays = Object.values(response.data).filter(val => Array.isArray(val));
+        if (possibleArrays.length > 0) {
+          // Use the first array found
+          apps = possibleArrays[0];
+        }
       }
+      
+      console.log(`Found ${apps.length} pending applications`);
+      setApplications(apps || []);
     } catch (error) {
       console.error("Error fetching applications:", error);
       toast.error("Failed to load applications");
@@ -46,7 +63,7 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
       
       setProcessingId(applicationId);
       const response = await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team-applications/${mentorData._id}/${applicationId}/accept`
+        `${API_BASE_URL}/api/mentor/team-applications/${mentorData._id}/${applicationId}/accept`
       );
       
       if (response.data?.success) {
@@ -73,7 +90,7 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
       
       setProcessingId(applicationId);
       const response = await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team-applications/${mentorData._id}/${applicationId}/reject`
+        `${API_BASE_URL}/api/mentor/team-applications/${mentorData._id}/${applicationId}/reject`
       );
       
       if (response.data?.success) {
@@ -93,17 +110,6 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
 
   const toggleExpand = (appId) => {
     setExpandedApp(expandedApp === appId ? null : appId);
-  };
-
-  
-
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
   };
 
   const getTimeAgo = (dateString) => {
@@ -150,27 +156,27 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
       ) : (
         <div className="space-y-4">
           {applications.map((app) => (
-            <div key={app.applicationId} className="border border-gray-800 rounded-lg overflow-hidden bg-[#111111] hover:border-[#E8C848]/30 transition-all duration-300">
+            <div key={app.id || app.applicationId || app._id} className="border border-gray-800 rounded-lg overflow-hidden bg-[#111111] hover:border-[#E8C848]/30 transition-all duration-300">
               <div 
                 className="p-4 hover:bg-[#1A1A1A] cursor-pointer transition-colors"
-                onClick={() => toggleExpand(app.applicationId)}
+                onClick={() => toggleExpand(app.id || app.applicationId || app._id)}
               >
                 <div className="flex justify-between items-start">
                   <div>
                     <div className="flex items-center gap-2">
                       <h4 className="font-medium text-white">
-                        {app.teamName}
+                        {app.teamName || "Team Application"}
                       </h4>
                       <span className="text-xs bg-[#E8C848]/10 text-[#E8C848] px-2 py-0.5 rounded-full">
-                        {app.memberCount} members
+                        {app.memberCount || app.members?.length || (app.hasTeam ? "Team" : "Individual")}
                       </span>
                     </div>
                     <p className="text-sm text-gray-400 mt-1">
-                      Applied {getTimeAgo(app.applicationDate)}
+                      Applied {app.applicationDate ? getTimeAgo(app.applicationDate) : "Recently"}
                     </p>
                   </div>
                   <div className="flex items-center">
-                    {expandedApp === app.applicationId ? (
+                    {expandedApp === (app.id || app.applicationId || app._id) ? (
                       <ChevronUp size={18} className="text-gray-400" />
                     ) : (
                       <ChevronDown size={18} className="text-gray-400" />
@@ -179,12 +185,12 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
                 </div>
               </div>
 
-              {expandedApp === app.applicationId && (
+              {expandedApp === (app.id || app.applicationId || app._id) && (
                 <div className="px-4 pb-4 border-t border-gray-800">
                   <div className="pt-3">
                     <h5 className="text-sm font-medium text-gray-300 mb-2">Team Description</h5>
                     <p className="text-sm text-gray-400 mb-4">
-                      {app.description || "No team description provided."}
+                      {app.description || "Team application for mentorship."}
                     </p>
                     
                     {app.techStack?.length > 0 && (
@@ -206,21 +212,21 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
                     <div className="mb-4">
                       <h5 className="text-sm font-medium text-gray-300 mb-1">Application Message</h5>
                       <div className="bg-[#1A1A1A] p-3 rounded-md text-sm text-gray-400 border border-gray-800">
-                        {app.message || "No message provided with this application."}
+                        {app.message || "We would like to request your mentorship for our team."}
                       </div>
                     </div>
                     
                     <div className="flex space-x-3">
                       <button 
-                        onClick={() => handleAccept(app.applicationId)}
-                        disabled={processingId === app.applicationId}
+                        onClick={() => handleAccept(app.id || app.applicationId || app._id)}
+                        disabled={processingId === (app.id || app.applicationId || app._id)}
                         className={`flex-1 py-2 px-4 rounded-md flex justify-center items-center ${
-                          processingId === app.applicationId 
+                          processingId === (app.id || app.applicationId || app._id) 
                             ? 'bg-gray-800 text-gray-500 cursor-not-allowed' 
                             : 'bg-[#E8C848] text-[#121212] hover:bg-[#E8C848]/80'
                         }`}
                       >
-                        {processingId === app.applicationId ? (
+                        {processingId === (app.id || app.applicationId || app._id) ? (
                           <div className="animate-spin rounded-full h-4 w-4 border-2 border-t-transparent border-[#121212] mr-2"></div>
                         ) : (
                           <CheckCircle size={16} className="mr-2" />
@@ -229,10 +235,10 @@ const TeamApplicationsCard = ({ mentorData, onRefresh }) => {
                       </button>
                       
                       <button 
-                        onClick={() => handleReject(app.applicationId)}
-                        disabled={processingId === app.applicationId}
+                        onClick={() => handleReject(app.id || app.applicationId || app._id)}
+                        disabled={processingId === (app.id || app.applicationId || app._id)}
                         className={`flex-1 py-2 px-4 rounded-md flex justify-center items-center ${
-                          processingId === app.applicationId 
+                          processingId === (app.id || app.applicationId || app._id)
                             ? 'bg-gray-800 text-gray-500 cursor-not-allowed' 
                             : 'bg-[#E8C848]/10 text-[#E8C848] hover:bg-[#E8C848]/20'
                         }`}
