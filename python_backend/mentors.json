@@ -1,3 +1,94 @@
-[{"_id":{"$oid":"67e2457a4daa06ab0e542b88"},"firebaseUID":"7HAIYl0WsYPS4amrdoTkpyApezx2","name":"312 XI Sci C - Russel Daniel Paul","email":"russeldp16@gmail.com","profile_picture":"https://lh3.googleusercontent.com/a/ACg8ocIaLESEx211HRpacowM3XyZc7JVjYlQAqgKY1UFbd6zT92Spw=s96-c","expertise":{"technical_skills":["saxasxa"],"non_technical_skills":["xasxasxde2djreoid"]},"industries_worked_in":["jcuashxkasjo;lx"],"mentorship_focus_areas":["xsaxas"],"mentorship_availability":{"hours_per_week":{"$numberInt":"2"},"mentorship_type":[]},"rating":{"$numberInt":"0"},"isRejected":false,"hackathon_mentorship_experiences":[],"applications":[{"student":{"$oid":"67ed6f8e2172957ee9ce9972"},"status":"accepted","teamId":{"$oid":"67ed6f8e2172957ee9ce9972"},"application_date":{"$date":{"$numberLong":"1744074176798"}},"message":"Hello, I would like to request your mentorship.","_id":{"$oid":"67f475c062e792c4d876d3f7"}},{"student":{"$oid":"67f196bf92189218c37fe285"},"status":"accepted","teamId":{"$oid":"67f196bf92189218c37fe285"},"application_date":{"$date":{"$numberLong":"1744074222686"}},"message":"Hello, I would like to request your mentorship.","_id":{"$oid":"67f475ee62e792c4d876d453"}}],"mentees":[],"createdAt":{"$date":{"$numberLong":"1742882170278"}},"updatedAt":{"$date":{"$numberLong":"1744126542449"}},"__v":{"$numberInt":"8"},"bio":"sabxuashcjashchasiochnasjnckal","current_role":{"title":"xshxasioxiasjxas","company":"bsaxhjbashbxas"},"phone":"921232323","social_links":{"linkedin":"https://github.com/wrestle-R/Talent-Hunt/tree/rdp","github":"https://github.com/wrestle-R/Talent-Hunt/tree/rdp","personal_website":"https://github.com/wrestle-R/Talent-Hunt/tree/rdp"},"years_of_experience":{"$numberInt":"12"}},
-{"_id":{"$oid":"67fc08dcde71fcb12130dd67"},"firebaseUID":"Uq9mkb9ZFHgIrMkkgO4pPrqRcDg1","name":"Crazy Idea","email":"gaurav8nile@gmail.com","profile_picture":"https://lh3.googleusercontent.com/a/ACg8ocKmIghDdte4NH7qNT7tLgO3uYStkCcFm-H_XA89vLYzZIwXGC6T=s96-c","expertise":{"technical_skills":[],"non_technical_skills":[]},"industries_worked_in":[],"mentorship_focus_areas":[],"mentorship_availability":{"hours_per_week":{"$numberInt":"2"},"mentorship_type":[]},"rating":{"$numberInt":"0"},"isRejected":false,"hackathon_mentorship_experiences":[],"applications":[],"mentees":[],"createdAt":{"$date":{"$numberLong":"1744570588226"}},"updatedAt":{"$date":{"$numberLong":"1744570588226"}},"__v":{"$numberInt":"0"}}
-]
+[
+    {
+      "_id": { "$oid": "67e2457a4daa06ab0e542b88" },
+      "firebaseUID": "7HAIYl0WsYPS4amrdoTkpyApezx2",
+      "name": "312 XI Sci C - Russel Daniel Paul",
+      "email": "russeldp16@gmail.com",
+      "profile_picture": "https://lh3.googleusercontent.com/a/ACg8ocIaLESEx211HRpacowM3XyZc7JVjYlQAqgKY1UFbd6zT92Spw=s96-c",
+      "expertise": {
+        "technical_skills": ["saxasxa"],
+        "non_technical_skills": ["xasxasxde2djreoid"]
+      },
+      "industries_worked_in": ["jcuashxkasjo;lx"],
+      "mentorship_focus_areas": ["xsaxas"],
+      "mentorship_availability": {
+        "hours_per_week": { "$numberInt": "2" },
+        "mentorship_type": []
+      },
+      "rating": { "$numberInt": "0" },
+      "isRejected": false,
+      "hackathon_mentorship_experiences": [],
+      "applications": [
+        {
+          "student": { "$oid": "67ed6f8e2172957ee9ce9972" },
+          "status": "accepted",
+          "teamId": { "$oid": "67ed6f8e2172957ee9ce9972" },
+          "application_date": { "$date": { "$numberLong": "1744074176798" } },
+          "message": "Hello, I would like to request your mentorship.",
+          "_id": { "$oid": "67f475c062e792c4d876d3f7" }
+        },
+        {
+          "student": { "$oid": "67f196bf92189218c37fe285" },
+          "status": "accepted",
+          "teamId": { "$oid": "67f196bf92189218c37fe285" },
+          "application_date": { "$date": { "$numberLong": "1744074222686" } },
+          "message": "Hello, I would like to request your mentorship.",
+          "_id": { "$oid": "67f475ee62e792c4d876d453" }
+        }
+      ],
+      "mentees": [],
+      "createdAt": { "$date": { "$numberLong": "1742882170278" } },
+      "updatedAt": { "$date": { "$numberLong": "1744126542449" } },
+      "__v": { "$numberInt": "8" },
+      "bio": "sabxuashcjashchasiochnasjnckal",
+      "current_role": {
+        "title": "xshxasioxiasjxas",
+        "company": "bsaxhjbashbxas"
+      },
+      "phone": "921232323",
+      "social_links": {
+        "linkedin": "https://github.com/wrestle-R/Talent-Hunt/tree/rdp",
+        "github": "https://github.com/wrestle-R/Talent-Hunt/tree/rdp",
+        "personal_website": "https://github.com/wrestle-R/Talent-Hunt/tree/rdp"
+      },
+      "years_of_experience": { "$numberInt": "12" }
+    },
+    {
+      "_id": { "$oid": "67fc08dcde71fcb12130dd67" },
+      "firebaseUID": "Uq9mkb9ZFHgIrMkkgO4pPrqRcDg1",
+      "name": "Crazy Idea",
+      "email": "gaurav8nile@gmail.com",
+      "profile_picture": "https://lh3.googleusercontent.com/a/ACg8ocKmIghDdte4NH7qNT7tLgO3uYStkCcFm-H_XA89vLYzZIwXGC6T=s96-c",
+      "expertise": {
+        "technical_skills": ["To be updated"],
+        "non_technical_skills": ["To be updated"]
+      },
+      "industries_worked_in": ["To be updated"],
+      "mentorship_focus_areas": ["To be updated"],
+      "mentorship_availability": {
+        "hours_per_week": { "$numberInt": "2" },
+        "mentorship_type": []
+      },
+      "rating": { "$numberInt": "0" },
+      "isRejected": false,
+      "hackathon_mentorship_experiences": [],
+      "applications": [],
+      "mentees": [],
+      "createdAt": { "$date": { "$numberLong": "1744570588226" } },
+      "updatedAt": { "$date": { "$numberLong": "1744570588226" } },
+      "__v": { "$numberInt": "0" },
+      "bio": "Bio not provided yet.",
+      "current_role": {
+        "title": "Mentor / Innovator",
+        "company": "Independent"
+      },
+      "phone": "N/A",
+      "social_links": {
+        "linkedin": "https://linkedin.com/in/placeholder",
+        "github": "https://github.com/placeholder",
+        "personal_website": "https://example.com"
+      },
+      "years_of_experience": { "$numberInt": "0" }
+    }
+  ]
+  

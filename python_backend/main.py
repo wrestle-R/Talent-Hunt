@@ -93,6 +93,7 @@ def add_mentor(request: FilePathRequest):
         return {"message": "Mentor added successfully", "total_documents": len(db.get())}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+    
 
 @app.post("/api/recommend_students")
 def recommend_student(request_data: dict = Body(...)):
@@ -101,7 +102,6 @@ def recommend_student(request_data: dict = Body(...)):
         userData = request_data.get('userData', {})
         
         model = ChatGoogleGenerativeAI(model='gemini-2.0-flash')
-
         print("USER INPUT: ", userData)
 
         prompt = ChatPromptTemplate.from_messages([
@@ -116,8 +116,7 @@ def recommend_student(request_data: dict = Body(...)):
                  5. **Collaboration Potential**: Prefer candidates with a history of teamwork and successful collaborations.  
  
                  Ensure the query is structured for an optimized similarity-based search. **Return only the RAG query and nothing else.**  """),
-             ('system', """Your prompt text here"""),
-             ("human", "{user_input}")
+             ('human', "{user_input}")
          ])
 
         chain = prompt | model | StrOutputParser()
@@ -125,30 +124,51 @@ def recommend_student(request_data: dict = Body(...)):
         print("Generated Query for RAG: ", query)
 
         current_dir = os.path.dirname(__file__)
-        persistance_dir = os.path.join(current_dir, 'db', 'students_data')
+        persistence_dir = os.path.join(current_dir, 'db', 'students_data')
 
-        # Safely get team size with defaults
-        team_size = 4  # Default value
-        
-        # Check if teammate_search exists and has purpose
+        # Get desired team size - uncomment if needed
+        # team_size = 4  # Default value
         # if 'teammate_search' in userData:
         #     teammate_search = userData['teammate_search']
         #     purpose = teammate_search.get('purpose', 'Hackathon')
-            
+        #     
         #     if purpose in ["Project", "Both"] and 'project_preferences' in teammate_search:
         #         team_size = int(teammate_search['project_preferences'].get('team_size', team_size))
         #     elif purpose in ["Hackathon", "Both"] and 'hackathon_preferences' in teammate_search:
         #         team_size = int(teammate_search['hackathon_preferences'].get('team_size', team_size))
 
-        db = Chroma(persist_directory=persistance_dir, embedding_function=app.state.embedding_model)
-        retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": team_size})
+        # Check if embedding model exists
+        if not hasattr(app.state, 'embedding_model'):
+            # Initialize the embedding model if not already available
+            from langchain_huggingface.embeddings import HuggingFaceEmbeddings
+            app.state.embedding_model = HuggingFaceEmbeddings(model_name='sentence-transformers/all-MiniLM-L6-v2')
+            
+        db = Chroma(persist_directory=persistence_dir, embedding_function=app.state.embedding_model)
+        retriever = db.as_retriever(search_type="similarity", search_kwargs={"k": 4})
+        
+        # Get relevant documents
         relevant_docs = retriever.invoke(query)
+        
+        # Process all documents properly
+        relevant_docs_content = []
         for doc in relevant_docs:
-            relevant_docs_content = json.loads(doc.page_content) 
+            try:
+                content = json.loads(doc.page_content)
+                relevant_docs_content.append(content)
+            except json.JSONDecodeError as json_err:
+                print(f"JSON decoding error: {json_err} - Document content: {doc.page_content[:100]}...")
+                # Skip invalid documents or handle as needed
+        
         return {"teammates": relevant_docs_content}
+    
     except Exception as e:
-        print(f"Error: {type(e)} - {str(e)}")
-        print(traceback.format_exc())
+        error_details = {
+            "error_type": type(e).__name__,
+            "error_message": str(e),
+            "traceback": traceback.format_exc()
+        }
+        print(f"Error: {error_details['error_type']} - {error_details['error_message']}")
+        print(error_details['traceback'])
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/recommend_mentors")
