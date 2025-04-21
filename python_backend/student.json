@@ -1,0 +1,102 @@
+[{
+    "_id": { "$oid": "68063b726144767632a379db" },
+    "firebaseUID": "uBjCvqQomzNNgqbhGhIBHYyDJew1",
+    "name": "Russel Daniel",
+    "email": "russeldanielpaul@gmail.com",
+    "profile_picture": "https://lh3.googleusercontent.com/a/ACg8ocJgKmeifoSZ30cDDTb2ZjRcItbtwQ4vMM0hwSE_IBPsdDe2tyC5Rw=s96-c",
+    "skills": ["React"],
+    "interests": ["webdev"],
+    "hackathon_prev_experiences": {
+      "$numberInt": "0"
+    },
+    "hackathon_current_interests": [
+      "Web development"
+    ],
+    "certifications": [],
+    "mentorship_interests": {
+      "seeking_mentor": false,
+      "mentor_topics": []
+    },
+    "teammate_search": {
+      "project_preferences": { "tech_stack": [] },
+      "hackathon_preferences": { "tech_stack": [] },
+      "looking_for_teammates": true,
+      "purpose": "Project",
+      "desired_skills": [],
+      "urgency_level": "Low"
+    },
+    "current_search_preferences": {
+      "hackathon_teammate_preferences": {
+        "required_skills": []
+      },
+      "project_teammate_preferences": {
+        "required_skills": [],
+        "commitment_level": "Medium"
+      },
+      "looking_for": "Mentors"
+    },
+    "goals": ["get good"],
+    "rating": { "$numberInt": "0" },
+    "total_reviews": { "$numberInt": "0" },
+    "isRejected": false,
+    "experience": [],
+    "projects": [
+      {
+        "name": "Talent Hunt",
+        "description": "Fsd project",
+        "tech_stack": ["React"],
+        "github_link": "https://github.com/wrestle-R/Talent-Hunt/tree/rdp",
+        "live_demo": "https://github.com/wrestle-R/Talent-Hunt/tree/rdp",
+        "status": "Pending",
+        "isDeleted": false,
+        "isFlagged": false,
+        "_id": {
+          "$oid": "67e246094daa06ab0e542bd0"
+        }
+      }
+    ],
+    "achievements": [],
+    "teammates": [],
+    "mentors": [],
+    "createdAt": {
+      "$date": { "$numberLong": "1742882155502" }
+    },
+    "updatedAt": {
+      "$date": { "$numberLong": "1744105577663" }
+    },
+    "__v": { "$numberInt": "0" },
+    "education": {
+      "institution": "Father Agnel College",
+      "degree": "Bachellors in Engineering",
+      "graduation_year": { "$numberInt": "2025" }
+    },
+    "location": {
+      "city": "MUMBAI",
+      "country": "India"
+    },
+    "phone": "08097992623",
+    "preferred_working_hours": {
+      "start_time": "09:00",
+      "end_time": "17:00"
+    },
+    "social_links": {
+      "github": "https://github.com/wrestle-R",
+      "linkedin": "https://www.linkedin.com/in/russel-daniel-970b8a303/",
+      "portfolio": "https://devfolio.co/@russeldp10"
+    },
+    "isTempTeam": false
+  },
+  {"_id":{"$oid":"68063baa6144767632a379dc"},"firebaseUID":"a7YiUGLFhzdTabRlg3m3o7IrfLH3","name":"Russel Daniel","email":"russeldp123@gmail.com","profile_picture":"https://lh3.googleusercontent.com/a/ACg8ocIEj6SUS3KPdHmF5BAqBfteg6ocNqhkFer2l8nOPLCV6SDJSw=s96-c","skills":[],"interests":[],"hackathon_prev_experiences":{"$numberInt":"0"},"hackathon_current_interests":[],"certifications":[],"mentorship_interests":{"seeking_mentor":false,"mentor_topics":[]},"teammate_search":{"project_preferences":{"tech_stack":[]},"hackathon_preferences":{"tech_stack":[]},"looking_for_teammates":true,"purpose":"Project","desired_skills":[],"urgency_level":"Medium"},"current_search_preferences":{"hackathon_teammate_preferences":{"required_skills":[]},"project_teammate_preferences":{"required_skills":[],"commitment_level":"Medium"},"looking_for":"Teammates"},"goals":[],"rating":{"$numberInt":"0"},"total_reviews":{"$numberInt":"0"},"isRejected":false,"experience":[],"projects":[],"achievements":[],"teammates":[],"mentors":[],"createdAt":{"$date":{"$numberLong":"1742882749700"}},"updatedAt":{"$date":{"$numberLong":"1743608096875"}},"__v":{"$numberInt":"0"},"education":{"institution":"Agnel","degree":"Be","graduation_year":{"$numberInt":"2025"}},"location":{"city":"Mumbai","country":"India"},"phone":"9808098980988","preferred_working_hours":{"start_time":"09:00","end_time":"17:00"},"social_links":{"github":"https://github.com/wrestle-R/Talent-Hunt/tree/rdp","linkedin":"https://github.com/wrestle-R/Talent-Hunt/tree/rdp","portfolio":"https://github.com/wrestle-R/Talent-Hunt/tree/rdp"}},
+  {"_id":{"$oid":"67e50fcd82f9e84b9e863c9a"},"firebaseUID":"yB6R8jOXnyb5uMVMmcPEhcdy2Iy1","name":"Mayank Mehta","email":"mayankhmehta80@gmail.com","profile_picture":"https://lh3.googleusercontent.com/a/ACg8ocITMLQyIHIQv-yFVkVkxG3ditzwT5J_IedlyHCtobg2NU6DqQ=s96-c","skills":["machine learning","block chain","artificial, Intelligence"],"interests":["Ai and machine learning"],"hackathon_prev_experiences":{"$numberInt":"5"},"hackathon_current_interests":["Wed dev"],"certifications":["IBM ai expert"],"mentorship_interests":{"seeking_mentor":true,"mentor_topics":[]},"teammate_search":{"project_preferences":{"tech_stack":[]},"hackathon_preferences":{"tech_stack":[]},"looking_for_teammates":true,"purpose":"Hackathon","desired_skills":["full stack development","frontend","backend"],"urgency_level":"High"},"current_search_preferences":{"hackathon_teammate_preferences":{"required_skills":[]},"project_teammate_preferences":{"required_skills":[],"commitment_level":"Medium"},"looking_for":"None"},"goals":["Senior Developer at Google"],"rating":{"$numberInt":"0"},"total_reviews":{"$numberInt":"0"},"isRejected":false,"experience":[{"title":"somethin something","description":"kdnjhude","date":{"$date":{"$numberLong":"1743033600000"}},"type":"Hackathon","_id":{"$oid":"67e511fd82f9e84b9e863cee"}},{"title":"","description":"","date":{"$date":{"$numberLong":"1743033600000"}},"type":"Project","_id":{"$oid":"67e511fd82f9e84b9e863cef"}}],"projects":[{"name":"dog vision","description":"kjehfuched","tech_stack":["mvbxhifdbckc"],"github_link":"jkdvsbskjncujszdnvciub","live_demo":"zvijdbvchuisbzkcj","status":"Pending","isDeleted":false,"isFlagged":false,"_id":{"$oid":"67e511fd82f9e84b9e863cf0"}},{"name":"","description":"","tech_stack":[],"github_link":"","live_demo":"","status":"Pending","isDeleted":false,"isFlagged":false,"_id":{"$oid":"67e511fd82f9e84b9e863cf1"}}],"achievements":[{"title":"1st place at Tech Mania","description":"won 1st place in the Hackathon","date":{"$date":{"$numberLong":"1743033600000"}},"_id":{"$oid":"67e511fd82f9e84b9e863cf2"}},{"title":"","description":"","date":{"$date":{"$numberLong":"1743033600000"}},"_id":{"$oid":"67e511fd82f9e84b9e863cf3"}}],"teammates":[],"mentors":[],"createdAt":{"$date":{"$numberLong":"1743065037110"}},"updatedAt":{"$date":{"$numberLong":"1743067200479"}},"__v":{"$numberInt":"0"},"education":{"institution":"Fr. Conceicao Rodrigues College of Engineering","degree":"B.Eng Computer Engineering","graduation_year":{"$numberInt":"2027"}},"location":{"city":"Mumbai","country":"India"},"phone":"","preferred_working_hours":{"start_time":"09:00","end_time":"17:00"},"social_links":{"github":"dnjudefk","linkedin":"sjaihdydjakd","portfolio":"ndksudgyj"}},
+  {"_id":{"$oid":"67e9b2d3f4e8b84c0187fed2"},"firebaseUID":"fK2Y7la8OWaZwB12FO1xfdq0l2o2","name":"13","email":"wotchervndn@gmail.com","profile_picture":"https://lh3.googleusercontent.com/a/ACg8ocIA6AkZ0abuUYyDBz30N7p8CwpVUnvVF0yeWDVwmmk8igF8yg=s96-c","skills":[],"interests":[],"hackathon_prev_experiences":{"$numberInt":"0"},"hackathon_current_interests":[],"certifications":[],"mentorship_interests":{"seeking_mentor":false,"mentor_topics":[]},"teammate_search":{"project_preferences":{"tech_stack":[]},"hackathon_preferences":{"tech_stack":[]},"looking_for_teammates":false,"purpose":"Not specified","desired_skills":[],"urgency_level":"Medium"},"current_search_preferences":{"hackathon_teammate_preferences":{"required_skills":[]},"project_teammate_preferences":{"required_skills":[],"commitment_level":"Medium"},"looking_for":"None"},"goals":[],"rating":{"$numberInt":"0"},"total_reviews":{"$numberInt":"0"},"isRejected":false,"isTempTeam":false,"experience":[],"projects":[],"achievements":[],"teammates":[],"mentors":[],"tempTeam":[],"createdAt":{"$date":{"$numberLong":"1743368915444"}},"updatedAt":{"$date":{"$numberLong":"1744709559597"}},"__v":{"$numberInt":"0"},"education":{"institution":"Father Agnel College","degree":"Bachellors in Engineering","graduation_year":{"$numberInt":"2025"}},"location":{"city":"MUMBAI","country":"India"},"phone":"08097992623","preferred_working_hours":{"start_time":"09:00","end_time":"17:00"},"social_links":{"github":"","linkedin":"","portfolio":""}}
+  ,
+  {"_id":{"$oid":"67e9b3def4e8b84c0187fff0"},"firebaseUID":"r1RHtdji05dC0orIUiQ4rG8ZoQg2","name":"Russel Daniel","email":"russeldp10@gmail.com","profile_picture":"https://lh3.googleusercontent.com/a/ACg8ocLw_fJpi7_qTpKj7A3PEcxFZg2GsAp69hKOiJXs180FIR5vfkM=s96-c","skills":[],"interests":[],"hackathon_prev_experiences":{"$numberInt":"0"},"hackathon_current_interests":[],"certifications":[],"mentorship_interests":{"seeking_mentor":false,"mentor_topics":[]},"teammate_search":{"project_preferences":{"tech_stack":[]},"hackathon_preferences":{"tech_stack":[]},"looking_for_teammates":false,"purpose":"Not specified","desired_skills":[],"urgency_level":"Medium"},"current_search_preferences":{"hackathon_teammate_preferences":{"required_skills":[]},"project_teammate_preferences":{"required_skills":[],"commitment_level":"Medium"},"looking_for":"None"},"goals":[],"rating":{"$numberInt":"0"},"total_reviews":{"$numberInt":"0"},"isRejected":false,"isTempTeam":false,"experience":[],"projects":[],"achievements":[],"teammates":[],"mentors":[],"tempTeam":[],"createdAt":{"$date":{"$numberLong":"1743369182827"}},"updatedAt":{"$date":{"$numberLong":"1743609699670"}},"__v":{"$numberInt":"0"},"education":{"institution":"Father Agnel College","degree":"Bachellors in Engineering","graduation_year":{"$numberInt":"2025"}},"location":{"city":"MUMBAI","country":"India"},"phone":"08097992623","preferred_working_hours":{"start_time":"09:00","end_time":"17:00"},"social_links":{"github":"","linkedin":"","portfolio":""}}
+  ,
+  {"_id":{"$oid":"67e9b42cf4e8b84c018801a9"},"firebaseUID":"KBwGRtUEfGajbaA7YNuvIZh7sWK2","name":"Russel Daniel","email":"russeldp7@gmail.com","profile_picture":"https://lh3.googleusercontent.com/a/ACg8ocLa8ORY2k0xy9wGeudqeC1W8ejNBlv10JPzwyuQDG-hJKCloA=s96-c","skills":[],"interests":[],"hackathon_prev_experiences":{"$numberInt":"0"},"hackathon_current_interests":[],"certifications":[],"mentorship_interests":{"seeking_mentor":false,"mentor_topics":[]},"teammate_search":{"project_preferences":{"tech_stack":[]},"hackathon_preferences":{"tech_stack":[]},"looking_for_teammates":false,"purpose":"Not specified","desired_skills":[],"urgency_level":"Medium"},"current_search_preferences":{"hackathon_teammate_preferences":{"required_skills":[]},"project_teammate_preferences":{"required_skills":[],"commitment_level":"Medium"},"looking_for":"None"},"goals":[],"rating":{"$numberInt":"0"},"total_reviews":{"$numberInt":"0"},"isRejected":false,"isTempTeam":false,"experience":[],"projects":[],"achievements":[],"teammates":[],"mentors":[],"tempTeam":[],"createdAt":{"$date":{"$numberLong":"1743369260878"}},"updatedAt":{"$date":{"$numberLong":"1743609602907"}},"__v":{"$numberInt":"0"}}
+  ,
+  {"_id":{"$oid":"67eac66da8206bba47fe0275"},"firebaseUID":"VCV8ADikVGRLZO83Mv6eCywtaT02","name":"Russel Daniel Paul","email":"crce.seca.10205@gmail.com","profile_picture":"https://lh3.googleusercontent.com/a/ACg8ocKj9LYHK_3TFWYGD8GzCumno94opdc1Vz3foQj0YIz0u-vSrw=s96-c","skills":[],"interests":[],"hackathon_prev_experiences":{"$numberInt":"0"},"hackathon_current_interests":[],"certifications":[],"mentorship_interests":{"seeking_mentor":false,"mentor_topics":[]},"teammate_search":{"project_preferences":{"tech_stack":[]},"hackathon_preferences":{"tech_stack":[]},"looking_for_teammates":false,"purpose":"Not specified","desired_skills":[],"urgency_level":"Medium"},"current_search_preferences":{"hackathon_teammate_preferences":{"required_skills":[]},"project_teammate_preferences":{"required_skills":[],"commitment_level":"Medium"},"looking_for":"None"},"goals":[],"rating":{"$numberInt":"0"},"total_reviews":{"$numberInt":"0"},"isRejected":false,"isTempTeam":false,"experience":[],"projects":[],"achievements":[],"teammates":[],"mentors":[],"tempTeam":[],"createdAt":{"$date":{"$numberLong":"1743439469141"}},"updatedAt":{"$date":{"$numberLong":"1743439469141"}},"__v":{"$numberInt":"0"}}
+  ,
+  {"_id":{"$oid":"68037526eb396a4e601b4f3d"},"firebaseUID":"8VhVT4fCQ6MW97eKsgQSk5yC13h2","name":"Gaurav Nile","email":"gauravrn02@gmail.com","profile_picture":"https://lh3.googleusercontent.com/a/ACg8ocLRZGRLKwsQeTdZcCGoN6e-TSJ9PmfMxTmlBKMvD-zwvqloRg=s96-c","skills":["Editing"],"interests":["Gaming"],"hackathon_prev_experiences":{"$numberInt":"3"},"hackathon_current_interests":["eqeqweq"],"certifications":["Baller"],"mentorship_interests":{"seeking_mentor":false,"mentor_topics":[]},"teammate_search":{"project_preferences":{"tech_stack":[]},"hackathon_preferences":{"tech_stack":[]},"looking_for_teammates":false,"purpose":"Not specified","desired_skills":[],"urgency_level":"Medium"},"current_search_preferences":{"hackathon_teammate_preferences":{"required_skills":[]},"project_teammate_preferences":{"required_skills":[],"commitment_level":"Medium"},"looking_for":"None"},"goals":["ACE"],"rating":{"$numberInt":"0"},"total_reviews":{"$numberInt":"0"},"isRejected":false,"isTempTeam":false,"experience":[],"projects":[{"name":"dda","description":"weqeq","tech_stack":["eqweq"],"github_link":"eqeqw","live_demo":"eq","status":"Pending","isDeleted":false,"isFlagged":false,"_id":{"$oid":"68052a911e8e72dc645b7245"}}],"achievements":[{"title":"qeqeq","description":"qeq","date":{"$date":{"$numberLong":"1745107200000"}},"_id":{"$oid":"68052a911e8e72dc645b7246"}}],"teammates":[],"mentors":[],"createdAt":{"$date":{"$numberLong":"1745057062220"}},"updatedAt":{"$date":{"$numberLong":"1745170568050"}},"__v":{"$numberInt":"0"},"education":{"institution":"FRCRCE","degree":"Computer","graduation_year":{"$numberInt":"2025"}},"location":{"city":"Navi Mumbai","country":"India"},"phone":"08451882973","preferred_working_hours":{"start_time":"09:00","end_time":"17:00"},"social_links":{"github":"","linkedin":"","portfolio":""}},
+  {"_id":{"$oid":"68052bf43bfbf9cec0a75011"},"firebaseUID":"test-user-123","name":"Test Student","email":"test@example.com","profile_picture":"https://example.com/avatar.jpg","education":{"institution":"Test University","degree":"Computer Science","graduation_year":{"$numberInt":"2024"}},"skills":["JavaScript","React","Node.js"],"interests":["Web Development","AI"],"hackathon_prev_experiences":{"$numberInt":"0"},"hackathon_current_interests":[],"certifications":[],"mentorship_interests":{"seeking_mentor":false,"mentor_topics":[]},"teammate_search":{"project_preferences":{"tech_stack":[]},"hackathon_preferences":{"tech_stack":[]},"looking_for_teammates":false,"purpose":"Not specified","desired_skills":[],"urgency_level":"Medium"},"current_search_preferences":{"hackathon_teammate_preferences":{"required_skills":[]},"project_teammate_preferences":{"required_skills":[],"commitment_level":"Medium"},"looking_for":"None"},"goals":[],"rating":{"$numberInt":"0"},"total_reviews":{"$numberInt":"0"},"isRejected":false,"isTempTeam":false,"experience":[],"projects":[],"achievements":[],"teammates":[],"mentors":[],"createdAt":{"$date":{"$numberLong":"1745169396894"}},"updatedAt":{"$date":{"$numberLong":"1745169396894"}},"__v":{"$numberInt":"0"}}
+
+]

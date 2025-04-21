@@ -5,8 +5,8 @@ from langchain_community.document_loaders import JSONLoader
 from langchain_huggingface.embeddings import HuggingFaceEmbeddings
 
 current_dir = os.path.dirname(__file__)
-file_path = os.path.join(current_dir, 'student_profiles.json')
-persistance_path = os.path.join(current_dir, 'db', 'students_data')
+file_path = os.path.join(current_dir, 'mentors.json')
+persistance_path = os.path.join(current_dir, 'db', 'mentors_data')
 
 if not os.path.exists(persistance_path):
     print("Persistance path does not exist. Creating one now...")
