@@ -9,12 +9,27 @@ import {
 import { motion } from 'framer-motion';
 import CreateTeamModal from './CreateTeamModal';
 
+// Use a reliable placeholder image
+const PLACEHOLDER_IMAGE = "https://via.placeholder.com/40?text=User";
+
+const API_BASE_URL = "http://localhost:4000"; // Using localhost:4000 for consistency
+
+// Safe user handling
+const getUserId = () => {
+  try {
+    const user = JSON.parse(localStorage.getItem('user') || '{"uid":"unknown"}');
+    return user?.uid || 'unknown';
+  } catch (error) {
+    console.error("Error getting user ID:", error);
+    return 'unknown';
+  }
+};
+
 const HackathonParticipantManager = () => {
   const { hackathonId } = useParams();
   const [activeTab, setActiveTab] = useState(0);
   const [activeIndividualTab, setActiveIndividualTab] = useState(0);
   const [activeTeamTab, setActiveTeamTab] = useState(0);
-  console.log(localStorage.user._id)
   // Data state
   const [hackathon, setHackathon] = useState(null);
   const [individuals, setIndividuals] = useState({
@@ -52,27 +67,44 @@ const HackathonParticipantManager = () => {
     try {
       // Fetch hackathon details
       const { data: hackathonData } = await axios.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}`
+        `${API_BASE_URL}/api/admin/hackathons/${hackathonId}`
       );
       setHackathon(hackathonData);
       
       // Fetch individual applicants
       const { data: individualsData } = await axios.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/individual-applicants`
+        `${API_BASE_URL}/api/admin/hackathons/${hackathonId}/individual-applicants`
       );
-      setIndividuals(individualsData.data);
-      
+      // Defensive: ensure .data exists and has pending/approved/rejected
+      setIndividuals(
+        (individualsData && individualsData.data)
+          ? {
+              pending: Array.isArray(individualsData.data.pending) ? individualsData.data.pending : [],
+              approved: Array.isArray(individualsData.data.approved) ? individualsData.data.approved : [],
+              rejected: Array.isArray(individualsData.data.rejected) ? individualsData.data.rejected : []
+            }
+          : { pending: [], approved: [], rejected: [] }
+      );
+
       // Fetch team applicants
       const { data: teamApplicantsData } = await axios.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/team-applicants`
+        `${API_BASE_URL}/api/admin/hackathons/${hackathonId}/team-applicants`
       );
-      setTeamApplicants(teamApplicantsData.data);
+      setTeamApplicants(
+        (teamApplicantsData && teamApplicantsData.data)
+          ? {
+              pending: Array.isArray(teamApplicantsData.data.pending) ? teamApplicantsData.data.pending : [],
+              approved: Array.isArray(teamApplicantsData.data.approved) ? teamApplicantsData.data.approved : [],
+              rejected: Array.isArray(teamApplicantsData.data.rejected) ? teamApplicantsData.data.rejected : []
+            }
+          : { pending: [], approved: [], rejected: [] }
+      );
       
       // Fetch registered teams
       const { data: registeredTeamsData } = await axios.get(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/registered-teams`
+        `${API_BASE_URL}/api/admin/hackathons/${hackathonId}/registered-teams`
       );
-      setRegisteredTeams(registeredTeamsData.teams);
+      setRegisteredTeams(Array.isArray(registeredTeamsData.teams) ? registeredTeamsData.teams : []);
       
     } catch (err) {
       console.error('Error fetching data:', err);
@@ -86,7 +118,7 @@ const HackathonParticipantManager = () => {
   const handleUpdateApplicantStatus = async (applicantId, newStatus) => {
     try {
       await axios.put(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/individual-applicants/${applicantId}`,
+        `${API_BASE_URL}/api/admin/hackathons/${hackathonId}/individual-applicants/${applicantId}`,
         { status: newStatus }
       );
       
@@ -140,12 +172,12 @@ const HackathonParticipantManager = () => {
   const handleCreateTempTeam = async () => {
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/temp-teams`,
+        `${API_BASE_URL}/api/admin/hackathons/${hackathonId}/temp-teams`,
         {
           teamName,
           leaderId: teamLeader._id,
           memberIds: selectedIndividuals.map((individual) => individual._id),
-          createdBy: '67d9b1f008d7aa2cf56a4a41', // Pass the admin's ID or relevant identifier
+          createdBy: getUserId(), // Use actual user ID from localStorage
         }
       );
   
@@ -165,7 +197,7 @@ const HackathonParticipantManager = () => {
   const handleUpdateTeamStatus = async (teamId, newStatus) => {
     try {
       await axios.put(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}/team-applicants/${teamId}`,
+        `${API_BASE_URL}/api/admin/hackathons/${hackathonId}/team-applicants/${teamId}`,
         { status: newStatus }
       );
       
@@ -177,6 +209,117 @@ const HackathonParticipantManager = () => {
       console.error('Error updating team status:', err);
       setTimeout(() => setError(null), 3000);
     }
+  };
+
+  const renderTeamMembers = (members) => {
+    if (!members || !Array.isArray(members)) {
+      return <div className="text-gray-500">No members information available</div>;
+    }
+
+    return members.map((member, index) => {
+      // Safety check for completely null/undefined member
+      if (!member) {
+        return (
+          <div key={`missing-member-${index}`} className="flex items-center">
+            <div className="flex-shrink-0 h-8 w-8">
+              <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center text-xs text-gray-400">
+                ?
+              </div>
+            </div>
+            <div className="ml-3">
+              <div className="text-sm font-medium text-gray-400">Unknown Member</div>
+            </div>
+          </div>
+        );
+      }
+
+      try {
+        // Check if this is a member with direct properties (for registered teams)
+        if (member.name && typeof member.name === 'string') {
+          return (
+            <div key={member._id || `direct-member-${index}`} className="flex items-center">
+              <div className="flex-shrink-0 h-8 w-8">
+                <img 
+                  className="h-8 w-8 rounded-full object-cover" 
+                  src={member.profile_picture || PLACEHOLDER_IMAGE} 
+                  alt={member.name.substring(0,1)} 
+                  onError={(e) => { e.target.src = PLACEHOLDER_IMAGE }}
+                />
+              </div>
+              <div className="ml-3">
+                <div className="text-sm font-medium flex items-center text-white">
+                  {member.name}
+                  {member.isLeader && (
+                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                      <Award size={12} className="mr-1" />
+                      Leader
+                    </span>
+                  )}
+                </div>
+                <div className="text-xs text-gray-400">{member.email || "No email"}</div>
+              </div>
+            </div>
+          );
+        }
+
+        // Check for nested student object
+        if (!member.student) {
+          return (
+            <div key={`no-student-${index}`} className="flex items-center">
+              <div className="flex-shrink-0 h-8 w-8">
+                <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center text-xs text-gray-400">
+                  ?
+                </div>
+              </div>
+              <div className="ml-3">
+                <div className="text-sm font-medium text-gray-400">Member Info Missing</div>
+              </div>
+            </div>
+          );
+        }
+
+        // Handle case with nested student object
+        return (
+          <div key={member._id || `member-${index}`} className="flex items-center">
+            <div className="flex-shrink-0 h-8 w-8">
+              <img 
+                className="h-8 w-8 rounded-full object-cover" 
+                src={member.student?.profile_picture || PLACEHOLDER_IMAGE} 
+                alt={(member.student?.name || "?").substring(0,1)}
+                onError={(e) => { e.target.src = PLACEHOLDER_IMAGE }}
+              />
+            </div>
+            <div className="ml-3">
+              <div className="text-sm font-medium flex items-center text-white">
+                {member.student?.name || "Unknown User"}
+                {member.role === 'Leader' && (
+                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                    <Award size={12} className="mr-1" />
+                    Leader
+                  </span>
+                )}
+              </div>
+              <div className="text-xs text-gray-400">{member.student?.email || "No email"}</div>
+            </div>
+          </div>
+        );
+      } catch (error) {
+        console.error("Error rendering team member:", error);
+        // Return fallback UI in case of any error
+        return (
+          <div key={`error-member-${index}`} className="flex items-center">
+            <div className="flex-shrink-0 h-8 w-8">
+              <div className="h-8 w-8 rounded-full bg-red-700 flex items-center justify-center text-xs text-white">
+                !
+              </div>
+            </div>
+            <div className="ml-3">
+              <div className="text-sm font-medium text-gray-400">Error Loading Member</div>
+            </div>
+          </div>
+        );
+      }
+    });
   };
   
   if (loading) {
@@ -339,8 +482,9 @@ const HackathonParticipantManager = () => {
                                   <div className="flex-shrink-0 h-10 w-10">
                                     <img 
                                       className="h-10 w-10 rounded-full" 
-                                      src={individual.student.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                      alt="" 
+                                      src={individual.student?.profile_picture || PLACEHOLDER_IMAGE} 
+                                      alt={individual.student?.name?.substring(0,1) || "?"}
+                                      onError={(e) => { e.target.src = PLACEHOLDER_IMAGE }}
                                     />
                                   </div>
                                   <div className="ml-4">
@@ -423,8 +567,9 @@ const HackathonParticipantManager = () => {
                             <div className="flex-shrink-0">
                               <img 
                                 className="h-12 w-12 rounded-full" 
-                                src={individual.student.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                alt="" 
+                                src={individual.student?.profile_picture || PLACEHOLDER_IMAGE} 
+                                alt={individual.student?.name?.substring(0,1) || "?"}
+                                onError={(e) => { e.target.src = PLACEHOLDER_IMAGE }}
                               />
                             </div>
                             <div className="ml-3">
@@ -480,8 +625,9 @@ const HackathonParticipantManager = () => {
                                   <div className="flex-shrink-0 h-10 w-10">
                                     <img 
                                       className="h-10 w-10 rounded-full" 
-                                      src={individual.student.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                      alt="" 
+                                      src={individual.student?.profile_picture || PLACEHOLDER_IMAGE} 
+                                      alt={individual.student?.name?.substring(0,1) || "?"}
+                                      onError={(e) => { e.target.src = PLACEHOLDER_IMAGE }}
                                     />
                                   </div>
                                   <div className="ml-4">
@@ -603,29 +749,7 @@ const HackathonParticipantManager = () => {
                               <div className="mt-3 border-t border-gray-800 pt-3">
                                 <h4 className="text-sm font-medium text-gray-400 mb-2">Team Members:</h4>
                                 <div className="space-y-2">
-                                  {application.team.members.map(member => (
-                                    <div key={member._id} className="flex items-center">
-                                      <div className="flex-shrink-0 h-8 w-8">
-                                        <img 
-                                          className="h-8 w-8 rounded-full" 
-                                          src={member.student.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                          alt="" 
-                                        />
-                                      </div>
-                                      <div className="ml-3">
-                                        <div className="text-sm font-medium flex items-center text-white">
-                                          {member.student.name}
-                                          {member.role === 'Leader' && (
-                                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                              <Award size={12} className="mr-1" />
-                                              Leader
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="text-xs text-gray-400">{member.student.email}</div>
-                                      </div>
-                                    </div>
-                                  ))}
+                                  {renderTeamMembers(application.team.members)}
                                 </div>
                                 
                                 <div className="mt-4 text-sm text-gray-400">
@@ -713,29 +837,7 @@ const HackathonParticipantManager = () => {
                               <div className="mt-3 border-t border-green-200 pt-3">
                                 <h4 className="text-sm font-medium text-gray-700 mb-2">Team Members:</h4>
                                 <div className="space-y-2">
-                                  {application.team.members.map(member => (
-                                    <div key={member._id} className="flex items-center">
-                                      <div className="flex-shrink-0 h-8 w-8">
-                                        <img 
-                                          className="h-8 w-8 rounded-full" 
-                                          src={member.student.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                          alt="" 
-                                        />
-                                      </div>
-                                      <div className="ml-3">
-                                        <div className="text-sm font-medium flex items-center">
-                                          {member.student.name}
-                                          {member.role === 'Leader' && (
-                                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                              <Award size={12} className="mr-1" />
-                                              Leader
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="text-xs text-gray-500">{member.student.email}</div>
-                                      </div>
-                                    </div>
-                                  ))}
+                                  {renderTeamMembers(application.team.members)}
                                 </div>
                                 
                                 <div className="mt-4 text-sm text-gray-700">
@@ -806,29 +908,7 @@ const HackathonParticipantManager = () => {
                               <div className="mt-3 border-t border-red-200 pt-3">
                                 <h4 className="text-sm font-medium text-gray-700 mb-2">Team Members:</h4>
                                 <div className="space-y-2">
-                                  {application.team.members.map(member => (
-                                    <div key={member._id} className="flex items-center">
-                                      <div className="flex-shrink-0 h-8 w-8">
-                                        <img 
-                                          className="h-8 w-8 rounded-full" 
-                                          src={member.student.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                          alt="" 
-                                        />
-                                      </div>
-                                      <div className="ml-3">
-                                        <div className="text-sm font-medium flex items-center">
-                                          {member.student.name}
-                                          {member.role === 'Leader' && (
-                                            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                              <Award size={12} className="mr-1" />
-                                              Leader
-                                            </span>
-                                          )}
-                                        </div>
-                                        <div className="text-xs text-gray-500">{member.student.email}</div>
-                                      </div>
-                                    </div>
-                                  ))}
+                                  {renderTeamMembers(application.team.members)}
                                 </div>
                                 
                                 <div className="mt-4 text-sm text-gray-700">
@@ -899,9 +979,10 @@ const HackathonParticipantManager = () => {
                             <div key={member._id} className="flex items-center">
                               <div className="flex-shrink-0 h-8 w-8">
                                 <img 
-                                  className="h-8 w-8 rounded-full" 
-                                  src={member.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                  alt="" 
+                                  className="h-8 w-8 rounded-full object-cover" 
+                                  src={member.profile_picture || PLACEHOLDER_IMAGE} 
+                                  alt={member.name.substring(0,1)} 
+                                  onError={(e) => { e.target.src = PLACEHOLDER_IMAGE }}
                                 />
                               </div>
                               <div className="ml-3">
@@ -929,29 +1010,7 @@ const HackathonParticipantManager = () => {
                         {expandedTeam === team._id ? (
                           <div className="mt-3 pt-3 border-t border-gray-800">
                             <div className="space-y-2">
-                              {team.members.slice(2).map(member => (
-                                <div key={member._id} className="flex items-center">
-                                  <div className="flex-shrink-0 h-8 w-8">
-                                    <img 
-                                      className="h-8 w-8 rounded-full" 
-                                      src={member.profile_picture || "https://via.placeholder.com/40?text=User"} 
-                                      alt="" 
-                                    />
-                                  </div>
-                                  <div className="ml-3">
-                                    <div className="text-sm font-medium flex items-center text-white">
-                                      {member.name}
-                                      {member.isLeader && (
-                                        <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                          <Award size={12} className="mr-1" />
-                                          Leader
-                                        </span>
-                                      )}
-                                    </div>
-                                    <div className="text-xs text-gray-400">{member.email}</div>
-                                  </div>
-                                </div>
-                              ))}
+                              {renderTeamMembers(team.members.slice(2))}
                             </div>
                             
                             <button

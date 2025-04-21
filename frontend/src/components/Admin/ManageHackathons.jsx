@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { CalendarDays, ArrowLeft, Plus, AlertCircle, Users } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import CreateHackathon from './CreateHackathon';
 import HackathonParticipantManager from './HackathonParticipantManager';
+
+// Add your API base URL directly here
+const API_BASE_URL = "http://localhost:4000"; // or your deployed backend URL
 
 const ManageHackathons = () => {
   const navigate = useNavigate();
@@ -25,8 +27,9 @@ const ManageHackathons = () => {
       setLoading(true);
       setError(null);
       
+      // 
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons`, {
+      const response = await axios.get(`${API_BASE_URL}/api/admin/hackathons`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -56,22 +59,28 @@ const ManageHackathons = () => {
       if (!user?.uid) {
         throw new Error("User authentication required");
       }
-  
-      // Prepare the request data
+
+      // Map frontend fields to backend expected fields
       const requestData = {
         ...hackathonData,
         adminUid: user.uid,
         prizePool: Number(hackathonData.prizePool),
         totalCapacity: Number(hackathonData.totalCapacity),
+        primaryDomain: hackathonData.primaryDomain || hackathonData.domain, // ensure correct field
+        primaryProblemStatement: hackathonData.primaryProblemStatement || hackathonData.problemStatement, // ensure correct field
         registration: {
           totalCapacity: Number(hackathonData.totalCapacity),
           currentlyRegistered: 0,
           requiredTeamSize: 4
         }
       };
-  
+
+      // Remove possible legacy fields to avoid backend confusion
+      delete requestData.domain;
+      delete requestData.problemStatement;
+
       const response = await axios.post(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons`,
+        `${API_BASE_URL}/api/admin/hackathons`,
         requestData,
         {
           headers: {
@@ -80,7 +89,7 @@ const ManageHackathons = () => {
           }
         }
       );
-  
+
       if (response.data.success) {
         await fetchHackathons();
         setActiveView('list');
@@ -113,7 +122,7 @@ const ManageHackathons = () => {
       };
       
       const response = await axios.put(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}`,
+        `${API_BASE_URL}/api/admin/hackathons/${hackathonId}`,
         {
           ...hackathonData,
           adminUid: user.uid
@@ -146,7 +155,7 @@ const ManageHackathons = () => {
       
       const token = localStorage.getItem('token');
       const response = await axios.delete(
-        `${import.meta.env.VITE_APP_BASE_URL}/api/admin/hackathons/${hackathonId}`,
+        `${API_BASE_URL}/api/admin/hackathons/${hackathonId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }

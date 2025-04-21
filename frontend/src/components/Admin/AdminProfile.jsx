@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { User, Building, Save } from 'lucide-react';
 
+const API_BASE_URL = "http://localhost:4000"; // or your deployed backend URL
+
+
 const AdminProfile = () => {
   const [formData, setFormData] = useState({
     name: '',

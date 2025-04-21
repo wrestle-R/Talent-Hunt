@@ -4,6 +4,9 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Users, UserPlus, X, CheckCircle, XCircle, Search } from 'lucide-react';
 import axios from 'axios';
 
+const API_BASE_URL = "http://localhost:4000"; // or your deployed backend URL
+
+
 const ManageHackathonParticipants = () => {
   const { hackathonId } = useParams();
   const navigate = useNavigate();

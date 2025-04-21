@@ -1,4 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+// Define API base URL consistently
+const API_BASE_URL = "http://localhost:4000";
 
 const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) => {
   const [loading, setLoading] = useState(false);
@@ -116,46 +120,31 @@ const CreateHackathon = ({ hackathon, isEditing = false, onSubmit, onCancel }) =
       const hackathonData = {
         ...formData,
         prizePool: Number(formData.prizePool),
-        totalCapacity: Number(formData.totalCapacity)
+        totalCapacity: Number(formData.totalCapacity),
+        adminUid: JSON.parse(localStorage.getItem('user'))?.uid // Add the admin UID
       };
       
       if (isEditing) {
-        // Mock successful update
-        console.log(`Updating hackathon with data:`, hackathonData);
+        // Actually make the API request instead of mocking
+        const response = await axios.put(
+          `${API_BASE_URL}/api/admin/hackathons/${hackathon._id}`,
+          hackathonData
+        );
         
-        const updatedHackathon = {
-          _id: hackathon._id,
-          ...hackathonData,
-          registration: {
-            totalCapacity: Number(hackathonData.totalCapacity),
-            currentlyRegistered: hackathon.registration?.currentlyRegistered || 0,
-            requiredTeamSize: 4
-          },
-          createdAt: hackathon.createdAt
-        };
-        
-        onSubmit(updatedHackathon);
+        onSubmit(response.data.hackathon);
       } else {
-        // Mock successful creation
-        console.log("Creating hackathon with data:", hackathonData);
+        // Actually make the API request instead of mocking
+        const response = await axios.post(
+          `${API_BASE_URL}/api/admin/hackathons`,
+          hackathonData
+        );
         
-        const newHackathon = {
-          _id: `hackathon${Date.now()}`,
-          ...hackathonData,
-          registration: {
-            totalCapacity: Number(hackathonData.totalCapacity),
-            currentlyRegistered: 0,
-            requiredTeamSize: 4
-          },
-          createdAt: new Date().toISOString()
-        };
-        
-        onSubmit(newHackathon);
+        onSubmit(response.data.hackathon);
       }
       
     } catch (err) {
       console.error(isEditing ? "Error updating hackathon:" : "Error creating hackathon:", err);
-      alert(`Failed to ${isEditing ? 'update' : 'create'} hackathon: ${err.message}`);
+      alert(`Failed to ${isEditing ? 'update' : 'create'} hackathon: ${err.response?.data?.message || err.message}`);
     } finally {
       setLoading(false);
     }

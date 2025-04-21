@@ -6,6 +6,9 @@ import {
   AlertCircle, UserPlus, Trash2, Award, RefreshCw
 } from 'lucide-react';
 
+const API_BASE_URL = "http://localhost:4000"; // or your deployed backend URL
+
+
 const ManageHackathonTeams = ({ hackathonId, onBack }) => {
   const [loading, setLoading] = useState(true);
   const [individuals, setIndividuals] = useState([]);

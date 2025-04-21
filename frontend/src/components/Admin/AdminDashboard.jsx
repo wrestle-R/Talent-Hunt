@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { CalendarDays, Users, Search, Bell, Shield, Database, FileText, FileBarChart } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
+const API_BASE_URL = "http://localhost:4000"; // or your deployed backend URL
+
+
 const AdminDashboard = ({ userData }) => {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');

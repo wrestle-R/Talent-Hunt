@@ -4,6 +4,8 @@ import { auth } from '../../firebaseConfig';
 import axios from 'axios';
 import AdminDashboard from './AdminDashboard';
 
+const API_BASE_URL = "http://localhost:4000"; // Use consistent base URL
+
 const AdminHero = () => {
   const [userData, setUserData] = useState({
     name: '',
@@ -34,8 +36,8 @@ const AdminHero = () => {
     try {
       setLoading(true);
       
-      // Fetch profile data from API using environment variable
-      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/admin/profile/${uid}`);
+      // Use the consistent API_BASE_URL instead of environment variable
+      const response = await axios.get(`${API_BASE_URL}/api/admin/profile/${uid}`);
       
       if (response.data) {
         // Update user data from API response
