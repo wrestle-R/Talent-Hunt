@@ -276,7 +276,9 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
           endpoint += `?${queryParams.toString()}`;
         }
         
-        const response = await axios.get(endpoint);
+        const response = await axios.post(endpoint, {
+          userData: userData
+        });
         console.log(response)
         // Process the response based on its structure
         if (response.data && response.data.success && Array.isArray(response.data.teammates)) {
