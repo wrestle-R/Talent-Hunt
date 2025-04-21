@@ -98,26 +98,26 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
     switch(status.toLowerCase()) {
       case 'accepted':
         return (
-          <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full flex items-center gap-1">
+          <span className="px-2 py-1 bg-[#2e7d32]/20 text-[#4caf50] rounded-full flex items-center gap-1">
             <CheckCircle size={14} /> {teamIndicator}Accepted
           </span>
         );
       case 'rejected':
         return (
-          <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full flex items-center gap-1">
+          <span className="px-2 py-1 bg-[#d32f2f]/20 text-[#f44336] rounded-full flex items-center gap-1">
             <XCircle size={14} /> {teamIndicator}Rejected
           </span>
         );
       case 'waitlisted':
         return (
-          <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full flex items-center gap-1">
+          <span className="px-2 py-1 bg-[#ff8f00]/20 text-[#ff9800] rounded-full flex items-center gap-1">
             <Clock size={14} /> {teamIndicator}Waitlisted
           </span>
         );
       case 'pending':
       default:
         return (
-          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full flex items-center gap-1">
+          <span className="px-2 py-1 bg-[#1976d2]/20 text-[#2196f3] rounded-full flex items-center gap-1">
             <Clock size={14} /> {teamIndicator}Pending
           </span>
         );
@@ -147,7 +147,7 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
         return (
           <Link 
             to={application.hackathon_url}
-            className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700"
+            className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-[#E8C848] text-[#121212] rounded-lg hover:bg-[#E8C848]/80 transition-all duration-300"
           >
             {timeInfo.isPast ? 'Visit Event' : 'Prepare'} <ExternalLink size={14} />
           </Link>
@@ -155,7 +155,7 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
       case 'waitlisted':
         return (
           <button 
-            className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-amber-600 text-white rounded-lg hover:bg-amber-700"
+            className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-[#E8C848]/10 text-[#E8C848] rounded-lg hover:bg-[#E8C848]/20 transition-all duration-300"
             onClick={() => window.alert("This would send a follow-up message to organizers")}
           >
             Check Status <AlertCircle size={14} />
@@ -165,7 +165,7 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
         return (
           <Link 
             to="/student/hackathons"
-            className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
+            className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-[#1A1A1A] text-white rounded-lg hover:bg-[#2A2A2A] transition-all duration-300"
           >
             Find More <Award size={14} />
           </Link>
@@ -174,7 +174,7 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
       default:
         return (
           <button 
-            className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+            className="inline-flex items-center gap-1 px-3 py-1 text-sm bg-[#1A1A1A] text-white rounded-lg hover:bg-[#2A2A2A] transition-all duration-300"
             onClick={() => window.alert("This would withdraw your application")}
           >
             Withdraw <XCircle size={14} />
@@ -190,42 +190,42 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
 
   if (!isFullPage) {
     return (
-      <div className="bg-white rounded-xl shadow-md p-6">
+      <div className="bg-[#1A1A1A] rounded-xl shadow-lg p-6 border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="font-bold text-lg flex items-center gap-2">
-            <Trophy className="text-purple-600" />
+          <h3 className="font-bold text-lg flex items-center gap-2 text-white">
+            <Trophy className="text-[#E8C848]" />
             Your Hackathon Applications
           </h3>
-          <Link
-            to="/student/hackathon-status" 
-            className="text-purple-600 hover:text-purple-700 text-sm font-medium flex items-center"
+          <button
+            onClick={() => onBack && onBack()} 
+            className="text-[#E8C848] hover:text-[#E8C848]/80 text-sm font-medium flex items-center transition-all duration-300"
           >
             View All <ChevronRight size={16} />
-          </Link>
+          </button>
         </div>
 
         {/* Loading State */}
         {loading && (
           <div className="flex justify-center p-4">
-            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-purple-600"></div>
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-[#E8C848]"></div>
           </div>
         )}
 
         {/* Error State */}
         {error && (
-          <div className="text-red-600 p-4">
+          <div className="text-red-400 p-4">
             {error}
           </div>
         )}
 
         {/* Empty State */}
         {!loading && !error && applications.length === 0 && (
-          <div className="text-center py-6 text-gray-500">
+          <div className="text-center py-6 text-gray-400">
             <div className="mb-2">
-              <Trophy size={32} className="mx-auto text-gray-400" />
+              <Trophy size={32} className="mx-auto text-gray-500" />
             </div>
             <p>You haven't applied to any hackathons yet</p>
-            <Link to="/student/hackathons" className="text-purple-600 hover:underline mt-2 inline-block">
+            <Link to="/student/hackathons" className="text-[#E8C848] hover:underline mt-2 inline-block">
               Browse Hackathons
             </Link>
           </div>
@@ -237,21 +237,21 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
             {applications.slice(0, limit).map((app) => (
               <div 
                 key={app.id} 
-                className={`p-4 rounded-lg ${
-                  app.status.toLowerCase() === 'accepted' ? 'bg-green-50' :
-                  app.status.toLowerCase() === 'pending' ? 'bg-blue-50' :
-                  app.status.toLowerCase() === 'waitlisted' ? 'bg-yellow-50' :
-                  'bg-red-50'
+                className={`p-4 rounded-lg border ${
+                  app.status.toLowerCase() === 'accepted' ? 'border-green-500/30 bg-[#2e7d32]/10' :
+                  app.status.toLowerCase() === 'pending' ? 'border-blue-500/30 bg-[#1976d2]/10' :
+                  app.status.toLowerCase() === 'waitlisted' ? 'border-yellow-500/30 bg-[#ff8f00]/10' :
+                  'border-red-500/30 bg-[#d32f2f]/10'
                 }`}
               >
                 <div className="flex justify-between items-start">
                   <div>
-                    <h4 className="font-medium text-gray-900">{app.hackathon_name}</h4>
-                    <div className="text-sm text-gray-600 mt-1">
+                    <h4 className="font-medium text-white">{app.hackathon_name}</h4>
+                    <div className="text-sm text-gray-400 mt-1">
                       {formatDate(app.start_date)} - {formatDate(app.end_date)}
                     </div>
                     {app.isTeamApplication && (
-                      <div className="text-sm text-gray-600 mt-1 flex items-center gap-1">
+                      <div className="text-sm text-gray-400 mt-1 flex items-center gap-1">
                         <Users size={14} /> Team: {app.teamName}
                       </div>
                     )}
@@ -268,18 +268,18 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
 
   // Full page view
   return (
-    <div className="p-6">
+    <div className="p-6 bg-[#121212]">
       {/* Header */}
       <div className="flex items-center mb-6">
         {onBack && (
           <button 
             onClick={onBack}
-            className="bg-purple-100 text-purple-700 p-2 rounded-full mr-4 hover:bg-purple-200 transition-colors"
+            className="bg-[#E8C848]/10 text-[#E8C848] p-2 rounded-full mr-4 hover:bg-[#E8C848]/20 transition-all duration-300"
           >
             <ArrowLeft size={20} />
           </button>
         )}
-        <h2 className="text-2xl font-bold text-gray-800">Your Hackathon Applications</h2>
+        <h2 className="text-2xl font-bold text-white">Your Hackathon Applications</h2>
       </div>
 
       {/* Filters */}
@@ -288,9 +288,9 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
           onClick={() => setFilter('all')}
           className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1 ${
             filter === 'all' 
-              ? 'bg-purple-600 text-white' 
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
+              ? 'bg-[#E8C848] text-[#121212]' 
+              : 'bg-[#1A1A1A] text-gray-300 hover:bg-[#2A2A2A]'
+          } transition-all duration-300`}
         >
           <Filter size={14} /> All
         </button>
@@ -298,22 +298,16 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
           <button 
             key={status}
             onClick={() => setFilter(status)}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1 ${
+            className={`px-3 py-1.5 rounded-full text-sm font-medium flex items-center gap-1 transition-all duration-300 ${
               filter === status
-                ? `bg-${status === 'accepted' ? 'green' : 
-                    status === 'pending' ? 'blue' : 
-                    status === 'waitlisted' ? 'yellow' : 
-                    'red'}-600 text-white`
-                : `bg-${status === 'accepted' ? 'green' : 
-                    status === 'pending' ? 'blue' : 
-                    status === 'waitlisted' ? 'yellow' : 
-                    'red'}-50 text-${status === 'accepted' ? 'green' : 
-                    status === 'pending' ? 'blue' : 
-                    status === 'waitlisted' ? 'yellow' : 
-                    'red'}-700 hover:bg-${status === 'accepted' ? 'green' : 
-                    status === 'pending' ? 'blue' : 
-                    status === 'waitlisted' ? 'yellow' : 
-                    'red'}-100`
+                ? status === 'accepted' ? 'bg-[#2e7d32]/20 text-[#4caf50] border border-[#4caf50]/50' :
+                  status === 'pending' ? 'bg-[#1976d2]/20 text-[#2196f3] border border-[#2196f3]/50' :
+                  status === 'waitlisted' ? 'bg-[#ff8f00]/20 text-[#ff9800] border border-[#ff9800]/50' :
+                  'bg-[#d32f2f]/20 text-[#f44336] border border-[#f44336]/50'
+                : status === 'accepted' ? 'bg-[#2e7d32]/10 text-[#4caf50] hover:bg-[#2e7d32]/20' :
+                  status === 'pending' ? 'bg-[#1976d2]/10 text-[#2196f3] hover:bg-[#1976d2]/20' :
+                  status === 'waitlisted' ? 'bg-[#ff8f00]/10 text-[#ff9800] hover:bg-[#ff8f00]/20' :
+                  'bg-[#d32f2f]/10 text-[#f44336] hover:bg-[#d32f2f]/20'
             }`}
           >
             {status === 'accepted' ? <CheckCircle size={14} /> :
@@ -328,16 +322,16 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
       {/* Content */}
       {loading && (
         <div className="flex justify-center p-8">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-purple-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#E8C848]"></div>
         </div>
       )}
 
       {error && (
-        <div className="bg-red-100 text-red-800 p-4 rounded-lg">
+        <div className="bg-[#d32f2f]/20 text-[#f44336] p-4 rounded-lg border border-[#f44336]/30">
           {error}
           <button 
             onClick={fetchHackathonApplications}
-            className="ml-2 text-red-700 underline"
+            className="ml-2 text-[#f44336] underline"
           >
             Try again
           </button>
@@ -345,11 +339,11 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
       )}
 
       {!loading && !error && filteredApplications.length === 0 && (
-        <div className="bg-gray-100 text-gray-700 p-8 rounded-lg text-center">
+        <div className="bg-[#1A1A1A] text-gray-400 p-8 rounded-lg text-center border border-gray-800">
           <div className="mb-3">
-            <Trophy size={48} className="mx-auto text-gray-400" />
+            <Trophy size={48} className="mx-auto text-gray-500" />
           </div>
-          <h3 className="text-xl font-medium mb-2">
+          <h3 className="text-xl font-medium mb-2 text-white">
             {applications.length === 0 
               ? "No Applications Yet"
               : "No Applications Match Your Filter"}
@@ -363,18 +357,18 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
           {applications.length === 0 && (
             <Link 
               to="/student/hackathons"
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg inline-block"
+              className="bg-[#E8C848] hover:bg-[#E8C848]/80 text-[#121212] px-4 py-2 rounded-lg inline-flex items-center gap-2 transition-all duration-300"
             >
-              Browse Hackathons
+              <Trophy size={16} /> Browse Hackathons
             </Link>
           )}
           
           {applications.length > 0 && (
             <button
               onClick={() => setFilter('all')}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg inline-block"
+              className="bg-[#E8C848] hover:bg-[#E8C848]/80 text-[#121212] px-4 py-2 rounded-lg inline-flex items-center gap-2 transition-all duration-300"
             >
-              Show All Applications
+              <Filter size={16} /> Show All Applications
             </button>
           )}
         </div>
@@ -385,19 +379,19 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
           {filteredApplications.map((app) => (
             <div 
               key={app.id} 
-              className={`bg-white p-5 rounded-lg shadow-md ${
-                app.status.toLowerCase() === 'accepted' ? 'border-l-4 border-green-500' :
-                app.status.toLowerCase() === 'pending' ? 'border-l-4 border-blue-500' :
-                app.status.toLowerCase() === 'waitlisted' ? 'border-l-4 border-yellow-500' :
-                'border-l-4 border-red-500'
-              }`}
+              className={`bg-[#1A1A1A] p-5 rounded-lg border ${
+                app.status.toLowerCase() === 'accepted' ? 'border-[#4caf50]/50' :
+                app.status.toLowerCase() === 'pending' ? 'border-[#2196f3]/50' :
+                app.status.toLowerCase() === 'waitlisted' ? 'border-[#ff9800]/50' :
+                'border-[#f44336]/50'
+              } hover:border-[#E8C848]/50 transition-all duration-300`}
             >
               <div className="flex justify-between items-start mb-3">
-                <h3 className="text-lg font-medium">{app.hackathon_name}</h3>
+                <h3 className="text-lg font-medium text-white">{app.hackathon_name}</h3>
                 {getStatusBadge(app.status, app.isTeamApplication)}
               </div>
               
-              <div className="mb-4 text-sm text-gray-600">
+              <div className="mb-4 text-sm text-gray-400">
                 <div className="flex items-center gap-1 mb-1">
                   <Calendar size={14} /> 
                   {formatDate(app.start_date)} - {formatDate(app.end_date)}
@@ -423,10 +417,10 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
                 {app.deadlineInfo && (
                   <div className="mt-2 text-sm">
                     {!app.deadlineInfo.isRegistrationOpen && (
-                      <p className="text-red-600">Registration Closed</p>
+                      <p className="text-[#f44336]">Registration Closed</p>
                     )}
                     {app.deadlineInfo.isRegistrationOpen && !app.deadlineInfo.isCapacityAvailable && (
-                      <p className="text-amber-600">Capacity Full</p>
+                      <p className="text-[#ff9800]">Capacity Full</p>
                     )}
                     {app.isTeamApplication && (
                       <p>Required Team Size: {app.deadlineInfo.requiredTeamSize}</p>
@@ -436,12 +430,12 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
                 
                 {/* Add temporary team info for individual applications */}
                 {!app.isTeamApplication && app.temporaryTeam && (
-                  <div className="mt-2 bg-blue-50 p-2 rounded">
-                    <p className="font-medium">Assigned Team:</p>
+                  <div className="mt-2 bg-[#1976d2]/10 p-2 rounded border border-[#2196f3]/20">
+                    <p className="font-medium text-white">Assigned Team:</p>
                     <p>{app.temporaryTeam.name}</p>
                     <div className="flex flex-wrap gap-1 mt-1">
                       {app.temporaryTeam.members.map((member, idx) => (
-                        <span key={idx} className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                        <span key={idx} className="text-xs bg-[#2196f3]/10 text-[#2196f3] px-2 py-1 rounded">
                           {member.name}
                         </span>
                       ))}
@@ -451,18 +445,18 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
               </div>
               
               {app.feedback && (
-                <div className={`mb-4 p-3 text-sm rounded ${
-                  app.status.toLowerCase() === 'accepted' ? 'bg-green-50 text-green-800' :
-                  app.status.toLowerCase() === 'waitlisted' ? 'bg-yellow-50 text-yellow-800' :
-                  app.status.toLowerCase() === 'rejected' ? 'bg-red-50 text-red-800' :
-                  'bg-gray-50 text-gray-800'
+                <div className={`mb-4 p-3 text-sm rounded border ${
+                  app.status.toLowerCase() === 'accepted' ? 'bg-[#2e7d32]/10 text-[#4caf50] border-[#4caf50]/30' :
+                  app.status.toLowerCase() === 'waitlisted' ? 'bg-[#ff8f00]/10 text-[#ff9800] border-[#ff9800]/30' :
+                  app.status.toLowerCase() === 'rejected' ? 'bg-[#d32f2f]/10 text-[#f44336] border-[#f44336]/30' :
+                  'bg-[#1A1A1A] text-gray-400 border-gray-700'
                 }`}>
-                  <p className="font-medium mb-1">Feedback:</p>
+                  <p className="font-medium mb-1 text-white">Feedback:</p>
                   <p>{app.feedback}</p>
                 </div>
               )}
               
-              <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+              <div className="flex justify-between items-center pt-3 border-t border-gray-800">
                 <div className="text-sm text-gray-500">
                   Applied: {formatDate(app.applied_date)}
                 </div>
@@ -477,7 +471,7 @@ const HackathonStatus = ({ isFullPage = false, limit = 3, onBack }) => {
       <div className="mt-8 text-center">
         <Link
           to="/student/hackathons"
-          className="bg-purple-600 hover:bg-purple-700 text-white font-medium px-6 py-3 rounded-lg inline-flex items-center gap-2"
+          className="bg-[#E8C848] hover:bg-[#E8C848]/80 text-[#121212] font-medium px-6 py-3 rounded-lg inline-flex items-center gap-2 transition-all duration-300"
         >
           <Trophy size={18} /> Find More Hackathons
         </Link>
