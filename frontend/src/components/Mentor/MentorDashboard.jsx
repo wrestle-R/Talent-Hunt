@@ -79,7 +79,7 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
     
     try {
       setMentorshipLoading(true);
-      const response = await axios.get(`http://localhost:4000/api/mentor/active-mentorships/${userData._id}`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/active-mentorships/${userData._id}`);
       console.log("Mentorships data:", response.data);
       setActiveMentorships(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
@@ -99,7 +99,7 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
     
     try {
       setApplicationsLoading(true);
-      const response = await axios.get(`http://localhost:4000/api/mentor/team-applications/${userData._id}`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team-applications/${userData._id}`);
       console.log("Applications data:", response.data);
       setTeamApplications(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
@@ -119,7 +119,7 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
     
     try {
       setConversationsLoading(true);
-      const response = await axios.get(`http://localhost:4000/api/mentor/conversations/${userData._id}`);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/mentor/conversations/${userData._id}`);
       console.log("Conversations data:", response.data);
       setConversations(Array.isArray(response.data) ? response.data : []);
     } catch (error) {
@@ -134,7 +134,7 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
   const handleViewTeam = async (team) => {
     try {
       const response = await axios.get(
-        `http://localhost:4000/api/mentor/team/${team._id}?mentorId=${userData._id}`
+        `${import.meta.env.VITE_APP_BASE_URL}/api/mentor/team/${team._id}?mentorId=${userData._id}`
       );
       
       if (response.data && response.data.success) {
@@ -172,7 +172,7 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
       
       // Now fetch detailed profile
       const response = await axios.get(
-        `http://localhost:4000/api/mentor/student-profile/${memberId}?mentorId=${userData._id}`
+        `${import.meta.env.VITE_APP_BASE_URL}/api/mentor/student-profile/${memberId}?mentorId=${userData._id}`
       );
       
       if (response.data && response.data.success) {

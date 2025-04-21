@@ -52,7 +52,7 @@ const MentorProfile = () => {
         }
         
         const response = await axios.get(
-          `http://localhost:4000/api/mentor/profile/${user.uid}`,
+          `${import.meta.env.VITE_APP_BASE_URL}/api/mentor/profile/${user.uid}`,
         );
         
         if (response.data) {
@@ -196,7 +196,7 @@ const MentorProfile = () => {
       }
     
       await axios.put(
-        `http://localhost:4000/api/mentor/profile/${user.uid}`,
+        `${import.meta.env.VITE_APP_BASE_URL}/api/mentor/profile/${user.uid}`,
         formData,
       );
       
