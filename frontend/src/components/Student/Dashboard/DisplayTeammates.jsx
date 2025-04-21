@@ -37,7 +37,7 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
   
   // Function to handle opening teammate profile
   const handleViewProfile = (teammateId) => {
-    navigate(`/student/teammate/${teammateId}`);
+    navigate(`/student/teammate/${teammateId.$oid}`);
   };
 
   // Function to handle opening chat
@@ -275,11 +275,18 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
         if (queryParams.toString()) {
           endpoint += `?${queryParams.toString()}`;
         }
+  
+        let response;
+        if (isRecommendations) {
+          response = await axios.post(endpoint, {
+            userData: userData
+          });
+        } else {
+          response = await axios.get(endpoint);
+        }
         
-        const response = await axios.post(endpoint, {
-          userData: userData
-        });
-        console.log(response)
+        console.log(response);
+        
         // Process the response based on its structure
         if (Array.isArray(response.data?.teammates)) {
           setTeammates(response.data.teammates);

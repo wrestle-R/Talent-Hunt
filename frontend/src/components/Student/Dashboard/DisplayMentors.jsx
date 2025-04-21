@@ -7,7 +7,7 @@ import { useUser } from '../../../../context/UserContext';
 import ChatModal from '../ChatModal';
 import MentorPlaceholder from "../../../public/mentor_placeholder.png";
 
-const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommendations = false }) => {
+const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommendations = true }) => {
   const navigate = useNavigate();
   const { userData: contextUserData } = useUser();
   const userData = propUserData || contextUserData;
@@ -70,9 +70,9 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
         // Determine which endpoint to use
         let endpoint;
         if (isRecommendations) {
-          endpoint = `http://localhost:4000/api/student/recommended-mentors/${uid}`;
+          endpoint = `http://localhost:8000/api/recommend_mentors/`;
         } else {
-          endpoint = `http://localhost:4000/api/student/mentors/`;
+          endpoint = `http://localhost:4000/api/student/mentors/:${uid}`;
         }
         
         // Add query parameters to endpoint if any exist
@@ -80,17 +80,25 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
           endpoint += `?${queryParams.toString()}`;
         }
         
-        const response = await axios.get(endpoint);
-        
+        let response;
+        if (isRecommendations) {
+          response = await axios.post(endpoint, {
+            userData: userData
+          });
+        } else {
+          response = await axios.get(endpoint);
+        }
+        console.log("Mentors response:", response.data);
         // Process the response based on its structure
-        if (response.data && response.data.success && Array.isArray(response.data.mentors)) {
+        if (Array.isArray(response.data.mentors)) {
           setMentors(response.data.mentors);
-        } else if (response.data && Array.isArray(response.data)) {
+        } else if (Array.isArray(response.data)) {
           setMentors(response.data);
         } else {
           console.warn("Unexpected response format:", response.data);
           setMentors([]);
         }
+        console.log("Mentors fetched:", mentors);
       } catch (err) {
         console.error("Error fetching mentors:", err);
         setError(`Failed to load mentors: ${err.message}`);
@@ -296,173 +304,161 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
       )}
       
       {/* Mentors list - in a row for recommendations, grid for full page */}
-      {filteredMentors.length > 0 ? (
-        <div className={`${isRecommendations 
-          ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4' 
-          : isFullPage 
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4' 
-            : 'grid grid-cols-1 md:grid-cols-2 gap-4'
-        }`}>
-          {filteredMentors.slice(0, isRecommendations ? 4 : undefined).map(mentor => {
-            const expertiseDisplay = getExpertiseDisplay(mentor);
-            
-            // Safely display complex values
-            const companyName = typeof mentor.currentCompany === 'string' 
-              ? mentor.currentCompany 
-              : typeof mentor.current_company === 'string'
-                ? mentor.current_company
-                : mentor.currentCompany && typeof mentor.currentCompany === 'object' && mentor.currentCompany.name
-                  ? mentor.currentCompany.name
-                  : mentor.current_company && typeof mentor.current_company === 'object' && mentor.current_company.name
-                    ? mentor.current_company.name
-                    : '';
-                    
-            const mentorTitle = typeof mentor.title === 'string'
-              ? mentor.title
-              : typeof mentor.current_role === 'string'
-                ? mentor.current_role
-                : 'Mentor';
-                
-            const mentorBio = typeof mentor.bio === 'string' ? mentor.bio : "No bio available.";
-            
-            // Safe rating
-            const rating = typeof mentor.averageRating === 'number'
-              ? mentor.averageRating
-              : typeof mentor.average_rating === 'number'
-                ? mentor.average_rating
-                : 0;
-                
-            // Get skills safely
-            const skills = Array.isArray(mentor.skills) 
-              ? mentor.skills.filter(skill => typeof skill === 'string')
-              : [];
+      {mentors.length > 0 ? (
+  <div className={`${isRecommendations 
+    ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3' 
+    : isFullPage 
+      ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3' 
+      : 'grid grid-cols-1 md:grid-cols-2 gap-3'
+  }`}>
+    {mentors.slice(0, isRecommendations ? 4 : undefined).map(mentor => {
+      // Safely extract mentor data
+      const mentorId = mentor._id?.$oid || mentor._id || '';
+      const profilePicture = mentor.profile_picture || MentorPlaceholder;
+      const mentorName = mentor.name || 'Unnamed Mentor';
+      const mentorTitle = mentor.current_role?.title || 'Mentor';
+      const companyName = mentor.current_role?.company || '';
+      const mentorBio = mentor.bio || "No bio available.";
+      const rating = mentor.rating?.$numberInt ? parseInt(mentor.rating.$numberInt) : 0;
+      const yearsExperience = mentor.years_of_experience?.$numberInt || 0;
+      
+      // Extract skills from expertise object
+      const technicalSkills = mentor.expertise?.technical_skills || [];
+      const nonTechnicalSkills = mentor.expertise?.non_technical_skills || [];
+      const allSkills = [...technicalSkills, ...nonTechnicalSkills].filter(skill => skill && skill !== "To be updated");
+      
+      // Get focus areas
+      const focusAreas = mentor.mentorship_focus_areas || [];
+      
+      return (
+        <div 
+          key={mentorId} 
+          className="flex flex-col bg-[#121212] rounded-lg border border-gray-800 overflow-hidden h-[220px] hover:shadow-lg cursor-pointer transition-shadow text-xs"
+          onClick={() => handleViewProfile(mentorId)}
+        >
+          <div className="p-3 flex items-start space-x-2 flex-1">
+            <img 
+              src={profilePicture} 
+              alt={mentorName} 
+              className="w-10 h-10 rounded-full object-cover"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = 'https://via.placeholder.com/40?text=👤';
+              }}
+            />
+            <div className="flex-1 min-w-0 space-y-1">
+              <p className="font-semibold text-white truncate">{mentorName}</p>
+              <p className="text-gray-400 truncate">
+                {mentorTitle} {companyName && `at ${companyName}`}
+              </p>
               
-            const expertise = Array.isArray(mentor.expertise)
-              ? mentor.expertise.filter(skill => typeof skill === 'string')
-              : [];
+              {/* Years of experience */}
+              {yearsExperience > 0 && (
+                <div className="flex items-center text-gray-400">
+                  <Clock size={10} className="mr-1 flex-shrink-0" />
+                  <span>{yearsExperience}+ years experience</span>
+                </div>
+              )}
+
+              {/* Rating display with yellow stars */}
+              {rating > 0 && (
+                <div className="flex items-center text-[#E8C848]">
+                  <span className="font-medium">Rating: </span>
+                  <div className="flex ml-1">
+                    {[...Array(5)].map((_, index) => (
+                      <Star 
+                        key={index} 
+                        size={10} 
+                        className={`${
+                          index < rating 
+                            ? 'text-yellow-400 fill-yellow-400' 
+                            : 'text-gray-300'
+                        }`} 
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
               
-            const allSkills = skills.length > 0 ? skills : expertise;
+              {/* Focus areas as badges */}
+              {focusAreas.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {focusAreas.slice(0, 2).map((area, i) => (
+                    <span key={i} className="bg-blue-500/10 text-blue-400 px-1.5 py-0.5 rounded-full">
+                      {area}
+                    </span>
+                  ))}
+                  {focusAreas.length > 2 && (
+                    <span className="text-gray-400">+{focusAreas.length - 2}</span>
+                  )}
+                </div>
+              )}
+              
+              {/* Skills display */}
+              {allSkills.length > 0 && (
+                <div className="flex flex-wrap gap-1">
+                  {allSkills.slice(0, 2).map((skill, i) => (
+                    <span key={i} className="bg-[#E8C848]/10 text-[#E8C848] px-1.5 py-0.5 rounded-full">
+                      {skill}
+                    </span>
+                  ))}
+                  {allSkills.length > 2 && (
+                    <span className="text-gray-400">+{allSkills.length - 2}</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="p-2 border-t border-gray-800 bg-[#121212]">
+            {/* Bio snippet */}
+            <div className="flex items-start text-gray-400 mb-1 truncate">
+              <User size={10} className="mr-1 mt-0.5 flex-shrink-0" />
+              <span className="truncate">{mentorBio}</span>
+            </div>
             
-            return (
-              <div 
-                key={mentor._id} 
-                className="flex flex-col bg-[#121212] rounded-lg border border-gray-800 overflow-hidden h-[300px] hover:border-[#E8C848]/30 transition-all duration-300 shadow-lg hover:shadow-[#E8C848]/10"
+            <div className="flex gap-1.5" onClick={e => e.stopPropagation()}>
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleOpenChat(mentor);
+                }} 
+                className="bg-gray-800 text-gray-400 px-2 py-1 rounded text-xs flex items-center hover:bg-gray-700 hover:text-white transition-all duration-300"
               >
-                <div 
-                  className="p-4 flex items-start space-x-3 flex-1 cursor-pointer hover:bg-[#1A1A1A] transition-all duration-300"
-                  onClick={() => handleViewProfile(mentor._id)}
-                >
-                  <img 
-                    src={mentor.profilePicture || mentor.profile_picture || MentorPlaceholder} 
-                    alt={mentor.name} 
-                    className="w-16 h-16 rounded-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'https://via.placeholder.com/64?text=👤';
-                    }}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-gray-300">{mentor.name || 'Unnamed Mentor'}</p>
-                    <p className="text-sm text-gray-400 truncate">
-                      {mentorTitle}
-                    </p>
-                    
-                    {/* Current company - safely rendered */}
-                    {companyName && (
-                      <p className="text-sm text-gray-400 truncate flex items-center mt-1">
-                        <Briefcase size={12} className="mr-1" />
-                        {companyName}
-                      </p>
-                    )}
-                    
-                    {/* Expertise tag */}
-                    <div className={`flex items-center ${expertiseDisplay.bgColor} ${expertiseDisplay.textColor} text-xs px-2 py-0.5 rounded-full mt-2 w-fit`}>
-                      {expertiseDisplay.icon}
-                      <span>{expertiseDisplay.text}</span>
-                    </div>
-                    
-                    {/* Rating - safely displayed */}
-                    {rating > 0 && (
-                      <div className="flex items-center mt-2">
-                        <div className="flex">
-                          {[...Array(5)].map((_, index) => (
-                            <Star 
-                              key={index} 
-                              size={12} 
-                              className={`${
-                                index < Math.floor(rating) 
-                                  ? 'text-yellow-400 fill-yellow-400' 
-                                  : 'text-gray-300'
-                              }`} 
-                            />
-                          ))}
-                        </div>
-                        <span className="ml-1 text-xs text-gray-400">
-                          {rating.toFixed(1)}
-                        </span>
-                      </div>
-                    )}
-                    
-                    {/* Skills - safely mapped */}
-                    {allSkills.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {allSkills.slice(0, 3).map((skill, i) => (
-                          <span key={i} className="bg-[#E8C848]/10 text-[#E8C848] text-xs px-2 py-0.5 rounded-full">
-                            {skill}
-                          </span>
-                        ))}
-                        {allSkills.length > 3 && (
-                          <span className="text-xs text-gray-400">+{allSkills.length - 3} more</span>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="p-4 border-t border-gray-800 bg-[#121212]">
-                  {/* Bio - safely rendered */}
-                  <p className="text-sm text-gray-400 mb-3 line-clamp-2">
-                    {mentorBio}
-                  </p>
-                  
-                  <div className="flex gap-2 mt-2" onClick={e => e.stopPropagation()}>
-                    <button 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleOpenChat(mentor);
-                      }} 
-                      className="bg-[#1A1A1A] text-gray-300 px-3 py-1 rounded-lg text-sm flex items-center flex-1 justify-center hover:bg-[#E8C848]/10 hover:text-[#E8C848] transition-all duration-300"
-                    >
-                      <MessageCircle size={14} className="mr-1" /> Message
-                    </button>
-                    <button 
-                      onClick={() => handleViewProfile(mentor._id)}
-                      className="bg-[#E8C848] text-[#121212] px-3 py-1 rounded-lg text-sm flex-1 hover:bg-[#E8C848]/80 transition-all duration-300 shadow-lg shadow-[#E8C848]/30"
-                    >
-                      View Profile
-                    </button>
-                  </div>
-                </div>
-              </div>
-            );
-          })}
+                <MessageCircle size={12} className="mr-1" />
+              </button>
+              
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewProfile(mentorId);
+                }}
+                className="bg-[#E8C848]/10 text-[#E8C848] px-2 py-1 rounded text-xs flex-1 hover:bg-[#E8C848]/20 transition-all duration-300"
+              >
+                Profile
+              </button>
+            </div>
+          </div>
         </div>
-      ) : (
-        <div className="text-center py-10">
-          <User size={48} className="mx-auto text-[#E8C848]/30 mb-3" />
-          <h4 className="text-lg font-medium text-gray-300 mb-1">No mentors found</h4>
-          <p className="text-gray-400 text-sm">
-            {isFullPage 
-              ? availabilityFilter !== 'all'
-                ? `No mentors are currently ${availabilityFilter === 'available' ? 'available' : 'open to mentorship'}.`
-                : "Try adjusting your search or filter criteria."
-              : "We're adding more mentor suggestions soon."}
-          </p>
-        </div>
-      )}
+      );
+    })}
+  </div>
+) : (
+  <div className="text-center py-10">
+    <User size={48} className="mx-auto text-[#E8C848]/30 mb-3" />
+    <h4 className="text-lg font-medium text-gray-300 mb-1">No mentors found</h4>
+    <p className="text-gray-400 text-sm">
+      {isFullPage 
+        ? availabilityFilter !== 'all'
+          ? `No mentors are currently ${availabilityFilter === 'available' ? 'available' : 'open to mentorship'}.`
+          : "Try adjusting your search or filter criteria."
+        : "We're adding more mentor suggestions soon."}
+    </p>
+  </div>
+)}
       
       {/* Pagination or more mentors button - only in full page view */}
-      {isFullPage && filteredMentors.length > 8 && (
+      {isFullPage && mentors.length > 8 && (
         <div className="mt-6 flex justify-center">
           <button className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/20 transition-all duration-300">
             Load More Mentors
