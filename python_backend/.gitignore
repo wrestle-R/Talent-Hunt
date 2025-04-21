@@ -1,5 +1,6 @@
 node_modules/
-
+_pycache_/
+__pycache__/
 # Logs
 logs
 *.log
@@ -8,7 +9,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
-
+venv
 node_modules
 dist
 dist-ssr
@@ -20,10 +21,10 @@ dist-ssr
 .idea
 .DS_Store
 *.suo
-*.ntvs*
+.ntvs
 *.njsproj
 *.sln
 *.sw?
 *.env
-
 .venv
+**/_pycache_/
