@@ -122,15 +122,6 @@ const ModeratorDashboard = ({ userData }) => {
       stats: { count: 12, label: 'Pending' }
     },
     {
-      title: 'Team Dissolution',
-      description: 'Review team dissolution requests',
-      icon: <UserX size={24} className="text-purple-600" />,
-      path: '/moderator/teams/dissolution',
-      bgColor: 'bg-purple-50',
-      textColor: 'text-purple-700',
-      stats: { count: 3, label: 'Requests' }
-    },
-    {
       title: 'Student Reports',
       description: 'Generate and review student activity reports',
       icon: <File size={24} className="text-emerald-600" />,

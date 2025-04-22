@@ -26,21 +26,37 @@ const Messages = () => {
     try {
       setIsLoading(true);
       const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=${statusFilter}`);
-      setReportedMessages(response.data);
       
-      // Calculate stats
+      // Ensure response.data is an array
+      const messages = Array.isArray(response.data) ? response.data : 
+                      Array.isArray(response.data.messages) ? response.data.messages : [];
+      
+      setReportedMessages(messages);
+      
+      // Calculate stats with safe array access
       const newStats = {
-        total: response.data.length,
-        pending: response.data.filter(msg => msg.reportDetails.status === 'pending').length,
-        reviewed: response.data.filter(msg => msg.reportDetails.status === 'reviewed').length,
-        actionTaken: response.data.filter(msg => msg.reportDetails.status === 'action_taken').length,
-        dismissed: response.data.filter(msg => msg.reportDetails.status === 'dismissed').length,
-        student: response.data.filter(msg => msg.sender?.type === 'student').length,
-        mentor: response.data.filter(msg => msg.sender?.type === 'mentor').length
+        total: messages.length,
+        pending: messages.filter(msg => msg?.reportDetails?.status === 'pending').length,
+        reviewed: messages.filter(msg => msg?.reportDetails?.status === 'reviewed').length,
+        actionTaken: messages.filter(msg => msg?.reportDetails?.status === 'action_taken').length,
+        dismissed: messages.filter(msg => msg?.reportDetails?.status === 'dismissed').length,
+        student: messages.filter(msg => msg?.sender?.type === 'student').length,
+        mentor: messages.filter(msg => msg?.sender?.type === 'mentor').length
       };
       setStats(newStats);
+
     } catch (error) {
       console.error('Error fetching reported messages:', error);
+      setReportedMessages([]); // Set empty array on error
+      setStats({
+        total: 0,
+        pending: 0,
+        reviewed: 0,
+        actionTaken: 0,
+        dismissed: 0,
+        student: 0,
+        mentor: 0
+      });
     } finally {
       setIsLoading(false);
     }
@@ -250,8 +266,8 @@ const Messages = () => {
                       </tr>
                     </thead>
                     <tbody className="bg-[#1A1A1A] divide-y divide-gray-800">
-                      {reportedMessages.map((message) => (
-                        <tr key={message._id} className="hover:bg-gray-50">
+                      {Array.isArray(reportedMessages) && reportedMessages.map((message) => (
+                        <tr key={message?._id || Math.random()} className="hover:bg-gray-50">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="text-sm text-gray-900">
                               {message.message.length > 50 
