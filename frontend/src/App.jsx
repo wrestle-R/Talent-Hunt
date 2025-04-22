@@ -42,7 +42,7 @@ import ManageHackathons from './components/Admin/ManageHackathons'
 import ManageHackathonTeams from "./components/Admin/ManagehackathonTeams"
 import AllConversationsPageMentor from './components/Mentor/dashboard/AllConversationsPage';
 import TeamManagement from './components/Mentor/Team/TeamManagement';
-
+import StudentReports from './components/Moderator/studentReports';
 const role = localStorage.userRole
 console.log(role)
 const App = () => {
@@ -120,6 +120,7 @@ const App = () => {
               <Route path="/moderator/projects/pending" element={<ProjectManagement statusFilter="Pending" />} />
               <Route path="/moderator/projects/approved" element={<ProjectManagement statusFilter="Approved" />} />
               <Route path="/moderator/projects/rejected" element={<ProjectManagement statusFilter="Rejected" />} />
+              <Route path="/moderator/reports" element={<StudentReports />} />
               
               {/* Moderator Notes Routes */}
               <Route path="/moderator/notes" element={<NotesManagement />} />
