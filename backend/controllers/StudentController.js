@@ -75,7 +75,7 @@ const updateStudentProfile = async (req, res) => {
   try {
     const { uid } = req.params;
     const updatedData = req.body;
-    
+    console.log("Updated Data:", updatedData);
     // Prevent updating protected fields
     delete updatedData.email;
     delete updatedData.firebaseUID;
