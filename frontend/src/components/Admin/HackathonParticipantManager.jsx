@@ -212,12 +212,13 @@ const HackathonParticipantManager = () => {
   };
 
   const renderTeamMembers = (members) => {
+    // Guard clause for null/undefined members array
     if (!members || !Array.isArray(members)) {
-      return <div className="text-gray-500">No members information available</div>;
+      return <div className="text-gray-500">No members available</div>;
     }
-
+  
     return members.map((member, index) => {
-      // Safety check for completely null/undefined member
+      // If member is completely null/undefined, return placeholder
       if (!member) {
         return (
           <div key={`missing-member-${index}`} className="flex items-center">
@@ -232,9 +233,9 @@ const HackathonParticipantManager = () => {
           </div>
         );
       }
-
+  
       try {
-        // Check if this is a member with direct properties (for registered teams)
+        // Handle case where member data is directly on the member object
         if (member.name && typeof member.name === 'string') {
           return (
             <div key={member._id || `direct-member-${index}`} className="flex items-center">
@@ -242,13 +243,13 @@ const HackathonParticipantManager = () => {
                 <img 
                   className="h-8 w-8 rounded-full object-cover" 
                   src={member.profile_picture || PLACEHOLDER_IMAGE} 
-                  alt={member.name.substring(0,1)} 
+                  alt={(member.name || '?').charAt(0)}
                   onError={(e) => { e.target.src = PLACEHOLDER_IMAGE }}
                 />
               </div>
               <div className="ml-3">
                 <div className="text-sm font-medium flex items-center text-white">
-                  {member.name}
+                  {member.name || 'Unknown'}
                   {member.isLeader && (
                     <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                       <Award size={12} className="mr-1" />
@@ -256,42 +257,27 @@ const HackathonParticipantManager = () => {
                     </span>
                   )}
                 </div>
-                <div className="text-xs text-gray-400">{member.email || "No email"}</div>
+                <div className="text-xs text-gray-400">{member.email || 'No email'}</div>
               </div>
             </div>
           );
         }
-
-        // Check for nested student object
-        if (!member.student) {
-          return (
-            <div key={`no-student-${index}`} className="flex items-center">
-              <div className="flex-shrink-0 h-8 w-8">
-                <div className="h-8 w-8 rounded-full bg-gray-700 flex items-center justify-center text-xs text-gray-400">
-                  ?
-                </div>
-              </div>
-              <div className="ml-3">
-                <div className="text-sm font-medium text-gray-400">Member Info Missing</div>
-              </div>
-            </div>
-          );
-        }
-
-        // Handle case with nested student object
+  
+        // Handle case where member data is nested in student property
+        const studentData = member.student || {};
         return (
-          <div key={member._id || `member-${index}`} className="flex items-center">
+          <div key={studentData._id || `student-member-${index}`} className="flex items-center">
             <div className="flex-shrink-0 h-8 w-8">
               <img 
                 className="h-8 w-8 rounded-full object-cover" 
-                src={member.student?.profile_picture || PLACEHOLDER_IMAGE} 
-                alt={(member.student?.name || "?").substring(0,1)}
+                src={studentData.profile_picture || PLACEHOLDER_IMAGE} 
+                alt={(studentData.name || '?').charAt(0)}
                 onError={(e) => { e.target.src = PLACEHOLDER_IMAGE }}
               />
             </div>
             <div className="ml-3">
               <div className="text-sm font-medium flex items-center text-white">
-                {member.student?.name || "Unknown User"}
+                {studentData.name || 'Unknown User'}
                 {member.role === 'Leader' && (
                   <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                     <Award size={12} className="mr-1" />
@@ -299,13 +285,13 @@ const HackathonParticipantManager = () => {
                   </span>
                 )}
               </div>
-              <div className="text-xs text-gray-400">{member.student?.email || "No email"}</div>
+              <div className="text-xs text-gray-400">{studentData.email || 'No email'}</div>
             </div>
           </div>
         );
       } catch (error) {
-        console.error("Error rendering team member:", error);
-        // Return fallback UI in case of any error
+        console.error('Error rendering team member:', error);
+        // Return fallback UI instead of throwing error
         return (
           <div key={`error-member-${index}`} className="flex items-center">
             <div className="flex-shrink-0 h-8 w-8">

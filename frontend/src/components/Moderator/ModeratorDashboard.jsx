@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Users, Search, Bell, Shield, Flag, File, Ban, MessageSquare, UserCog, UserX, UserCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Users, Search, Bell, Shield, Flag, File, Ban, MessageSquare, UserCog, UserX, UserCheck, Lock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ModeratorDashboard = ({ userData }) => {
@@ -7,6 +7,69 @@ const ModeratorDashboard = ({ userData }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [isValidated, setIsValidated] = useState(false);
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+
+  // Check localStorage on mount
+  useEffect(() => {
+    const validated = localStorage.getItem('moderatorValidated');
+    if (validated === 'true') {
+      setIsValidated(true);
+    }
+  }, []);
+
+  const handleValidation = (e) => {
+    e.preventDefault();
+    if (password === 'moderator123') {
+      setIsValidated(true);
+      setError('');
+      localStorage.setItem('moderatorValidated', 'true');
+    } else {
+      setError('Invalid password');
+    }
+  };
+
+  if (!isValidated) {
+    return (
+      <div className="min-h-screen bg-[#111111] flex items-center justify-center p-4">
+        <div className="bg-[#1A1A1A] p-8 rounded-xl border border-gray-800 w-full max-w-md">
+          <div className="flex items-center justify-center mb-6">
+            <div className="w-12 h-12 rounded-full bg-[#E8C848]/20 flex items-center justify-center">
+              <Lock className="text-[#E8C848]" size={24} />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-white text-center mb-6">Moderator Access</h2>
+          <form onSubmit={handleValidation}>
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-400 mb-1">
+                  Enter Password
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full px-4 py-2 bg-[#242424] border border-gray-700 rounded-lg focus:outline-none focus:border-[#E8C848] text-white"
+                  placeholder="Enter moderator password"
+                />
+              </div>
+              {error && (
+                <p className="text-red-400 text-sm">{error}</p>
+              )}
+              <button
+                type="submit"
+                className="w-full bg-[#E8C848] text-[#111111] py-2 px-4 rounded-lg font-medium hover:bg-[#E8C848]/90 transition-all duration-300"
+              >
+                Access Dashboard
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   // Mock data for search functionality
   const mockStudents = [
