@@ -42,6 +42,10 @@ import ManageHackathons from './components/Admin/ManageHackathons'
 import ManageHackathonTeams from "./components/Admin/ManagehackathonTeams"
 import AllConversationsPageMentor from './components/Mentor/dashboard/AllConversationsPage';
 import TeamManagement from './components/Mentor/Team/TeamManagement';
+import About from './components/About';
+import Features from './components/Features';
+import HackathonReports from './components/Admin/HackathonReports';
+
 import StudentReports from './components/Moderator/studentReports';
 const role = localStorage.userRole
 console.log(role)
@@ -93,6 +97,7 @@ const App = () => {
               <Route path="/admin/hackathons/:hackathonId/participants" element={ <HackathonParticipantManager />}/>
               <Route path="/admin/hackathon_applications" element={<ManageHackathons />} />
               <Route path="/admin/hackathon-applications" element={<ManageHackathons />} /> {/* Add this route */}
+              <Route path="/admin/reports/generate" element={<HackathonReports />} />
 {/* Admin Routes */}
 <Route path="/admin/hero" element={<AdminHero />} /> 
 <Route path="/admin/hackathons" element={<ManageHackathons />} />
@@ -127,6 +132,8 @@ const App = () => {
               <Route path="/moderator/note/:noteId" element={<NoteDetail />} />
               <Route path="/landing" element={<Landing />} />
 
+              <Route path="/about" element={<About />} />
+              <Route path="/features" element={<Features />} />
               
               {/* Default Route */}
               {role == 'admin' &&(
