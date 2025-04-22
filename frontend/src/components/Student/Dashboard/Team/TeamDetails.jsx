@@ -9,6 +9,7 @@ import {
 import axios from 'axios';
 import { useUser } from '../../../../../context/UserContext';
 import TeamChatModal from './TeamChatModal';
+import MentorChatModal from './Mentor/MentorChatModal'; // Add this import
 import { toast } from 'react-hot-toast';
 
 const TeamDetails = () => {
@@ -21,8 +22,10 @@ const TeamDetails = () => {
   const [activeTab, setActiveTab] = useState('members');
   const [statusMessage, setStatusMessage] = useState({ message: '', type: '' });
   
-  // Add state for team chat modal
+  // Add state for chat modals
   const [isTeamChatOpen, setIsTeamChatOpen] = useState(false);
+  const [isMentorChatOpen, setIsMentorChatOpen] = useState(false);
+  const [selectedMentor, setSelectedMentor] = useState(null);
 
   // Fetch team details
   useEffect(() => {
@@ -31,12 +34,14 @@ const TeamDetails = () => {
         setLoading(true);
         // Use userData directly instead of token
         const studentId = userData?._id;
-        
         const response = await axios.get(
           `http://localhost:4000/api/teams/${teamId}?studentId=${studentId || ''}`
         );
+        console.log("Raw team data:", response.data);
         
         if (response.data && response.data.success) {
+          console.log("Team mentor data:", response.data.team.mentor);
+          console.log("Team applications:", response.data.team.applications);
           setTeam(response.data.team);
         } else {
           setError('Failed to load team details');
@@ -122,7 +127,6 @@ const TeamDetails = () => {
         // Update applications list
         const updatedTeam = {...team};
         const appIndex = updatedTeam.joinRequests.findIndex(app => app._id === applicationId);
-        
         if (appIndex !== -1) {
           updatedTeam.joinRequests[appIndex].status = accept ? 'accepted' : 'declined';
           setTeam(updatedTeam);
@@ -202,7 +206,6 @@ const TeamDetails = () => {
       
       if (response.data && response.data.success) {
         toast.success(`Team is now ${newStatus ? 'recruiting' : 'not recruiting'}`);
-        
         // Update local state
         setTeam(prev => ({
           ...prev,
@@ -454,36 +457,87 @@ const TeamDetails = () => {
 
   // Render mentors tab content
   const renderMentorsTab = () => {
+    console.log("Rendering mentors tab with team data:", team);
+    
+    // Check if there's a mentor directly in the team object
+    const assignedMentor = team.mentor ? [team.mentor] : [];
+    
+    // Also check for accepted mentor applications
+    const acceptedMentorApplications = team.applications ? 
+      team.applications.filter(app => app.status === "accepted").map(app => ({
+        _id: app.mentorId,
+        name: app.mentorName,
+        email: app.mentorEmail,
+        profile_picture: app.mentorProfilePicture,
+        expertise: app.mentorExpertise?.technical_skills || [],
+        focus_areas: app.mentorFocusAreas || [],
+        company: app.mentorRole?.company || 'Unknown Company'
+      })) : [];
+    
+    console.log("Assigned mentor:", assignedMentor);
+    console.log("Accepted applications:", acceptedMentorApplications);
+    
+    // Combine both sources of mentors
+    const allMentors = [...assignedMentor, ...acceptedMentorApplications];
+    
+    console.log("All mentors:", allMentors);
+    
     return (
       <div>
         <div className="mb-6">
           <h3 className="text-xl font-bold text-white flex items-center gap-2">
             <Shield size={20} className="text-[#E8C848]" />
-            Team Mentors
+            Team Mentor
           </h3>
           <p className="text-gray-400 mb-4">Get guidance from industry experts</p>
         </div>
         
-        {team.mentors && team.mentors.length > 0 ? (
+        {allMentors.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {team.mentors.map((mentor) => (
+            {allMentors.map((mentor) => (
               <div
                 key={mentor._id}
                 className="p-4 bg-[#242424] rounded-lg border border-gray-800"
               >
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-full bg-[#333333] flex items-center justify-center text-white">
-                    {mentor.name?.charAt(0).toUpperCase() || "M"}
+                  <div className="w-12 h-12 rounded-full bg-[#333333] flex items-center justify-center text-white overflow-hidden">
+                    {mentor.profile_picture ? (
+                      <img 
+                        src={mentor.profile_picture} 
+                        alt={mentor.name} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span>{mentor.name?.charAt(0).toUpperCase() || "M"}</span>
+                    )}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <p className="font-medium text-white">{mentor.name}</p>
-                    <p className="text-sm text-gray-400">{mentor.expertise}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-xs bg-[#E8C848]/20 text-[#E8C848] px-2 py-1 rounded">
-                        {mentor.company}
-                      </span>
+                    <p className="text-sm text-gray-400">{mentor.email}</p>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      {mentor.company && (
+                        <span className="text-xs bg-[#E8C848]/20 text-[#E8C848] px-2 py-1 rounded">
+                          {mentor.company}
+                        </span>
+                      )}
+                      
+                      {mentor.focus_areas?.slice(0, 2).map((area, index) => (
+                        <span key={index} className="text-xs bg-[#333333] text-gray-300 px-2 py-1 rounded">
+                          {area}
+                        </span>
+                      ))}
                     </div>
                   </div>
+                  <button
+                    onClick={() => {
+                      setSelectedMentor(mentor);
+                      setIsMentorChatOpen(true);
+                    }}
+                    className="px-3 py-1.5 bg-[#E8C848]/10 hover:bg-[#E8C848]/20 text-[#E8C848] rounded-full flex items-center text-sm transition-all duration-300"
+                  >
+                    <MessageCircle size={14} className="mr-1" />
+                    Chat
+                  </button>
                 </div>
               </div>
             ))}
@@ -493,7 +547,7 @@ const TeamDetails = () => {
             <p>No mentors assigned to this team yet.</p>
             {team.userStatus.isLeader && (
               <button
-                onClick={() => navigate('/student/mentors')}
+                onClick={() => navigate(`/student/team/${teamId}/mentor`)}
                 className="mt-4 bg-[#333333] text-[#E8C848] px-4 py-2 rounded-lg hover:bg-[#E8C848]/10 transition-all duration-300"
               >
                 Find Mentors
@@ -683,6 +737,20 @@ const TeamDetails = () => {
           <TeamChatModal
             isOpen={isTeamChatOpen}
             onClose={() => setIsTeamChatOpen(false)}
+            team={team}
+            currentUser={userData}
+          />
+        )}
+
+        {/* Mentor Chat Modal */}
+        {isMentorChatOpen && selectedMentor && (
+          <MentorChatModal
+            isOpen={isMentorChatOpen}
+            onClose={() => {
+              setIsMentorChatOpen(false);
+              setSelectedMentor(null);
+            }}
+            mentor={selectedMentor}
             team={team}
             currentUser={userData}
           />

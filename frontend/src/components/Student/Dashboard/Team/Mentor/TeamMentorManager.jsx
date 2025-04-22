@@ -165,7 +165,7 @@ const TeamMentorManager = () => {
           >
             <ChevronLeft size={20} />
           </button>
-          <h2 className="text-2xl font-bold text-white">Team Mentors</h2>
+          <h2 className="text-2xl font-bold text-white">Team Mentor</h2>
         </div>
         <div className="bg-red-900/20 text-red-400 p-4 rounded-lg border border-red-800">
           <p>{error}</p>
@@ -191,7 +191,7 @@ const TeamMentorManager = () => {
           <ChevronLeft size={20} />
         </button>
         <div className="flex-1">
-          <h2 className="text-2xl font-bold text-white">Team Mentors</h2>
+          <h2 className="text-2xl font-bold text-white">Team Mentor</h2>
           <p className="text-gray-400">Manage mentors for {team?.name}</p>
         </div>
         

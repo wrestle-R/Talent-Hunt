@@ -1,201 +1,71 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ChevronLeft, X, Send, Paperclip, MessageCircle, User, Shield, Flag, AlertCircle, Lock } from 'lucide-react';
-import { io } from 'socket.io-client';
+import { X, Send } from 'lucide-react';
 import axios from 'axios';
 import { toast } from 'react-hot-toast';
+import io from 'socket.io-client';
 
-// Create socket instance (outside component to persist between renders)
-let socket;
+// Initialize socket connection
+const socket = io('http://localhost:4000');
 
-const MentorChatModal = ({ isOpen, onClose, mentor, currentUser, team }) => {
+// Hardcoded mentor ID - Use this instead of dynamic mentor ID
+const HARDCODED_MENTOR_ID = "68066ed669957410d3f56074";
+
+const MentorChatModal = ({ isOpen, onClose, mentor, team, currentUser }) => {
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [isTyping, setIsTyping] = useState(false);
-  const [socketConnected, setSocketConnected] = useState(true);
-  const [messageToReport, setMessageToReport] = useState(null);
-  const [isReportModalOpen, setIsReportModalOpen] = useState(false);
-  const [reportReason, setReportReason] = useState('');
-  const [additionalInfo, setAdditionalInfo] = useState('');
-  const [isSubmittingReport, setIsSubmittingReport] = useState(false);
-  const [messageContextMenu, setMessageContextMenu] = useState({ isOpen: false, messageId: null, x: 0, y: 0 });
-  
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
-  const tempIdCounterRef = useRef(0); // Counter for unique temp IDs
-  
-  // Keep track of processed message IDs to avoid duplicates
   const processedMessageIds = useRef(new Set());
   
-  // Check if current user is team leader
-  const isTeamLeader = team?.leader?._id === currentUser?._id;
-
-  // Initialize socket connection once
-  useEffect(() => {
-    if (!socket) {
-      socket = io('http://localhost:4000', {
-        transports: ['websocket', 'polling'],
-        reconnection: true,
-        reconnectionAttempts: 10,
-        reconnectionDelay: 1000
-      });
-      
-      socket.on('connect', () => {
-        console.log('Connected to socket server');
-        setSocketConnected(true);
-      });
-      
-      socket.on('connect_error', (error) => {
-        console.error('Socket connection error:', error);
-        console.log('Connection error, but keeping UI enabled for better UX');
-      });
-    }
-    
-    return () => {
-      if (typingTimeoutRef.current) {
-        clearTimeout(typingTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  // Helper function to safely extract ID
-  const getUserId = (userObj) => {
-    if (!userObj) return null;
-    return userObj._id || userObj.mentorId || userObj.uid || null;
-  };
-
-  // Join chat room when team and mentor are available
-  useEffect(() => {
-    if (team && mentor) {
-      const teamId = team._id;
-      const mentorId = getUserId(mentor);
-      
-      if (teamId) {
-        console.log(`Joining team-mentor chat room: team ${teamId} with mentor ${mentorId}`);
-        // Use team ID for the room instead of student ID
-        socket.emit('join', teamId);
-      }
-    }
-  }, [team, mentor]);
-
-  // Click outside to close context menu
-  useEffect(() => {
-    if (messageContextMenu.isOpen) {
-      const handleClickOutside = () => {
-        setMessageContextMenu({ isOpen: false, messageId: null, x: 0, y: 0 });
-      };
-      
-      document.addEventListener('click', handleClickOutside);
-      
-      return () => {
-        document.removeEventListener('click', handleClickOutside);
-      };
-    }
-  }, [messageContextMenu.isOpen]);
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
-
-  // Generate a unique temp ID
-  const generateTempId = () => {
-    tempIdCounterRef.current += 1;
-    return `temp-${Date.now()}-${tempIdCounterRef.current}`;
-  };
-
-  // Add a message safely (avoiding duplicates)
+  // Safely add messages to state without duplicates
   const addMessageSafely = (newMsg) => {
-    // If it's a temporary message, don't need to check for duplicates
-    if (newMsg.temp) {
-      // Ensure temp message has a unique ID
-      const msgWithId = {
-        ...newMsg,
-        _id: newMsg._id || generateTempId()
-      };
-      setMessages(prev => [...prev, msgWithId]);
-      return;
-    }
-
-    // Check if we've already processed this message ID
-    if (!newMsg._id || processedMessageIds.current.has(newMsg._id)) {
-      return;
-    }
+    if (!newMsg || processedMessageIds.current.has(newMsg._id)) return;
     
-    // Add to processed set
     processedMessageIds.current.add(newMsg._id);
-    
-    // Replace any temp message with the same content, or add as new
-    setMessages(prev => {
-      // Find an index of a temp message with similar content to replace
-      const tempIndex = prev.findIndex(msg => 
-        msg.temp && 
-        msg.senderId === newMsg.senderId && 
-        msg.message === newMsg.message
-      );
-      
-      if (tempIndex !== -1) {
-        // Create a new array with the temp message replaced
-        const newMessages = [...prev];
-        newMessages[tempIndex] = newMsg;
-        return newMessages;
-      } else {
-        // Just add the new message
-        return [...prev, newMsg];
-      }
-    });
+    setMessages((prevMessages) => [...prevMessages, newMsg]);
   };
 
-  // Mark messages as read when opening chat
-  useEffect(() => {
-    if (isOpen && mentor && team) {
-      const teamId = team._id;
-      const mentorId = getUserId(mentor);
-      
-      if (teamId && mentorId) {
-        // Mark messages as read via API (using team ID instead of student ID)
-        axios.put(`http://localhost:4000/api/chat/messages/read/${teamId}/${mentorId}`)
-          .then(response => {
-            console.log("Messages marked as read:", response.data);
-          })
-          .catch(error => {
-            console.error("Error marking messages as read:", error);
-          });
-      }
-    }
-  }, [isOpen, mentor, team]);
+  // Function to get user ID based on user type
+  const getUserId = (user) => {
+    if (!user) return null;
+    return user._id || null;
+  };
+  
+  // Format timestamp for display
+  const formatTime = (timestamp) => {
+    if (!timestamp) return '';
+    const date = new Date(timestamp);
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
-  // Load chat history when mentor or team changes
+  // Use hardcoded mentor ID in useEffect
   useEffect(() => {
-    if (!isOpen || !mentor || !team) return;
+    if (!isOpen || !currentUser) return;
     
     // Clear processed message IDs when changing chat
     processedMessageIds.current.clear();
     
-    // Reset temp ID counter
-    tempIdCounterRef.current = 0;
+    // Use hardcoded mentor ID instead of dynamic mentor._id
+    const mentorId = HARDCODED_MENTOR_ID;
+    const studentId = getUserId(currentUser);
     
-    // Use team ID instead of student ID
-    const teamId = team._id;
-    const mentorId = getUserId(mentor);
-    
-    if (!teamId || !mentorId) {
-      console.log("Missing IDs for mentor chat:", { teamId, mentorId });
+    if (!studentId || !mentorId) {
+      console.log("Missing IDs for chat:", { studentId, mentorId });
       return;
     }
 
-    console.log("Setting up team-mentor chat between:", teamId, mentorId);
-    setIsLoading(true);
+    console.log("Setting up chat with hardcoded mentor:", { studentId, mentorId });
+    setLoading(true);
     
-    // Set up event listeners for this specific chat
+    // Update socket event listeners to use hardcoded ID
     socket.on('messageSent', (newMsg) => {
       console.log("Message sent confirmation:", newMsg);
       
       if (
-        (newMsg.senderId === teamId && newMsg.receiverId === mentorId) ||
-        (newMsg.senderId === mentorId && newMsg.receiverId === teamId)
+        (newMsg.senderId === studentId && newMsg.receiverId === mentorId) ||
+        (newMsg.senderId === mentorId && newMsg.receiverId === studentId)
       ) {
         addMessageSafely(newMsg);
       }
@@ -205,16 +75,16 @@ const MentorChatModal = ({ isOpen, onClose, mentor, currentUser, team }) => {
       console.log("New message received:", newMsg);
       
       if (
-        (newMsg.senderId === teamId && newMsg.receiverId === mentorId) ||
-        (newMsg.senderId === mentorId && newMsg.receiverId === teamId)
+        (newMsg.senderId === studentId && newMsg.receiverId === mentorId) ||
+        (newMsg.senderId === mentorId && newMsg.receiverId === studentId)
       ) {
         addMessageSafely(newMsg);
         
         // If we're receiving a message and the chat is open, mark it as read
         if (newMsg.senderId === mentorId && isOpen) {
-          axios.put(`http://localhost:4000/api/chat/messages/read/${teamId}/${mentorId}`)
+          axios.put(`http://localhost:4000/api/student/messages/read/${studentId}/${mentorId}`)
             .catch(error => {
-              console.error("Error marking messages as read:", error);
+              console.error("Error marking message as read:", error);
             });
         }
       }
@@ -222,339 +92,214 @@ const MentorChatModal = ({ isOpen, onClose, mentor, currentUser, team }) => {
     
     socket.on('messageError', (error) => {
       console.error('Message error:', error);
-      toast.error("Failed to send message. Please try again.");
-    });
-    
-    // Typing indicators
-    socket.on('userTyping', (data) => {
-      if (data.senderId === mentorId && data.receiverId === teamId) {
-        setIsTyping(true);
-      }
-    });
-    
-    socket.on('userStoppedTyping', (data) => {
-      if (data.senderId === mentorId && data.receiverId === teamId) {
-        setIsTyping(false);
-      }
-    });
-    
-    // Fetch message history - use team ID instead of student ID
-    const fetchMessages = async () => {
-      try {
-        const response = await axios.get(`http://localhost:4000/api/chat/messages/${teamId}/${mentorId}`);
-        console.log("Fetched messages:", response.data);
+      
+      // Show toast notification with the error
+      if (error && error.error) {
+        toast.error(`Message failed: ${error.error}`);
         
-        if (Array.isArray(response.data)) {
-          // Add all fetched messages to processed set to avoid duplicates
+        // Update UI to show failed message
+        setMessages(prev => prev.map(msg => {
+          if (msg.temp && error.messageId && msg._id === error.messageId) {
+            return { ...msg, failed: true };
+          }
+          return msg;
+        }));
+      }
+    });
+    
+    // Fetch message history
+    axios.get(`http://localhost:4000/api/messages/history?senderId=${studentId}&receiverId=${mentorId}`)
+      .then(response => {
+        if (response.data && Array.isArray(response.data)) {
+          // Add all messages to the processed set to prevent duplicates
           response.data.forEach(msg => {
-            if (msg._id) {
-              processedMessageIds.current.add(msg._id);
-            }
+            processedMessageIds.current.add(msg._id);
           });
           
+          // Set the messages
           setMessages(response.data);
-        } else {
-          console.warn("Unexpected response format:", response.data);
-          setMessages([]);
         }
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-        setMessages([]);
-        toast.error("Failed to load chat history");
-      } finally {
-        setIsLoading(false);
-      }
-    };
+      })
+      .catch(error => {
+        console.error("Error fetching message history:", error);
+        toast.error("Failed to load message history");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
     
-    fetchMessages();
-    
-    // Cleanup function to remove event listeners
     return () => {
+      // Clean up event listeners when unmounting
       socket.off('messageSent');
       socket.off('newMessage');
       socket.off('messageError');
       socket.off('userTyping');
       socket.off('userStoppedTyping');
-      setMessages([]);
-      setIsTyping(false);
     };
-  }, [mentor, team, isOpen]);
+  }, [currentUser, isOpen]);
 
+  // Handle sending message
   const handleSendMessage = (e) => {
     e.preventDefault();
-    if (!message.trim() || !isTeamLeader) return;
+    if (!message.trim()) return;
 
-    // Use team ID instead of student ID
-    const teamId = team._id;
-    const mentorId = getUserId(mentor);
+    const senderId = getUserId(currentUser);
+    const receiverId = HARDCODED_MENTOR_ID;
 
-    if (!teamId || !mentorId) {
-      console.error("Cannot send message: Missing IDs", { teamId, mentorId });
+    if (!senderId || !receiverId) {
+      console.error("Cannot send message: Missing user IDs", { senderId, receiverId });
       return;
     }
 
-    console.log("Sending team message:", {
-      senderId: teamId,
-      receiverId: mentorId,
-      message: message.trim(),
-      senderType: 'team',
-      senderName: team.name
-    });
+    // Create a message ID for tracking
+    const tempId = `temp-${Date.now()}`;
 
-    // Send message through socket with team metadata
+    // Send message through socket
     socket.emit('sendMessage', {
-      senderId: teamId,
-      receiverId: mentorId,
+      senderId,
+      receiverId,
       message: message.trim(),
-      senderType: 'team',
-      senderName: team.name,
-      senderInfo: {
-        teamName: team.name,
-        sentByUser: currentUser._id,
-        sentByUserName: currentUser.name
-      }
+      messageId: tempId
     });
     
     // Add message to local state immediately for instant feedback
     const tempMessage = {
-      _id: generateTempId(),
-      senderId: teamId,
-      receiverId: mentorId,
+      _id: tempId,
+      senderId,
+      receiverId,
       message: message.trim(),
       createdAt: new Date().toISOString(),
-      senderType: 'team',
-      senderName: team.name,
-      senderInfo: {
-        teamName: team.name,
-        sentByUser: currentUser._id,
-        sentByUserName: currentUser.name
-      },
-      temp: true // Flag to identify temporary messages
+      temp: true
     };
     
     addMessageSafely(tempMessage);
     
     // Clear input
     setMessage('');
-    
-    // Clear typing timeout and indicator
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-      socket.emit('stopTyping', {
-        senderId: teamId,
-        receiverId: mentorId
-      });
-    }
   };
 
-  // Typing indicator functionality - only if user is team leader
-  const handleInputChange = (e) => {
-    setMessage(e.target.value);
-    
-    if (!isTeamLeader) return;
-    
-    // Use team ID instead of student ID
-    const teamId = team._id;
-    const mentorId = getUserId(mentor);
-    
-    if (!teamId || !mentorId) return;
-    
-    // Send typing indicator
-    socket.emit('typing', {
-      senderId: teamId,
-      receiverId: mentorId,
-      senderType: 'team',
-      senderName: team.name
-    });
-    
-    // Clear any existing timeout
-    if (typingTimeoutRef.current) {
-      clearTimeout(typingTimeoutRef.current);
-    }
-    
-    // Set new timeout to stop typing indicator after 2 seconds
-    typingTimeoutRef.current = setTimeout(() => {
-      socket.emit('stopTyping', {
-        senderId: teamId,
-        receiverId: mentorId
-      });
-    }, 2000);
-  };
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
-  // Handle message context menu
-  const handleMessageContextMenu = (e, messageId) => {
-    e.preventDefault();
+  // Handle retry for failed messages
+  const handleRetryMessage = (messageId) => {
+    // Find the failed message
+    const failedMessage = messages.find(msg => msg._id === messageId);
+    if (!failedMessage) return;
     
-    // Only allow reporting messages from the mentor
-    const clickedMessage = messages.find(msg => msg._id === messageId);
-    const mentorId = getUserId(mentor);
+    // Extract proper IDs
+    const senderId = getUserId(currentUser);
+    const receiverId = HARDCODED_MENTOR_ID;
+
+    // Remove the failed message
+    setMessages(prev => prev.filter(msg => msg._id !== messageId));
     
-    if (!clickedMessage || clickedMessage.senderId !== mentorId) {
-      return;
-    }
+    // Add a new temp message
+    const tempMessage = {
+      _id: `temp-${Date.now()}`,
+      senderId,
+      receiverId,
+      message: failedMessage.message,
+      createdAt: new Date().toISOString(),
+      temp: true
+    };
     
-    // Position context menu
-    setMessageContextMenu({
-      isOpen: true,
-      messageId,
-      x: e.clientX,
-      y: e.clientY
+    addMessageSafely(tempMessage);
+
+    // Send message through socket
+    socket.emit('sendMessage', {
+      senderId,
+      receiverId,
+      message: failedMessage.message,
+      messageId: tempMessage._id
     });
   };
-
-  // Open report modal
-  const openReportModal = (messageId) => {
-    const messageObj = messages.find(msg => msg._id === messageId);
-    setMessageToReport(messageObj);
-    setIsReportModalOpen(true);
-    setMessageContextMenu({ isOpen: false, messageId: null, x: 0, y: 0 });
-  };
-
-  // Handle report submission
-  const handleReportSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!messageToReport || !reportReason) {
-      toast.error("Please select a reason for reporting");
-      return;
-    }
-    
-    try {
-      setIsSubmittingReport(true);
-      
-      const response = await axios.post('http://localhost:4000/api/chat/messages/report', {
-        messageId: messageToReport._id,
-        reportedBy: team._id,
-        reportedByType: 'team',
-        reportedByName: team.name,
-        reporterInfo: {
-          teamId: team._id,
-          userId: currentUser._id,
-          userName: currentUser.name
-        },
-        reason: reportReason,
-        additionalInfo
-      });
-      
-      toast.success("Message reported successfully. Our moderators will review it.");
-      setIsReportModalOpen(false);
-      setReportReason('');
-      setAdditionalInfo('');
-      setMessageToReport(null);
-    } catch (error) {
-      console.error("Error reporting message:", error);
-      toast.error(error.response?.data?.error || "Failed to report message");
-    } finally {
-      setIsSubmittingReport(false);
-    }
-  };
-
-  const formatTime = (timestamp) => {
-    const date = new Date(timestamp);
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  };
-
-  if (!isOpen || !mentor) return null;
 
   return (
-    <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-[#1A1A1A] shadow-xl z-50 flex flex-col animate-slide-in-right border-l border-gray-800">
+    <div className="fixed inset-y-0 right-0 w-full sm:w-96 bg-[#1A1A1A] shadow-lg z-50 flex flex-col animate-slide-in-right border-l border-gray-800">
       {/* Chat Header */}
-      <div className="px-4 py-3 bg-[#121212] text-white flex items-center justify-between border-b border-gray-800">
-        <div className="flex items-center">
-          <button onClick={onClose} className="p-1 mr-2 rounded-full hover:bg-[#E8C848]/10 text-[#E8C848] transition-all duration-300">
-            <ChevronLeft size={20} />
-          </button>
-          <div className="flex items-center">
-            <div className="h-8 w-8 rounded-full overflow-hidden bg-[#121212] mr-3 flex-shrink-0">
-              {mentor.profile_picture ? (
-                <img 
-                  src={mentor.profile_picture} 
-                  alt={mentor.name} 
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center bg-[#E8C848]/10 text-[#E8C848]">
-                  <Shield size={16} />
-                </div>
-              )}
-            </div>
-            <div>
-              <h3 className="font-medium text-white">{mentor.name}</h3>
-              <p className="text-xs text-gray-400 flex items-center">
-                <Shield size={12} className="mr-1 text-[#E8C848]" /> Team Mentor
-              </p>
-            </div>
+      <div className="p-4 border-b border-gray-800 bg-[#1A1A1A] flex justify-between items-center sticky top-0">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-[#333333] flex items-center justify-center text-white overflow-hidden">
+            {mentor.profile_picture ? (
+              <img 
+                src={mentor.profile_picture} 
+                alt={mentor.name} 
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span>{mentor.name?.charAt(0).toUpperCase() || "M"}</span>
+            )}
+          </div>
+          <div>
+            <h3 className="font-medium text-white">{mentor.name}</h3>
+            <p className="text-xs text-gray-400">
+              {mentor.company ? mentor.company : 'Mentor'}
+            </p>
           </div>
         </div>
-        <button onClick={onClose} className="p-1 rounded-full hover:bg-[#E8C848]/10 text-[#E8C848] transition-all duration-300">
+        <button
+          onClick={onClose}
+          className="p-2 rounded-full hover:bg-[#333333] text-gray-400 hover:text-white transition-all duration-300"
+        >
           <X size={20} />
         </button>
       </div>
       
       {/* Chat Messages */}
       <div className="flex-1 overflow-y-auto p-4 bg-[#121212]">
-        {isLoading ? (
+        {loading ? (
           <div className="flex justify-center items-center h-full">
             <div className="animate-pulse flex flex-col items-center">
-              <div className="h-2.5 bg-[#1A1A1A] rounded-full w-24 mb-2.5"></div>
-              <div className="h-2.5 bg-[#1A1A1A] rounded-full w-32 mb-2.5"></div>
-              <div className="h-2.5 bg-[#1A1A1A] rounded-full w-28"></div>
+              <div className="h-2.5 bg-gray-800 rounded-full w-24 mb-2.5"></div>
+              <div className="h-2.5 bg-gray-800 rounded-full w-32 mb-2.5"></div>
+              <div className="h-2.5 bg-gray-800 rounded-full w-28"></div>
             </div>
           </div>
         ) : (
           <div className="space-y-3">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-32 text-gray-400">
-                <MessageCircle size={24} className="mb-2 text-[#E8C848]/30" />
+                <Send size={24} className="mb-2 text-[#E8C848]" />
                 <p>No messages yet</p>
-                <p className="text-sm">
-                  {isTeamLeader 
-                    ? "Start a conversation with your mentor" 
-                    : "Your team leader can message the mentor"
-                  }
-                </p>
+                <p className="text-sm">Start a conversation with {mentor.name}</p>
               </div>
             ) : (
               messages.map((msg) => {
-                const mentorId = getUserId(mentor);
-                const isFromTeam = msg.senderId === team._id;
+                const senderId = getUserId(currentUser);
+                const isMe = msg.senderId === senderId;
                 
                 return (
                   <div 
-                    key={msg._id}
-                    className={`flex ${isFromTeam ? 'justify-end' : 'justify-start'}`}
-                    onContextMenu={(e) => handleMessageContextMenu(e, msg._id)}
+                    key={msg._id} 
+                    className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}
                   >
                     <div 
                       className={`max-w-[80%] rounded-lg px-3 py-2 ${
-                        isFromTeam 
-                          ? `bg-[#E8C848] text-[#121212] rounded-br-none ${msg.temp ? 'opacity-70' : ''}`
-                          : 'bg-[#1A1A1A] text-white border border-gray-800 rounded-bl-none relative group hover:border-[#E8C848]/30 transition-all duration-300'
+                        isMe 
+                          ? `bg-[#E8C848] text-[#121212] rounded-br-none ${msg.temp ? 'opacity-70' : ''} ${msg.failed ? 'bg-red-500/70' : ''}`
+                          : 'bg-[#1A1A1A] text-white rounded-bl-none border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300'
                       }`}
                     >
-                      {!isFromTeam && (
-                        <button 
-                          className="absolute right-0 top-0 -mt-1 -mr-1 p-1 rounded-full bg-[#1A1A1A] shadow-lg border border-gray-800 opacity-0 group-hover:opacity-100 transition-opacity hover:border-[#E8C848]/30"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            openReportModal(msg._id);
-                          }}
-                        >
-                          <Flag size={12} className="text-[#E8C848]" />
-                        </button>
-                      )}
-                      
-                      {isFromTeam && msg.senderInfo?.sentByUserName && (
-                        <div className="text-xs text-[#121212]/70 mb-1">
-                          Sent by {msg.senderInfo.sentByUserName}
-                        </div>
-                      )}
-                      
                       <p className="text-sm">{msg.message}</p>
                       <div className={`text-xs mt-1 flex items-center justify-end gap-1 ${
-                        isFromTeam ? 'text-[#121212]/70' : 'text-gray-400'
+                        isMe ? 'text-[#121212]' : 'text-gray-400'
                       }`}>
-                        {formatTime(msg.createdAt)}
+                        {msg.failed ? (
+                          <>
+                            <span className="text-red-800">Failed</span>
+                            <button 
+                              onClick={() => handleRetryMessage(msg._id)}
+                              className="underline hover:text-white ml-2"
+                            >
+                              Retry
+                            </button>
+                          </>
+                        ) : (
+                          formatTime(msg.createdAt)
+                        )}
                       </div>
                     </div>
                   </div>
@@ -563,11 +308,11 @@ const MentorChatModal = ({ isOpen, onClose, mentor, currentUser, team }) => {
             )}
             {isTyping && (
               <div className="flex justify-start">
-                <div className="bg-[#1A1A1A] rounded-lg px-3 py-2 max-w-[80%] border border-gray-800">
+                <div className="bg-gray-800 rounded-lg px-3 py-2 max-w-[80%]">
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-[#E8C848]/30 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 bg-[#E8C848]/30 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 bg-[#E8C848]/30 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                   </div>
                 </div>
               </div>
@@ -577,162 +322,29 @@ const MentorChatModal = ({ isOpen, onClose, mentor, currentUser, team }) => {
         )}
       </div>
       
-      {/* Context Menu */}
-      {messageContextMenu.isOpen && (
-        <div 
-          className="fixed bg-[#1A1A1A] shadow-lg rounded-md py-1 z-50 w-48 border border-gray-800"
-          style={{ top: messageContextMenu.y, left: messageContextMenu.x }}
-        >
-          <button 
-            className="w-full text-left px-4 py-2 text-sm text-[#E8C848] hover:bg-[#121212] flex items-center transition-all duration-300"
-            onClick={() => openReportModal(messageContextMenu.messageId)}
-          >
-            <Flag size={16} className="mr-2" /> Report Message
-          </button>
-        </div>
-      )}
-      
       {/* Chat Input */}
-      <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-800 bg-[#1A1A1A] flex gap-2">
-        {isTeamLeader ? (
-          <>
-            <button 
-              type="button"
-              className="p-2 text-[#E8C848] rounded-full hover:bg-[#E8C848]/10 transition-all duration-300"
-            >
-              <Paperclip size={20} />
-            </button>
-            <input
-              type="text"
-              value={message}
-              onChange={handleInputChange}
-              placeholder="Ask your mentor a question..."
-              className="flex-1 py-2 px-3 bg-[#121212] border border-gray-800 text-white rounded-full focus:outline-none focus:border-[#E8C848] focus:ring-1 focus:ring-[#E8C848]/30 placeholder-gray-500 transition-all duration-300"
-            />
-            <button 
-              type="submit"
-              disabled={!message.trim()}
-              className={`p-2 rounded-full transition-all duration-300 ${
-                message.trim()
-                  ? 'bg-[#E8C848] text-[#121212] hover:bg-[#E8C848]/80'
-                  : 'bg-gray-800 text-gray-600 cursor-not-allowed'
-              }`}
-            >
-              <Send size={20} />
-            </button>
-          </>
-        ) : (
-          <div className="flex items-center justify-center w-full py-2 text-gray-400 bg-[#121212] rounded-lg border border-gray-800">
-            <Lock size={16} className="mr-2" />
-            <span>Only team leaders can send messages to mentors</span>
-          </div>
-        )}
-      </form>
-
-      {/* Report Modal */}
-      {isReportModalOpen && (
-        <div className="fixed inset-0 bg-[#121212]/80 backdrop-blur-sm flex items-center justify-center z-50">
-          <div className="bg-[#1A1A1A] rounded-lg shadow-xl p-6 w-full max-w-md mx-4 border border-gray-800">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-medium text-white flex items-center">
-                <AlertCircle size={20} className="text-[#E8C848] mr-2" />
-                Report Message
-              </h3>
-              <button 
-                onClick={() => {
-                  setIsReportModalOpen(false);
-                  setReportReason('');
-                  setAdditionalInfo('');
-                  setMessageToReport(null);
-                }}
-                className="text-gray-400 hover:text-gray-500"
-              >
-                <X size={20} />
-              </button>
-            </div>
-            
-            <div className="mb-4 p-3 bg-[#121212] rounded-lg border border-gray-800">
-              <p className="text-sm text-gray-400">Message content:</p>
-              <p className="text-white mt-1">{messageToReport?.message}</p>
-            </div>
-            
-            <form onSubmit={handleReportSubmit}>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Reason for reporting*
-                </label>
-                <select
-                  value={reportReason}
-                  onChange={(e) => setReportReason(e.target.value)}
-                  className="w-full rounded-lg border border-gray-800 bg-[#121212] text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C848]/30"
-                  required
-                >
-                  <option value="">Select a reason</option>
-                  <option value="harassment">Harassment</option>
-                  <option value="inappropriate_content">Inappropriate Content</option>
-                  <option value="spam">Spam</option>
-                  <option value="hate_speech">Hate Speech</option>
-                  <option value="threats">Threats</option>
-                  <option value="misinformation">Misinformation</option>
-                  <option value="personal_information">Personal Information</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Additional information (optional)
-                </label>
-                <textarea
-                  value={additionalInfo}
-                  onChange={(e) => setAdditionalInfo(e.target.value)}
-                  className="w-full rounded-lg border border-gray-800 bg-[#121212] text-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#E8C848]/30"
-                  placeholder="Please provide any additional details"
-                  rows="3"
-                  maxLength="500"
-                />
-              </div>
-              
-              <div className="mt-6 flex justify-end gap-3">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsReportModalOpen(false);
-                    setReportReason('');
-                    setAdditionalInfo('');
-                    setMessageToReport(null);
-                  }}
-                  className="px-4 py-2 bg-gray-800 text-gray-400 rounded-lg text-sm"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmittingReport || !reportReason}
-                  className={`px-4 py-2 bg-[#E8C848] text-[#121212] rounded-lg text-sm flex items-center ${
-                    isSubmittingReport || !reportReason ? 'opacity-70 cursor-not-allowed' : 'hover:bg-[#E8C848]/80'
-                  }`}
-                >
-                  {isSubmittingReport ? (
-                    <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-[#121212]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      Submitting...
-                    </>
-                  ) : (
-                    <>
-                      <Flag size={16} className="mr-2" />
-                      Submit Report
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      <div className="p-4 bg-[#1A1A1A] border-t border-gray-800">
+        <form onSubmit={handleSendMessage} className="flex gap-2">
+          <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Type a message..."
+            className="flex-1 rounded-lg bg-[#242424] border border-gray-800 px-4 py-2 text-white placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-[#E8C848]"
+          />
+          <button
+            type="submit"
+            disabled={!message.trim()}
+            className={`p-2 rounded-lg ${
+              message.trim()
+                ? 'bg-[#E8C848] text-[#121212] hover:bg-[#E8C848]/80'
+                : 'bg-gray-800 text-gray-500 cursor-not-allowed'
+            } transition-all duration-300`}
+          >
+            <Send size={20} />
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

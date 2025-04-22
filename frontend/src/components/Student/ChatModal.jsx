@@ -206,8 +206,22 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
       }
     });
     
+    // Improved error handling for message errors
     socket.on('messageError', (error) => {
       console.error('Message error:', error);
+      
+      // Show toast notification with the error
+      if (error && error.error) {
+        toast.error(`Message failed: ${error.error}`);
+        
+        // Update UI to show failed message
+        setMessages(prev => prev.map(msg => {
+          if (msg.temp && error.messageId && msg._id === error.messageId) {
+            return { ...msg, failed: true };
+          }
+          return msg;
+        }));
+      }
     });
     
     // Optional typing indicators
@@ -297,6 +311,51 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
     };
   }, [user, currentUser, isOpen]);
 
+  // Add a new function to retry sending failed messages
+  const handleRetryMessage = (messageId) => {
+    // Find the failed message
+    const failedMessage = messages.find(msg => msg._id === messageId);
+    if (!failedMessage) return;
+    
+    // Extract proper IDs
+    const senderId = getUserId(currentUser);
+    const receiverId = getUserId(user);
+
+    if (!senderId || !receiverId) {
+      console.error("Cannot retry message: Missing user IDs", { senderId, receiverId });
+      return;
+    }
+
+    console.log("Retrying message:", {
+      senderId,
+      receiverId,
+      message: failedMessage.message
+    });
+
+    // Remove the failed message
+    setMessages(prev => prev.filter(msg => msg._id !== messageId));
+    
+    // Add a new temp message
+    const tempMessage = {
+      _id: `temp-${Date.now()}`,
+      senderId,
+      receiverId,
+      message: failedMessage.message,
+      createdAt: new Date().toISOString(),
+      temp: true
+    };
+    
+    addMessageSafely(tempMessage);
+
+    // Send message through socket
+    socket.emit('sendMessage', {
+      senderId,
+      receiverId,
+      message: failedMessage.message,
+      messageId: tempMessage._id // Include message ID for tracking
+    });
+  };
+
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (!message.trim()) return;
@@ -310,22 +369,27 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
       return;
     }
 
+    // Create a message ID for tracking
+    const tempId = `temp-${Date.now()}`;
+
     console.log("Sending message:", {
       senderId,
       receiverId,
-      message: message.trim()
+      message: message.trim(),
+      messageId: tempId
     });
 
-    // Send message through socket
+    // Send message through socket (include messageId for error tracking)
     socket.emit('sendMessage', {
       senderId,
       receiverId,
-      message: message.trim()
+      message: message.trim(),
+      messageId: tempId
     });
     
     // Add message to local state immediately for instant feedback
     const tempMessage = {
-      _id: `temp-${Date.now()}`,
+      _id: tempId,
       senderId,
       receiverId,
       message: message.trim(),
@@ -538,7 +602,7 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
                     <div 
                       className={`max-w-[80%] rounded-lg px-3 py-2 ${
                         isMe 
-                          ? `bg-[#E8C848] text-[#121212] rounded-br-none ${msg.temp ? 'opacity-70' : ''}`
+                          ? `bg-[#E8C848] text-[#121212] rounded-br-none ${msg.temp ? 'opacity-70' : ''} ${msg.failed ? 'bg-red-500/70' : ''}`
                           : 'bg-[#1A1A1A] text-white rounded-bl-none relative group border border-gray-800 hover:border-[#E8C848]/30 transition-all duration-300'
                       }`}
                     >
@@ -557,7 +621,19 @@ const ChatModal = ({ isOpen, onClose, user, currentUser }) => {
                       <div className={`text-xs mt-1 flex items-center justify-end gap-1 ${
                         isMe ? 'text-[#121212]' : 'text-gray-400'
                       }`}>
-                        {formatTime(msg.createdAt)}
+                        {msg.failed ? (
+                          <>
+                            <span className="text-red-300">Failed</span>
+                            <button 
+                              onClick={() => handleRetryMessage(msg._id)}
+                              className="underline hover:text-white ml-2"
+                            >
+                              Retry
+                            </button>
+                          </>
+                        ) : (
+                          formatTime(msg.createdAt)
+                        )}
                       </div>
                     </div>
                   </div>
