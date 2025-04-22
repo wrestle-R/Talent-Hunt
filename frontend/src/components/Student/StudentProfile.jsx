@@ -1,8 +1,11 @@
   import React, { useState, useEffect } from 'react';
   import axios from 'axios';
   import { User, GraduationCap, Code, Award, Briefcase, Globe, Save, X, Plus, Clock, Target, Users, CheckCircle } from 'lucide-react';
+import { Navigate, useNavigate } from 'react-router-dom';
 
   const StudentProfile = () => {
+
+    const navigate = new useNavigate()
     // Add toast state
     const [toast, setToast] = useState({
       show: false,
@@ -285,6 +288,8 @@
         });
       } finally {
         setSaving(false);
+        navigate('/student/hero');
+        window.location.reload();
       }
     };
     

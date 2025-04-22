@@ -39,7 +39,10 @@ const studentSchema = new mongoose.Schema(
         github_link: { type: String },
         live_demo: { type: String },
         // Additional fields for project status, notes, and moderation
-        status: { type: String,enum: ['Pending','Rejected' ,'Approved','pending','rejected' ,'approved' ], default: 'Pending' },
+        status: { type: String, 
+          enum: ['Pending', 'Rejected', 'Approved', 'In Progress', 'pending', 'rejected', 'approved'], 
+          default: 'Pending' 
+        },
         moderatorNotes: { type: String },
         moderatedAt: { type: Date },
         isDeleted: { type: Boolean, default: false },
