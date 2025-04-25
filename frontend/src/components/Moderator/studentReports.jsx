@@ -41,24 +41,48 @@ const StudentReports = () => {
     'In Progress': '#4338CA',
   };
 
-  // Custom label for pie chart
-  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
+  // Custom label for pie chart with improved positioning
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name, value }) => {
     const RADIAN = Math.PI / 180;
-    const radius = outerRadius * 1.2; // Increased distance from center
+    // Increased radius to push labels further out
+    const radius = outerRadius * 1.4;
+    // Calculate label position
     const x = cx + radius * Math.cos(-midAngle * RADIAN);
     const y = cy + radius * Math.sin(-midAngle * RADIAN);
     
+    // Determine if the label should be on the right or left side
+    const isRightSide = x > cx;
+    
+    // Calculate line end point for the label connector
+    const lineEndX = cx + (outerRadius + 10) * Math.cos(-midAngle * RADIAN);
+    const lineEndY = cy + (outerRadius + 10) * Math.sin(-midAngle * RADIAN);
+    
+    // Calculate label offset based on quadrant
+    const labelX = isRightSide ? x + 5 : x - 5;
+    
     return (
-      <text 
-        x={x} 
-        y={y} 
-        fill="#9CA3AF"
-        textAnchor={x > cx ? 'start' : 'end'} 
-        dominantBaseline="central"
-        fontSize="12"
-      >
-        {`${name} (${(percent * 100).toFixed(0)}%)`}
-      </text>
+      <g>
+        {/* Connector line */}
+        <line
+          x1={lineEndX}
+          y1={lineEndY}
+          x2={labelX}
+          y2={y}
+          stroke="#666"
+          strokeWidth={1}
+        />
+        {/* Label text */}
+        <text
+          x={labelX}
+          y={y}
+          fill="#9CA3AF"
+          textAnchor={isRightSide ? "start" : "end"}
+          dominantBaseline="central"
+          fontSize="11"
+        >
+          {`${name} (${value})`}
+        </text>
+      </g>
     );
   };
 
@@ -604,7 +628,7 @@ const StudentReports = () => {
             <Award size={20} className="text-[#E8C848]" />
             <h2 className="text-lg font-bold text-white">Experience Level Distribution</h2>
           </div>
-          <div className="h-64 flex items-center justify-center">
+          <div className="h-72 flex items-center justify-center"> {/* Increased height */}
             <ResponsiveContainer width="100%" height="100%">
               <RechartsAppPieChart>
                 <Pie
@@ -613,9 +637,11 @@ const StudentReports = () => {
                   cy="50%"
                   labelLine={false}
                   outerRadius={80}
+                  innerRadius={40}  // Added inner radius for donut chart
                   fill="#8884d8"
                   dataKey="value"
                   label={renderCustomizedLabel}
+                  paddingAngle={2}  // Added padding between segments
                 >
                   {experienceLevelData.map((entry, index) => (
                     <Cell 
@@ -633,10 +659,6 @@ const StudentReports = () => {
                     borderRadius: '4px',
                     color: '#E5E7EB'
                   }} 
-                />
-                <Legend 
-                  formatter={(value) => <span style={{ color: '#9CA3AF' }}>{value}</span>}
-                  iconType="circle"
                 />
               </RechartsAppPieChart>
             </ResponsiveContainer>
