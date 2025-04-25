@@ -19,7 +19,8 @@ const {
   submitProjectFeedback,
   getAllConversations,
   fetchTeamApplications,
-  handleStudentApplications
+  handleStudentApplications,
+  getAllMentors
 } = require("../controllers/MentorController");
 
 // Public routes with no authentication
@@ -27,6 +28,9 @@ router.post("/registerOrLogin", registerOrLoginMentor);
 router.get("/profile/:uid", getMentorProfile);
 router.put("/profile/:uid", updateMentorProfile);
 router.get("/profile-completion/:uid", calculateMentorProfileCompletion);
+
+// New route for getting all mentors
+router.get("/all", getAllMentors);
 
 // Dashboard routes
 router.get("/students/:mentorId", getCurrentStudents);

@@ -56,30 +56,14 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
         // Get user ID and email
         const uid = userData?.firebaseUID || currentUser?.uid || '';
         
-        // Build query parameters
-        let queryParams = new URLSearchParams();
-        
-        if (availabilityFilter !== 'all') {
-          queryParams.append('availability', availabilityFilter);
-        }
-        
-        if (expertiseFilter) {
-          queryParams.append('expertise', expertiseFilter);
-        }
-        
         // Determine which endpoint to use
         let endpoint;
         if (isRecommendations) {
           endpoint = `http://localhost:8000/api/recommend_mentors/`;
         } else {
-          endpoint = `http://localhost:4000/api/student/mentors/:${uid}`;
+          endpoint = `http://localhost:4000/api/mentor/all`;
         }
-        
-        // Add query parameters to endpoint if any exist
-        if (queryParams.toString()) {
-          endpoint += `?${queryParams.toString()}`;
-        }
-        
+          
         let response;
         if (isRecommendations) {
           response = await axios.post(endpoint, {
@@ -88,17 +72,46 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
         } else {
           response = await axios.get(endpoint);
         }
-        console.log("Mentors response:", response.data);
-        // Process the response based on its structure
-        if (Array.isArray(response.data.mentors)) {
-          setMentors(response.data.mentors);
-        } else if (Array.isArray(response.data)) {
-          setMentors(response.data);
-        } else {
-          console.warn("Unexpected response format:", response.data);
-          setMentors([]);
+
+        // Normalize the data structure regardless of source
+        let normalizedMentors = [];
+        
+        if (response.data) {
+          const rawMentors = Array.isArray(response.data.mentors) ? response.data.mentors 
+            : Array.isArray(response.data) ? response.data 
+            : [];
+            
+          normalizedMentors = rawMentors.map(mentor => ({
+            _id: mentor._id?.$oid || mentor._id || '',
+            profile_picture: mentor.profile_picture || MentorPlaceholder,
+            name: mentor.name || 'Unnamed Mentor',
+            current_role: {
+              title: mentor.current_role?.title || mentor.title || 'Mentor',
+              company: mentor.current_role?.company || mentor.current_company || ''
+            },
+            bio: mentor.bio || "No bio available.",
+            rating: typeof mentor.rating === 'number' ? mentor.rating 
+              : mentor.rating?.$numberInt ? parseInt(mentor.rating.$numberInt) 
+              : 0,
+            years_of_experience: typeof mentor.years_of_experience === 'number' ? mentor.years_of_experience
+              : mentor.years_of_experience?.$numberInt ? parseInt(mentor.years_of_experience.$numberInt)
+              : 0,
+            expertise: {
+              technical_skills: Array.isArray(mentor.expertise?.technical_skills) ? mentor.expertise.technical_skills 
+                : Array.isArray(mentor.expertise) ? mentor.expertise
+                : Array.isArray(mentor.skills) ? mentor.skills
+                : [],
+              non_technical_skills: Array.isArray(mentor.expertise?.non_technical_skills) ? mentor.expertise.non_technical_skills : []
+            },
+            mentorship_focus_areas: Array.isArray(mentor.mentorship_focus_areas) ? mentor.mentorship_focus_areas 
+              : Array.isArray(mentor.mentor_topics) ? mentor.mentor_topics
+              : [],
+            mentorship_availability: mentor.mentorship_availability || {}
+          }));
         }
-        console.log("Mentors fetched:", mentors);
+
+        setMentors(normalizedMentors);
+        console.log("Fetched mentors:", normalizedMentors);
       } catch (err) {
         console.error("Error fetching mentors:", err);
         setError(`Failed to load mentors: ${err.message}`);
@@ -108,19 +121,29 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
     };
     
     fetchMentors();
-  }, [userData, isRecommendations, availabilityFilter, expertiseFilter]);
-  
-  // Filter mentors based on search term
+  }, [userData, isRecommendations]);
+
+  // Filter mentors based on search term, expertise, and availability
   const filteredMentors = mentors.filter(mentor => {
+    // Search term filter
     const matchesSearch = searchTerm === '' || 
       mentor.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      mentor.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (Array.isArray(mentor.expertise) && mentor.expertise.some(skill => typeof skill === 'string' && skill.toLowerCase().includes(searchTerm.toLowerCase()))) ||
-      (Array.isArray(mentor.skills) && mentor.skills.some(skill => typeof skill === 'string' && skill.toLowerCase().includes(searchTerm.toLowerCase()))) ||
-      (typeof mentor.currentCompany === 'string' && mentor.currentCompany.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (typeof mentor.current_company === 'string' && mentor.current_company.toLowerCase().includes(searchTerm.toLowerCase()));
-      
-    return matchesSearch;
+      mentor.current_role?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mentor.current_role?.company?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      mentor.expertise?.technical_skills?.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      mentor.expertise?.non_technical_skills?.some(skill => skill.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    // Expertise filter
+    const matchesExpertise = expertiseFilter === '' ||
+      mentor.expertise?.technical_skills?.some(skill => skill.toLowerCase().includes(expertiseFilter.toLowerCase())) ||
+      mentor.expertise?.non_technical_skills?.some(skill => skill.toLowerCase().includes(expertiseFilter.toLowerCase()));
+
+    // Availability filter
+    const matchesAvailability = availabilityFilter === 'all' ||
+      (availabilityFilter === 'available' && mentor.mentorship_availability?.status === 'available') ||
+      (availabilityFilter === 'open' && mentor.mentorship_availability?.status === 'open');
+
+    return matchesSearch && matchesExpertise && matchesAvailability;
   });
 
   // Helper function to get expertise icon and color
@@ -304,14 +327,14 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
       )}
       
       {/* Mentors list - in a row for recommendations, grid for full page */}
-      {mentors.length > 0 ? (
+      {filteredMentors.length > 0 ? (
   <div className={`${isRecommendations 
     ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3' 
     : isFullPage 
       ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3' 
       : 'grid grid-cols-1 md:grid-cols-2 gap-3'
   }`}>
-    {mentors.slice(0, isRecommendations ? 4 : undefined).map(mentor => {
+    {filteredMentors.slice(0, isRecommendations ? 4 : undefined).map(mentor => {
       // Safely extract mentor data
       const mentorId = mentor._id?.$oid || mentor._id || '';
       const profilePicture = mentor.profile_picture || MentorPlaceholder;
@@ -461,7 +484,7 @@ const DisplayMentors = ({ userData: propUserData, isFullPage = false, isRecommen
 )}
       
       {/* Pagination or more mentors button - only in full page view */}
-      {isFullPage && mentors.length > 8 && (
+      {isFullPage && filteredMentors.length > 8 && (
         <div className="mt-6 flex justify-center">
           <button className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#E8C848]/20 transition-all duration-300">
             Load More Mentors

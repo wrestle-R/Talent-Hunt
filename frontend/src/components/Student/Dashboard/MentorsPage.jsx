@@ -27,7 +27,7 @@ const MentorsPage = () => {
           </p>
         </div>
 {        console.log(userData)
-}        <DisplayMentors userData={userData} isFullPage={true} />
+}        <DisplayMentors userData={userData} isFullPage={true} isRecommendations={false}/>
       </div>
     </>
   );

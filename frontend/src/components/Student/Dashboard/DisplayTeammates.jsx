@@ -37,7 +37,7 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
   
   // Function to handle opening teammate profile
   const handleViewProfile = (teammateId) => {
-    navigate(`/student/teammate/${teammateId.$oid}`);
+    navigate(`/student/teammate/${teammateId}`);
   };
 
   // Function to handle opening chat
@@ -263,12 +263,16 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
           queryParams.append('skills', skillFilter);
         }
         
+        // Add exclusion parameters for all-students endpoint
+        queryParams.append('excludeUID', uid);
+        queryParams.append('excludeEmail', currentUser.email);
+        
         // Determine which endpoint to use
         let endpoint;
         if (isRecommendations) {
           endpoint = `http://localhost:8000/api/recommend_students/`;
         } else {
-          endpoint = `http://localhost:4000/api/student/teammates/${uid}`;
+          endpoint = `http://localhost:4000/api/student/all-students/`;
         }
         
         // Add query parameters to endpoint if any exist
@@ -285,13 +289,14 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
           response = await axios.get(endpoint);
         }
         
-        console.log(response);
-        
         // Process the response based on its structure
-        if (Array.isArray(response.data?.teammates)) {
+        if (isRecommendations && Array.isArray(response.data?.teammates)) {
           setTeammates(response.data.teammates);
+        } else if (!isRecommendations && response.data?.students) {
+          // Handle the all-students response format
+          setTeammates(response.data.students);
         } else if (Array.isArray(response.data)) {
-          setTeammates(response.data); // Handle case where array is at root
+          setTeammates(response.data);
         } else {
           console.warn("Unexpected response format:", response.data);
           setTeammates([]);

@@ -1329,6 +1329,29 @@ const handleStudentApplications = async (req, res) => {
   }
 };
 
+// Get all mentors
+const getAllMentors = async (req, res) => {
+  try {
+    // Find all non-rejected mentors
+    const mentors = await Mentor.find({ isRejected: false })
+      .select('name email profile_picture current_role expertise mentorship_focus_areas mentorship_availability industries_worked_in rating years_of_experience bio');
+
+    res.status(200).json({
+      success: true,
+      count: mentors.length,
+      mentors
+    });
+
+  } catch (error) {
+    console.error("Error fetching mentors:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to retrieve mentors",
+      error: error.message
+    });
+  }
+};
+
 // Update module exports to include the new functions
 module.exports = { 
   registerOrLoginMentor,
@@ -1350,8 +1373,8 @@ module.exports = {
   getTeamDetails,
   getAllConversations,
   fetchTeamApplications,
-  handleStudentApplications
-
+  handleStudentApplications,
+  getAllMentors
 };
 
 
