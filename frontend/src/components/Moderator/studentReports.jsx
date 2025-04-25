@@ -32,13 +32,34 @@ const StudentReports = () => {
   const [showFilters, setShowFilters] = useState(false);
   const [error, setError] = useState(null);
 
-  // Colors for charts
-  const COLORS = ['#E8C848', '#4338CA', '#EC4899', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444'];
+  // Colors for charts - Updated to match page theme
+  const COLORS = ['#E8C848', '#4338CA', '#10B981', '#8B5CF6', '#EC4899', '#F59E0B', '#EF4444'];
   const PROJECT_STATUS_COLORS = {
-    'Pending': '#F59E0B',
+    'Pending': '#E8C848', // Updated to primary yellow
     'Approved': '#10B981',
     'Rejected': '#EF4444',
     'In Progress': '#4338CA',
+  };
+
+  // Custom label for pie chart
+  const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius * 1.2; // Increased distance from center
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="#9CA3AF"
+        textAnchor={x > cx ? 'start' : 'end'} 
+        dominantBaseline="central"
+        fontSize="12"
+      >
+        {`${name} (${(percent * 100).toFixed(0)}%)`}
+      </text>
+    );
   };
 
   // Fetch students data
@@ -515,15 +536,25 @@ const StudentReports = () => {
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={projectStatusData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis dataKey="name" stroke="#999" />
-                <YAxis stroke="#999" />
+                <XAxis dataKey="name" stroke="#9CA3AF" />
+                <YAxis stroke="#9CA3AF" />
                 <Tooltip 
-                  contentStyle={{ backgroundColor: '#222', border: '1px solid #444', borderRadius: '4px' }}
+                  contentStyle={{ 
+                    backgroundColor: '#222', 
+                    border: '1px solid #444', 
+                    borderRadius: '4px',
+                    color: '#E5E7EB'
+                  }}
                   formatter={(value, name, props) => [`${value} (${props.payload.percentage}%)`, 'Projects']}
                 />
                 <Bar dataKey="value" fill="#E8C848">
                   {projectStatusData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={PROJECT_STATUS_COLORS[entry.name] || '#E8C848'} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={PROJECT_STATUS_COLORS[entry.name] || '#E8C848'}
+                      strokeWidth={1}
+                      stroke="#111111"
+                    />
                   ))}
                 </Bar>
               </BarChart>
@@ -545,10 +576,23 @@ const StudentReports = () => {
                 margin={{ top: 5, right: 30, left: 80, bottom: 5 }}
               >
                 <CartesianGrid strokeDasharray="3 3" stroke="#333" />
-                <XAxis type="number" stroke="#999" />
-                <YAxis dataKey="name" type="category" stroke="#999" width={80} />
-                <Tooltip contentStyle={{ backgroundColor: '#222', border: '1px solid #444', borderRadius: '4px' }} />
-                <Bar dataKey="value" fill="#4338CA" />
+                <XAxis type="number" stroke="#9CA3AF" />
+                <YAxis 
+                  dataKey="name" 
+                  type="category" 
+                  stroke="#9CA3AF" 
+                  width={80} 
+                  tick={{ fill: '#9CA3AF' }}
+                />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#222', 
+                    border: '1px solid #444', 
+                    borderRadius: '4px',
+                    color: '#E5E7EB'
+                  }} 
+                />
+                <Bar dataKey="value" fill="#E8C848" />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -571,14 +615,29 @@ const StudentReports = () => {
                   outerRadius={80}
                   fill="#8884d8"
                   dataKey="value"
-                  label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                  label={renderCustomizedLabel}
                 >
                   {experienceLevelData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[index % COLORS.length]} 
+                      strokeWidth={1}
+                      stroke="#111111"
+                    />
                   ))}
                 </Pie>
-                <Tooltip contentStyle={{ backgroundColor: '#222', border: '1px solid #444', borderRadius: '4px' }} />
-                <Legend />
+                <Tooltip 
+                  contentStyle={{ 
+                    backgroundColor: '#222', 
+                    border: '1px solid #444', 
+                    borderRadius: '4px',
+                    color: '#E5E7EB'
+                  }} 
+                />
+                <Legend 
+                  formatter={(value) => <span style={{ color: '#9CA3AF' }}>{value}</span>}
+                  iconType="circle"
+                />
               </RechartsAppPieChart>
             </ResponsiveContainer>
           </div>
