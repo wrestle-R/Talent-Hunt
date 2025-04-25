@@ -54,7 +54,7 @@ router.get("/profile-completion/:uid", calculateStudentProfileCompletion);
 
 // Teammate discovery routes
 router.get("/mentors", getAllMentors);
-router.get("/all-students/:uid", getAllTeammates);
+router.get("/all-students", getAllStudents); // Ensure this route matches the frontend API call
 router.get("/recommended-teammates/:uid", getRecommendedTeammates);
 router.get("/recommended-mentors/:uid", getRecommendedMentors);
 router.get("/teammates/:uid", getPotentialTeammates);

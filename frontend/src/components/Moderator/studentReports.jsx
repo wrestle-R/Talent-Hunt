@@ -45,23 +45,22 @@ const StudentReports = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        // Get Firebase UID from localStorage or auth context
-        const uid = localStorage.getItem('firebaseUID') || 'defaultModeratorUID';
-        
-        const response = await fetch(`http://localhost:4000/api/student/all-students/uBjCvqQomzNNgqbhGhIBHYyDJew1`);
-        
+        const response = await fetch('http://localhost:4000/api/student/all-students');
         if (!response.ok) {
-          throw new Error(`Error fetching students: ${response.statusText}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
         const data = await response.json();
-        setStudents(data);
-        console.log("Students received: ",students);
-        setFilteredStudents(data);
+        console.log('Fetched students:', data); // Debugging log
+        if (data.success && Array.isArray(data.students)) {
+          setStudents(data.students);
+          setFilteredStudents(data.students);
+        } else {
+          throw new Error('Invalid data format received');
+        }
         setLoading(false);
-      } catch (err) {
-        console.error('Failed to fetch students:', err);
-        setError(err.message);
+      } catch (error) {
+        console.error('Error fetching students:', error);
+        setError('Failed to fetch student data. Please try again later.');
         setLoading(false);
       }
     };
@@ -77,10 +76,10 @@ const StudentReports = () => {
     let totalProjects = 0;
     
     students.forEach(student => {
-      if (student.projects && student.projects.length) {
+      if (student.projects && Array.isArray(student.projects)) {
         student.projects.forEach(project => {
           if (!project.isDeleted) {
-            const status = project.status.charAt(0).toUpperCase() + project.status.slice(1).toLowerCase();
+            const status = project.status?.charAt(0).toUpperCase() + project.status?.slice(1).toLowerCase() || 'Pending';
             statusCounts[status] = (statusCounts[status] || 0) + 1;
             totalProjects++;
           }

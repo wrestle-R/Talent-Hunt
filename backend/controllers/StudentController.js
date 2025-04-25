@@ -348,58 +348,42 @@ const getAllStudents = async (req, res) => {
     // Search and filter parameters
     const search = req.query.search || '';
     const skill = req.query.skill || '';
+    const excludeEmail = req.query.excludeEmail;
+    const excludeUID = req.query.excludeUID;
     
-    // Get parameters to exclude current user (using both email and UID for reliability)
-    const excludeEmail = req.query.excludeEmail || '';
-    const excludeUID = req.query.excludeUID || '';
+    // Build base query
+    let query = {
+      isRejected: { $ne: true }
+    };
     
-    // Build query
-    let query = {};
-    
-    // Exclude the current user using $and to ensure both conditions are applied
+    // Add exclusion conditions if provided
     if (excludeEmail || excludeUID) {
-      query.$and = [];
-      
       if (excludeEmail) {
-        query.$and.push({ email: { $ne: excludeEmail } });
+        query.email = { $ne: excludeEmail };
       }
-      
       if (excludeUID) {
-        query.$and.push({ firebaseUID: { $ne: excludeUID } });
+        query.firebaseUID = { $ne: excludeUID };
       }
     }
     
     // Add search functionality
     if (search) {
-      const searchQuery = {
-        $or: [
-          { name: { $regex: search, $options: 'i' } },
-          { email: { $regex: search, $options: 'i' } },
-          { 'education.institution': { $regex: search, $options: 'i' } }
-        ]
-      };
-      
-      // Combine with existing query
-      if (query.$and) {
-        query.$and.push(searchQuery);
-      } else {
-        query = { ...query, ...searchQuery };
-      }
+      query.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { 'education.institution': { $regex: search, $options: 'i' } },
+        { 'education.degree': { $regex: search, $options: 'i' } }
+      ];
     }
     
     // Add skill filter
     if (skill) {
-      const skillQuery = { skills: { $in: [new RegExp(skill, 'i')] } };
-      
-      // Combine with existing query
-      if (query.$and) {
-        query.$and.push(skillQuery);
-      } else {
-        query = { ...query, ...skillQuery };
-      }
+      query.skills = {
+        $regex: new RegExp(skill, 'i')
+      };
     }
 
-    // Execute query with pagination
+    // Execute query with proper error handling
     const students = await Student.find(query)
       .select({
         firebaseUID: 1,
@@ -410,25 +394,79 @@ const getAllStudents = async (req, res) => {
         education: 1,
         skills: 1,
         interests: 1,
-        achievements: 1,
+        bio: 1,
+        teammate_search: 1,
         projects: 1,
-        mentorship_status: 1
+        hackathon_prev_experiences: 1,
+        mentorship_interests: 1,
+        experience: 1,
+        achievements: 1,
+        social_links: 1,
+        preferred_working_hours: 1,
+        teammates: 1,
+        mentors: 1,
+        createdAt: 1,
+        updatedAt: 1
       })
       .sort({ updatedAt: -1 })
       .skip(skip)
-      .limit(limit);
+      .limit(limit)
+      .lean();
     
     // Get total count for pagination
     const totalStudents = await Student.countDocuments(query);
     
-    // Send response
+    // Format response data with proper default values
+    const formattedStudents = students.map(student => ({
+      _id: student._id,
+      firebaseUID: student.firebaseUID,
+      name: student.name || 'Unnamed Student',
+      email: student.email,
+      profile_picture: student.profile_picture,
+      location: student.location || {},
+      education: student.education || {},
+      skills: student.skills || [],
+      interests: student.interests || [],
+      bio: student.bio || '',
+      teammate_search: {
+        looking_for_teammates: student.teammate_search?.looking_for_teammates || false,
+        purpose: student.teammate_search?.purpose || '',
+        urgency_level: student.teammate_search?.urgency_level || 'low'
+      },
+      projects: (student.projects || []).map(project => ({
+        ...project,
+        status: project.status || 'pending',
+        tech_stack: project.tech_stack || [],
+        isDeleted: project.isDeleted || false
+      })),
+      hackathon_prev_experiences: student.hackathon_prev_experiences || 0,
+      mentorship_interests: {
+        seeking_mentor: student.mentorship_interests?.seeking_mentor || false,
+        mentor_topics: student.mentorship_interests?.mentor_topics || []
+      },
+      experience: student.experience || [],
+      achievements: student.achievements || [],
+      teammates: student.teammates || [],
+      mentors: student.mentors || [],
+      createdAt: student.createdAt,
+      updatedAt: student.updatedAt
+    }));
+    
     res.status(200).json({
       success: true,
-      count: students.length,
+      count: formattedStudents.length,
       total: totalStudents,
       totalPages: Math.ceil(totalStudents / limit),
       currentPage: page,
-      students
+      students: formattedStudents,
+      query: {
+        search,
+        skill,
+        excludeEmail,
+        excludeUID,
+        page,
+        limit
+      }
     });
 
   } catch (error) {
@@ -436,11 +474,11 @@ const getAllStudents = async (req, res) => {
     res.status(500).json({ 
       success: false,
       message: "Failed to retrieve students", 
-      error: error.message 
+      error: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
-}; 
-
+};
 
 // Updated getRecommendedTeammates function with isRejected and profile completion checks
 const getRecommendedTeammates = async (req, res) => {
