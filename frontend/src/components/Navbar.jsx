@@ -98,7 +98,7 @@ const Navbar = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <NavLink to="/">Home</NavLink>
+              <NavLink to="/landing">Home</NavLink>
               <NavLink to="/features">Features</NavLink>
               <NavLink to="/about">About</NavLink>
               {isLoggedIn ? (
