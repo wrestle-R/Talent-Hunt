@@ -1,24 +1,46 @@
 const express = require('express');
 const router = express.Router();
-const ModeratorController = require('../controllers/ModeratorController');
+const {
+  getReportedMessages,
+  getConversation,
+  updateReportedMessage,
+  getUserMessages,
+  getAllProjects,
+  getProjectById,  
+  updateProjectStatus,
+  deleteProject,
+  flagProject,
+  getFlaggedProjects,
+  sendNote,
+  getNotesByRecipient,
+  getNotesBySender,
+  getNoteReplies,
+  updateNoteStatus,
+  getAllNotes,
+  getNoteById
+} = require('../controllers/ModeratorController');
 
-// Existing message routes
-router.get('/messages/reported', ModeratorController.getReportedMessages);
-router.get('/conversation/:user1/:user2', ModeratorController.getConversation);
-router.put('/messages/reported/:messageId', ModeratorController.updateReportedMessage);
-router.get('/messages/user/:userId', ModeratorController.getUserMessages);
+// Messages routes
+router.get('/messages/reported', getReportedMessages);
+router.get('/conversation/:user1/:user2', getConversation);
+router.put('/messages/reported/:messageId', updateReportedMessage);
+router.get('/messages/user/:userId', getUserMessages);
 
 // Project management routes
-router.get('/projects', ModeratorController.getAllProjects);
-router.get('/projects/:projectId', ModeratorController.getProjectById);
-router.put('/projects/:projectId', ModeratorController.updateProjectStatus);
-router.delete('/projects/:projectId', ModeratorController.deleteProject);
+router.get('/projects', getAllProjects);
+router.get('/projects/:projectId', getProjectById);
+router.put('/projects/:projectId', updateProjectStatus);
+router.delete('/projects/:projectId', deleteProject);
+router.post('/projects/:projectId/flag', flagProject);
+router.get('/projects/flagged', getFlaggedProjects);
 
 // Note system routes
-router.post('/notes', ModeratorController.sendNote);
-router.get('/notes/recipient/:userId/:userType', ModeratorController.getNotesByRecipient);
-router.get('/notes/sender/:moderatorId', ModeratorController.getNotesBySender);
-router.get('/notes/:noteId/replies', ModeratorController.getNoteReplies);
-router.put('/notes/:noteId/status', ModeratorController.updateNoteStatus);
+router.post('/notes', sendNote);
+router.get('/notes/recipient/:userId/:userType', getNotesByRecipient);
+router.get('/notes/sender/:moderatorId', getNotesBySender);
+router.get('/notes/:noteId/replies', getNoteReplies);
+router.put('/notes/:noteId/status', updateNoteStatus);
+router.get('/notes', getAllNotes);
+router.get('/notes/:noteId', getNoteById);
 
 module.exports = router;

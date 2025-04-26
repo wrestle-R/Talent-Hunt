@@ -473,8 +473,8 @@ const ManageHackathonTeams = ({ hackathonId, onBack }) => {
                           onError={(e) => { e.target.src = '/default-avatar.png' }}
                         />
                         <div>
-                          <div className="font-medium text-white">{applicant.student?.name || 'Unknown'}</div>
-                          <div className="text-sm text-gray-400">{applicant.student?.email || 'No email'}</div>
+                          <div className="font-medium text-white">{applicant.student?.name || 'Russel Daniel'}</div>
+                          <div className="text-sm text-gray-400">{applicant.student?.email || 'russeldaniel@gmail.com'}</div>
                         </div>
                       </div>
                     </td>

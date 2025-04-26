@@ -228,7 +228,7 @@ const HackathonParticipantManager = () => {
               </div>
             </div>
             <div className="ml-3">
-              <div className="text-sm font-medium text-gray-400">Unknown Member</div>
+              <div className="text-sm font-medium text-gray-400">Russel Daniel</div>
             </div>
           </div>
         );
@@ -973,7 +973,7 @@ const HackathonParticipantManager = () => {
                               </div>
                               <div className="ml-3">
                                 <div className="text-sm font-medium flex items-center text-white">
-                                  {member?.name || 'Unknown User'}
+                                  {member?.name || 'Russel Daniel'}
                                   {member?.isLeader && (
                                     <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                       <Award size={12} className="mr-1" />

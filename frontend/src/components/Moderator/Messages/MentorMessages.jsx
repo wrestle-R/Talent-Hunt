@@ -12,12 +12,13 @@ const MentorMessages = ({ statusFilter, updateMessageStatus, isLoading: parentLo
     const fetchMentorMessages = async () => {
       try {
         setIsLoading(true);
-        const response = await axios.get(
-          `${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=${statusFilter}&userType=mentor`
-        );
-        setMentorMessages(response.data);
+        const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=${statusFilter}&userType=mentor`);
+        // Ensure we have an array and filter for mentor messages
+        const messages = Array.isArray(response.data) ? response.data : [];
+        setMentorMessages(messages.filter(msg => msg?.sender?.type === 'mentor'));
       } catch (error) {
         console.error('Error fetching mentor reported messages:', error);
+        setMentorMessages([]);
       } finally {
         setIsLoading(false);
       }
@@ -29,14 +30,27 @@ const MentorMessages = ({ statusFilter, updateMessageStatus, isLoading: parentLo
   // If parent is loading, show parent's loader
   if (parentLoading) return null;
 
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center">
+        <div className="animate-spin w-10 h-10 border-4 border-[#E8C848] border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p className="text-gray-400">Loading mentor messages...</p>
+      </div>
+    );
+  }
+
+  if (!Array.isArray(mentorMessages)) {
+    console.error('mentorMessages is not an array:', mentorMessages);
+    return (
+      <div className="p-8 text-center text-red-500">
+        Error: Invalid data format received
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#1A1A1A] rounded-lg border border-gray-800 overflow-hidden">
-      {isLoading ? (
-        <div className="p-8 text-center">
-          <div className="animate-spin w-10 h-10 border-4 border-[#E8C848] border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading mentor messages...</p>
-        </div>
-      ) : mentorMessages.length === 0 ? (
+      {mentorMessages.length === 0 ? (
         <div className="p-8 text-center">
           <Flag size={48} className="mx-auto mb-4 text-gray-600" />
           <h3 className="text-lg font-medium text-gray-300 mb-2 font-montserrat">No reported mentor messages found</h3>

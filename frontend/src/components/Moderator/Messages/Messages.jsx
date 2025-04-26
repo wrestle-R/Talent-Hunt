@@ -21,33 +21,55 @@ const Messages = () => {
   });
   const navigate = useNavigate();
 
-  // Fetch reported messages
+  // Update fetchReportedMessages function
   const fetchReportedMessages = async () => {
     try {
       setIsLoading(true);
-      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=${statusFilter}`);
+      console.log('Fetching reported messages with status:', statusFilter);
+      const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=${statusFilter}`, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       
-      // Ensure response.data is an array
-      const messages = Array.isArray(response.data) ? response.data : 
-                      Array.isArray(response.data.messages) ? response.data.messages : [];
+      console.log('API Response:', response.data);
       
-      setReportedMessages(messages);
-      
-      // Calculate stats with safe array access
-      const newStats = {
-        total: messages.length,
-        pending: messages.filter(msg => msg?.reportDetails?.status === 'pending').length,
-        reviewed: messages.filter(msg => msg?.reportDetails?.status === 'reviewed').length,
-        actionTaken: messages.filter(msg => msg?.reportDetails?.status === 'action_taken').length,
-        dismissed: messages.filter(msg => msg?.reportDetails?.status === 'dismissed').length,
-        student: messages.filter(msg => msg?.sender?.type === 'student').length,
-        mentor: messages.filter(msg => msg?.sender?.type === 'mentor').length
-      };
-      setStats(newStats);
-
+      // Handle the new response format
+      if (response.data.success && Array.isArray(response.data.messages)) {
+        setReportedMessages(response.data.messages);
+        
+        // Calculate stats from the messages array
+        const messages = response.data.messages;
+        const newStats = {
+          total: messages.length,
+          pending: messages.filter(msg => msg?.reportDetails?.status === 'pending').length,
+          reviewed: messages.filter(msg => msg?.reportDetails?.status === 'reviewed').length,
+          actionTaken: messages.filter(msg => msg?.reportDetails?.status === 'action_taken').length,
+          dismissed: messages.filter(msg => msg?.reportDetails?.status === 'dismissed').length,
+          student: messages.filter(msg => msg?.sender?.type === 'student').length,
+          mentor: messages.filter(msg => msg?.sender?.type === 'mentor').length
+        };
+        setStats(newStats);
+      } else {
+        console.error('Invalid response format:', response.data);
+        setReportedMessages([]);
+        setStats({
+          total: 0,
+          pending: 0,
+          reviewed: 0,
+          actionTaken: 0,
+          dismissed: 0,
+          student: 0,
+          mentor: 0
+        });
+      }
     } catch (error) {
       console.error('Error fetching reported messages:', error);
-      setReportedMessages([]); // Set empty array on error
+      if (error.response) {
+        console.error('Response data:', error.response.data);
+        console.error('Response status:', error.response.status);
+      }
+      setReportedMessages([]);
       setStats({
         total: 0,
         pending: 0,
@@ -63,6 +85,7 @@ const Messages = () => {
   };
 
   useEffect(() => {
+    console.log('Messages component mounted or statusFilter changed:', statusFilter);
     fetchReportedMessages();
   }, [statusFilter]);
 
@@ -85,6 +108,14 @@ const Messages = () => {
       console.error('Error updating message status:', error);
     }
   };
+
+  // Filter messages based on active tab
+  const filteredMessages = reportedMessages.filter(message => {
+    if (activeTab === 'all') return true;
+    if (activeTab === 'student') return message?.sender?.type === 'student';
+    if (activeTab === 'mentor') return message?.sender?.type === 'mentor';
+    return true;
+  });
 
   return (
     <div className="container mx-auto px-4 py-8 bg-[#111111] font-inter">
@@ -392,6 +423,7 @@ const Messages = () => {
           {/* Student Messages Tab */}
           {activeTab === 'student' && (
             <StudentMessages 
+              studentMessages={filteredMessages}
               statusFilter={statusFilter}
               updateMessageStatus={updateMessageStatus}
               isLoading={isLoading} 
@@ -401,6 +433,7 @@ const Messages = () => {
           {/* Mentor Messages Tab */}
           {activeTab === 'mentor' && (
             <MentorMessages 
+              mentorMessages={filteredMessages}
               statusFilter={statusFilter}
               updateMessageStatus={updateMessageStatus}
               isLoading={isLoading} 

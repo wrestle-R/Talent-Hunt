@@ -7,46 +7,48 @@ const Note = require('../models/Note');
 // Get all reported messages
 exports.getReportedMessages = async (req, res) => {
   try {
+    console.log('Getting reported messages - Query params:', req.query);
     const { status, userType } = req.query;
     
-    // Base query for reported messages
+    // Build the query with isReported true
     let query = { isReported: true };
+    console.log('Initial query:', query);
     
-    // Filter by report status if provided
+    // Add status filter if provided and not 'all'
     if (status && status !== 'all') {
       query['reportDetails.status'] = status;
     }
-    
+    console.log('Query after status filter:', query);
+
     // Fetch messages
     const messages = await Message.find(query)
       .sort({ 'reportDetails.reportedAt': -1 });
+    console.log('Found messages count:', messages.length);
+    console.log('Raw messages:', JSON.stringify(messages, null, 2));
     
     // Enhance messages with user details
     const enhancedMessages = await Promise.all(messages.map(async (message) => {
+      console.log('Processing message:', message._id);
       const messageObj = message.toObject();
       
       // Get sender details
       try {
-        const senderIsStudent = await Student.findById(message.senderId);
-        if (senderIsStudent) {
+        console.log('Finding sender with ID:', message.senderId);
+        let sender = await Student.findOne({ firebaseUID: message.senderId });
+        if (!sender) {
+          sender = await Mentor.findOne({ firebaseUID: message.senderId });
+        }
+        if (sender) {
           messageObj.sender = {
-            _id: senderIsStudent._id,
-            name: senderIsStudent.name,
-            email: senderIsStudent.email,
-            type: 'student',
-            profilePicture: senderIsStudent.profilePicture
+            _id: message.senderId,
+            name: sender.name,
+            email: sender.email,
+            type: sender.constructor.modelName.toLowerCase(),
+            profilePicture: sender.profile_picture
           };
+          console.log('Found sender:', messageObj.sender);
         } else {
-          const senderIsMentor = await Mentor.findById(message.senderId);
-          if (senderIsMentor) {
-            messageObj.sender = {
-              _id: senderIsMentor._id,
-              name: senderIsMentor.name,
-              email: senderIsMentor.email,
-              type: 'mentor',
-              profilePicture: senderIsMentor.profilePicture
-            };
-          }
+          console.log('Sender not found for ID:', message.senderId);
         }
       } catch (err) {
         console.error('Error fetching sender details:', err);
@@ -54,75 +56,76 @@ exports.getReportedMessages = async (req, res) => {
       
       // Get receiver details
       try {
-        const receiverIsStudent = await Student.findById(message.receiverId);
-        if (receiverIsStudent) {
+        console.log('Finding receiver with ID:', message.receiverId);
+        let receiver = await Student.findOne({ firebaseUID: message.receiverId });
+        if (!receiver) {
+          receiver = await Mentor.findOne({ firebaseUID: message.receiverId });
+        }
+        if (receiver) {
           messageObj.receiver = {
-            _id: receiverIsStudent._id,
-            name: receiverIsStudent.name,
-            email: receiverIsStudent.email,
-            type: 'student',
-            profilePicture: receiverIsStudent.profilePicture
+            _id: message.receiverId,
+            name: receiver.name,
+            email: receiver.email,
+            type: receiver.constructor.modelName.toLowerCase(),
+            profilePicture: receiver.profile_picture
           };
+          console.log('Found receiver:', messageObj.receiver);
         } else {
-          const receiverIsMentor = await Mentor.findById(message.receiverId);
-          if (receiverIsMentor) {
-            messageObj.receiver = {
-              _id: receiverIsMentor._id,
-              name: receiverIsMentor.name,
-              email: receiverIsMentor.email,
-              type: 'mentor',
-              profilePicture: receiverIsMentor.profilePicture
-            };
-          }
+          console.log('Receiver not found for ID:', message.receiverId);
         }
       } catch (err) {
         console.error('Error fetching receiver details:', err);
       }
       
-      // Get reporter details
-      try {
-        const reporterIsStudent = await Student.findById(message.reportDetails.reportedBy);
-        if (reporterIsStudent) {
-          messageObj.reporter = {
-            _id: reporterIsStudent._id,
-            name: reporterIsStudent.name,
-            email: reporterIsStudent.email,
-            type: 'student',
-            profilePicture: reporterIsStudent.profilePicture
-          };
-        } else {
-          const reporterIsMentor = await Mentor.findById(message.reportDetails.reportedBy);
-          if (reporterIsMentor) {
+      // Get reporter details if exists
+      if (message.reportDetails?.reportedBy) {
+        try {
+          let reporter = await Student.findOne({ firebaseUID: message.reportDetails.reportedBy });
+          if (!reporter) {
+            reporter = await Mentor.findOne({ firebaseUID: message.reportDetails.reportedBy });
+          }
+          if (reporter) {
             messageObj.reporter = {
-              _id: reporterIsMentor._id,
-              name: reporterIsMentor.name,
-              email: reporterIsMentor.email,
-              type: 'mentor',
-              profilePicture: reporterIsMentor.profilePicture
+              _id: message.reportDetails.reportedBy,
+              name: reporter.name,
+              email: reporter.email,
+              type: reporter.constructor.modelName.toLowerCase(),
+              profilePicture: reporter.profile_picture
             };
           }
+        } catch (err) {
+          console.error('Error fetching reporter details:', err);
         }
-      } catch (err) {
-        console.error('Error fetching reporter details:', err);
       }
       
       return messageObj;
     }));
     
     // Filter by user type if requested
+    let filteredMessages = enhancedMessages;
     if (userType && userType !== 'all') {
-      const filteredMessages = enhancedMessages.filter(msg => {
-        if (userType === 'student' && msg.sender?.type === 'student') return true;
-        if (userType === 'mentor' && msg.sender?.type === 'mentor') return true;
-        return false;
-      });
-      return res.status(200).json(filteredMessages);
+      console.log('Filtering by user type:', userType);
+      filteredMessages = enhancedMessages.filter(msg => 
+        msg.sender?.type === userType.toLowerCase()
+      );
+      console.log('Messages after user type filter:', filteredMessages.length);
     }
     
-    return res.status(200).json(enhancedMessages);
+    console.log('Sending response with messages count:', filteredMessages.length);
+    // Return messages with a success flag and count
+    return res.status(200).json({
+      success: true,
+      count: filteredMessages.length,
+      messages: filteredMessages
+    });
+
   } catch (error) {
-    console.error('Error fetching reported messages:', error);
-    return res.status(500).json({ error: 'Server error' });
+    console.error('Error in getReportedMessages:', error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Failed to fetch reported messages',
+      error: error.message 
+    });
   }
 };
 

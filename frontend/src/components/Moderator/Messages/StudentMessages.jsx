@@ -13,9 +13,12 @@ const StudentMessages = ({ statusFilter, updateMessageStatus, isLoading: parentL
       try {
         setIsLoading(true);
         const response = await axios.get(`${import.meta.env.VITE_APP_BASE_URL}/api/moderator/messages/reported?status=${statusFilter}&userType=student`);
-        setStudentMessages(response.data);
+        // Ensure we have an array and filter for student messages
+        const messages = Array.isArray(response.data) ? response.data : [];
+        setStudentMessages(messages.filter(msg => msg?.sender?.type === 'student'));
       } catch (error) {
         console.error('Error fetching student reported messages:', error);
+        setStudentMessages([]);
       } finally {
         setIsLoading(false);
       }
@@ -27,14 +30,27 @@ const StudentMessages = ({ statusFilter, updateMessageStatus, isLoading: parentL
   // If parent is loading, show parent's loader
   if (parentLoading) return null;
 
+  if (isLoading) {
+    return (
+      <div className="p-8 text-center">
+        <div className="animate-spin w-10 h-10 border-4 border-[#E8C848] border-t-transparent rounded-full mx-auto mb-4"></div>
+        <p className="text-gray-400">Loading student messages...</p>
+      </div>
+    );
+  }
+
+  if (!Array.isArray(studentMessages)) {
+    console.error('studentMessages is not an array:', studentMessages);
+    return (
+      <div className="p-8 text-center text-red-500">
+        Error: Invalid data format received
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#1A1A1A] rounded-lg border border-gray-800 overflow-hidden font-inter">
-      {isLoading ? (
-        <div className="p-8 text-center">
-          <div className="animate-spin w-10 h-10 border-4 border-[#E8C848] border-t-transparent rounded-full mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading student messages...</p>
-        </div>
-      ) : studentMessages.length === 0 ? (
+      {studentMessages.length === 0 ? (
         <div className="p-8 text-center">
           <Flag size={48} className="mx-auto mb-4 text-gray-600" />
           <h3 className="text-lg font-medium text-gray-300 mb-2 font-montserrat">No reported student messages found</h3>
