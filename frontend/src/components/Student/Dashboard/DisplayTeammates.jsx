@@ -37,7 +37,11 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
   
   // Function to handle opening teammate profile
   const handleViewProfile = (teammateId) => {
-    navigate(`/student/teammate/${teammateId}`);
+    if(isRecommendations){
+    navigate(`/student/teammate/${teammateId.$oid}`);}
+    else{
+      navigate(`/student/teammate/${teammateId}`);
+    }
   };
 
   // Function to handle opening chat

@@ -36,7 +36,7 @@ const StudentDashboard = ({ userData, formatDate, getDaysRemaining }) => {
           <h2 className="text-2xl font-bold text-white">Browse Mentors</h2>
         </div>
         
-        <DisplayMentors userData={userData} isFullPage={true} />
+        <DisplayMentors userData={userData} isFullPage={true} isRecommendations={false}/>
       </div>
     );
   }
