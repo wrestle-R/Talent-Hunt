@@ -323,7 +323,6 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
                 <Users className="text-[#E8C848]" size={24} />
                 <h3 className="text-xl font-semibold text-white">Team Management</h3>
               </div>
-              {userData._id}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <TeamApplicationsCard 
                   applications={teamApplications}
@@ -420,7 +419,7 @@ const MentorDashboard = ({ userData, refreshUserData }) => {
                       {selectedTeam.performanceMetrics && (
                         <div className="bg-[#E8C848]/10 text-[#E8C848] px-4 py-2 rounded-lg text-center">
                           <div className="text-sm uppercase font-semibold tracking-wide">Team Score</div>
-                          <div className="text-2xl font-bold">{selectedTeam.performanceMetrics.overallRating || '7.5'}/10</div>
+                          <div className="text-2xl font-bold">{selectedTeam.performanceMetrics.overallRating}/10</div>
                         </div>
                       )}
                     </div>

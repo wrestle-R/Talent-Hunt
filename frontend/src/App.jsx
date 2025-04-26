@@ -57,6 +57,21 @@ const App = () => {
           <Navbar />
           <div className="flex-grow">
             <Routes>
+            {role == 'admin' &&(
+              <Route path="/" element={<AdminHero />} />
+
+              )}
+
+              {role == 'mentor' &&(
+              <Route path="/" element={<MentorHero />} />
+
+              )}
+              {
+                role == 'student' && (
+              <Route path="/" element={<StudentHero />} />
+
+                )
+              }
             <Route path="/" element={<Landing />} />
 
 
