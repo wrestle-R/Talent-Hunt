@@ -51,22 +51,26 @@ const Invitations = ({ limit }) => {
         toast.error('Please login to respond to invitations');
         return;
       }
-  
+
+      // Set the invitation as responding
       setInvitations(prev => 
         prev.map(inv => inv._id === invitationId ? { ...inv, isResponding: true } : inv)
       );
-  
+
+      // Make the API call
       const response = await axios.put(
         `http://localhost:4000/api/student/team-invitations/${invitationId}/respond`,
         {
           uid: user.uid,
-          status,
-          teamId
+          teamId,
+          status
         }
       );
-  
+
+      // Handle success
       if (response.data.success) {
         toast.success(status === 'accepted' ? 'Successfully joined the team!' : 'Invitation declined');
+        // Remove the invitation from the list
         setInvitations(prev => prev.filter(inv => inv._id !== invitationId));
       }
     } catch (err) {
@@ -74,6 +78,7 @@ const Invitations = ({ limit }) => {
       const errorMessage = err.response?.data?.message || 'Failed to respond to invitation';
       toast.error(errorMessage);
       
+      // Reset the responding state for this invitation
       setInvitations(prev => 
         prev.map(inv => inv._id === invitationId ? { ...inv, isResponding: false } : inv)
       );
@@ -350,7 +355,7 @@ const Invitations = ({ limit }) => {
                   <CheckCircle className="w-5 h-5" />
                 </button>
                 <button
-                  onClick={() => handleInvitation(invitation._id, invitation.teamId, 'rejected')}
+                  onClick={() => handleInvitation(invitation._id, invitation.teamId, 'declined')}
                   className="p-1.5 rounded-full text-red-400 hover:bg-red-900/20 transition-all duration-300"
                   disabled={invitation.isResponding}
                 >

@@ -748,7 +748,8 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
                       <MessageCircle size={12} className="mr-1" />
                     </button>
                     
-                    {teamsList.length > 0 && (
+                    {/* Only show invite button if not in recommendations view */}
+                    {!isRecommendations && teamsList.length > 0 && (
                       <>
                         {hasAnyInvitation(teammateData._id) ? (
                           <button

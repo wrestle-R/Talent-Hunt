@@ -2184,79 +2184,94 @@ const respondToTeamInvitation = async (req, res) => {
   try {
     const { invitationId } = req.params;
     const { uid, status, teamId } = req.body;
-
-    // Validate status
-    if (!['accepted', 'rejected'].includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid status. Must be either 'accepted' or 'rejected'"
-      });
-    }
+    
+    console.log('🔍 Invitation Response Request:', {
+      invitationId,
+      uid,
+      status,
+      teamId
+    });
 
     // Find student
     const student = await Student.findOne({ firebaseUID: uid });
     if (!student) {
+      console.log('❌ Student not found:', { uid });
       return res.status(404).json({
         success: false,
         message: "Student not found"
       });
     }
+    console.log('✅ Student found:', { 
+      studentId: student._id,
+      name: student.name,
+      email: student.email 
+    });
 
-    // Find team and check if it exists
-    const team = await Team.findById(teamId)
-      .populate('members.student', 'name email')
-      .populate('leader', 'name email');
-
+    const team = await Team.findById(teamId);
     if (!team) {
+      console.log('❌ Team not found:', { teamId });
       return res.status(404).json({
         success: false,
         message: "Team not found"
       });
     }
+    console.log('✅ Team found:', { 
+      teamId: team._id,
+      teamName: team.name,
+      currentMembers: team.members.length,
+      maxSize: team.maxTeamSize 
+    });
 
-    // Find the invitation
-    const invitation = team.invitations.find(
-      inv => inv._id.toString() === invitationId &&
+    // Find invitation index
+    const invitationIndex = team.invitations.findIndex(
+      inv => inv._id.toString() === invitationId && 
             inv.recipientId.toString() === student._id.toString()
     );
 
-    if (!invitation) {
+    if (invitationIndex === -1) {
+      console.log('❌ Invitation not found:', { 
+        invitationId,
+        studentId: student._id,
+        allInvitations: team.invitations.map(inv => ({
+          id: inv._id,
+          recipientId: inv.recipientId,
+          status: inv.status
+        }))
+      });
       return res.status(404).json({
         success: false,
         message: "Invitation not found"
       });
     }
 
+    const invitation = team.invitations[invitationIndex];
+    console.log('✅ Invitation found:', {
+      invitationId: invitation._id,
+      currentStatus: invitation.status,
+      newStatus: status
+    });
+
     // Check if invitation is still pending
     if (invitation.status !== 'pending') {
+      console.log('❌ Invalid invitation status:', {
+        currentStatus: invitation.status,
+        attemptedStatus: status
+      });
       return res.status(400).json({
         success: false,
         message: `Invitation has already been ${invitation.status}`
       });
     }
 
-    // Check if student is already in another team
-    const existingTeam = await Team.findOne({
-      _id: { $ne: teamId },
-      $or: [
-        { leader: student._id },
-        { 'members.student': student._id }
-      ],
-      status: { $ne: 'disbanded' }
-    });
-
-    if (existingTeam) {
-      return res.status(400).json({
-        success: false,
-        message: "You are already a member of another team"
-      });
-    }
-
-    // If accepting the invitation
+    // If accepting, check team capacity
     if (status === 'accepted') {
       // Check team capacity
       if (team.members.length >= team.maxTeamSize) {
-        invitation.status = 'rejected';
+        console.log('❌ Team is full:', {
+          currentSize: team.members.length,
+          maxSize: team.maxTeamSize
+        });
+        team.invitations[invitationIndex].status = 'declined';
         await team.save();
         return res.status(400).json({
           success: false,
@@ -2264,16 +2279,19 @@ const respondToTeamInvitation = async (req, res) => {
         });
       }
 
+      console.log('✅ Team capacity check passed:', {
+        currentSize: team.members.length,
+        maxSize: team.maxTeamSize
+      });
+
       // Add student to team members
       team.members.push({
         student: student._id,
         role: invitation.role || 'Member',
-        joinedAt: new Date(),
-        status: 'active',
-        invitationStatus: 'accepted'
+        joinedAt: new Date()
       });
 
-      // Add to activity log
+      // Add activity log entry
       team.activityLog.push({
         action: 'member_joined',
         description: `${student.name} joined the team`,
@@ -2282,32 +2300,20 @@ const respondToTeamInvitation = async (req, res) => {
         timestamp: new Date()
       });
 
-      // Update student's teammate search status if they were looking
-      if (student.teammate_search?.looking_for_teammates) {
-        await Student.updateOne(
-          { _id: student._id },
-          { 
-            'teammate_search.looking_for_teammates': false,
-            $push: {
-              teammates: {
-                id: team.leader._id,
-                name: team.leader.name,
-                email: team.leader.email,
-                role: 'Leader'
-              }
-            }
-          }
-        );
-      }
+      console.log('✅ Added to team members:', {
+        role: invitation.role || 'Member',
+        membersCount: team.members.length
+      });
     }
 
     // Update invitation status
-    invitation.status = status;
+    team.invitations[invitationIndex].status = status;
     await team.save();
+    console.log('✅ Updated invitation status:', { newStatus: status });
 
-    // Remove other pending invitations if accepted
+    // If accepted, expire other pending invitations
     if (status === 'accepted') {
-      await Team.updateMany(
+      const updateResult = await Team.updateMany(
         {
           _id: { $ne: teamId },
           'invitations': {
@@ -2323,21 +2329,44 @@ const respondToTeamInvitation = async (req, res) => {
           }
         }
       );
+
+      console.log('✅ Expired other invitations:', {
+        modifiedCount: updateResult.modifiedCount
+      });
+
+      // Update student's teammate search status if they were looking
+      if (student.teammate_search?.looking_for_teammates) {
+        await Student.updateOne(
+          { _id: student._id },
+          { 'teammate_search.looking_for_teammates': false }
+        );
+        console.log('✅ Updated student teammate search status');
+      }
     }
+
+    const updatedTeam = await Team.findById(teamId)
+      .populate('members.student', 'name email profile_picture')
+      .populate('leader', 'name email profile_picture');
+
+    console.log('✅ Response successful:', {
+      status,
+      teamId,
+      membersCount: updatedTeam.members.length
+    });
 
     res.status(200).json({
       success: true,
       message: `Invitation ${status} successfully`,
-      team: {
-        _id: team._id,
-        name: team.name,
-        members: team.members,
-        leader: team.leader
-      }
+      team: updatedTeam
     });
 
   } catch (err) {
-    console.error("Error responding to invitation:", err);
+    console.error('❌ Error in respondToTeamInvitation:', {
+      error: err.message,
+      stack: err.stack,
+      requestBody: req.body,
+      params: req.params
+    });
     res.status(500).json({
       success: false,
       message: "Failed to respond to invitation",
