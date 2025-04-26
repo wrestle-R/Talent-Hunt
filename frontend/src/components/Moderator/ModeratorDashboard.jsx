@@ -104,15 +104,6 @@ const ModeratorDashboard = ({ userData }) => {
       stats: { count: 218, label: 'Active' }
     },
     {
-      title: 'Project Managing',
-      description: 'Managing Projects of students',
-      icon: <Ban size={24} className="text-red-600" />,
-      path: '/moderator/projects',
-      bgColor: 'bg-red-50',
-      textColor: 'text-red-700',
-      stats: { count: 5, label: 'New' }
-    },
-    {
       title: 'Messages Moderation',
       description: 'Review reported messages',
       icon: <MessageSquare size={24} className="text-amber-600" />,
