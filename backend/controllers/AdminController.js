@@ -1075,6 +1075,15 @@ const createTemporaryTeam = async (req, res) => {
       });
     }
 
+    // Find the admin by Firebase UID
+    const admin = await Admin.findOne({ firebaseUID: createdBy });
+    if (!admin) {
+      return res.status(404).json({
+        success: false,
+        message: "Admin not found",
+      });
+    }
+
     // Find the hackathon
     const hackathon = await Hackathon.findById(hackathonId);
     if (!hackathon) {
@@ -1084,14 +1093,14 @@ const createTemporaryTeam = async (req, res) => {
       });
     }
 
-    // Create the temporary team
+    // Create the temporary team using admin's MongoDB ObjectId
     const tempTeam = new Team({
-      name: teamName, // Ensure the `name` field is set
+      name: teamName,
       leader: leaderId,
       members: memberIds.map((id) => ({ student: id })),
       isTempTeam: true,
       hackathon: hackathonId,
-      createdBy, // Ensure the `createdBy` field is set
+      createdBy: admin._id // Use admin's MongoDB ObjectId
     });
 
     await tempTeam.save();

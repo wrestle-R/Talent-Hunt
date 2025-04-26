@@ -18,8 +18,8 @@ const teamSchema = new mongoose.Schema(
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Student",
-      required: true
+      ref: "Admin",
+      required: function() { return !this.isTempTeam; } // Only required for permanent teams
     },
     
     // Team visibility and access

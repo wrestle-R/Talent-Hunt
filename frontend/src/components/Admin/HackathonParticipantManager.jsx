@@ -966,22 +966,22 @@ const HackathonParticipantManager = () => {
                               <div className="flex-shrink-0 h-8 w-8">
                                 <img 
                                   className="h-8 w-8 rounded-full object-cover" 
-                                  src={member.profile_picture || PLACEHOLDER_IMAGE} 
-                                  alt={member.name.substring(0,1)} 
+                                  src={member?.profile_picture || PLACEHOLDER_IMAGE} 
+                                  alt={(member?.name || '?').substring(0,1)} 
                                   onError={(e) => { e.target.src = PLACEHOLDER_IMAGE }}
                                 />
                               </div>
                               <div className="ml-3">
                                 <div className="text-sm font-medium flex items-center text-white">
-                                  {member.name}
-                                  {member.isLeader && (
+                                  {member?.name || 'Unknown User'}
+                                  {member?.isLeader && (
                                     <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
                                       <Award size={12} className="mr-1" />
                                       Leader
                                     </span>
                                   )}
                                 </div>
-                                <div className="text-xs text-gray-400">{member.email}</div>
+                                <div className="text-xs text-gray-400">{member?.email || 'No email'}</div>
                               </div>
                             </div>
                           ))}
