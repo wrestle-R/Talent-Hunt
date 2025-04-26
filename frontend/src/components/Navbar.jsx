@@ -12,7 +12,7 @@ const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const [activeLink, setActiveLink] = useState("")
-
+  console.log()
   useEffect(() => {
     setActiveLink(location.pathname)
   }, [location])
@@ -153,7 +153,7 @@ const Navbar = () => {
             <NavLink to="/about">About</NavLink>
             {isLoggedIn ? (
               <>
-                <NavLink to={`/${userRole}/hero`}>Profile</NavLink>
+                <NavLink to={`/${userRole}/profile`}>Profile</NavLink>
                 <button
                   onClick={() => {
                     handleLogout()
