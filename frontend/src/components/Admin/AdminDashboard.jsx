@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CalendarDays, Users, Search, Bell, Shield, Database, FileText, FileBarChart } from 'lucide-react';
+import { CalendarDays, Users, Search, Bell, Shield, Database, FileText, FileBarChart, Globe, Target, BarChart2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = "http://localhost:4000"; // or your deployed backend URL
@@ -20,6 +20,23 @@ const AdminDashboard = ({ userData }) => {
     { id: 'st5', name: 'Jamal Brown', email: 'jamal@example.com', major: 'Computer Engineering' }
   ];
 
+  // SDG data for the mapping section
+  const sdgData = [
+    { id: 1, name: "No Poverty", projects: 18, color: "bg-red-500" },
+    { id: 3, name: "Good Health & Well-being", projects: 32, color: "bg-green-500" },
+    { id: 4, name: "Quality Education", projects: 45, color: "bg-red-400" },
+    { id: 9, name: "Industry & Innovation", projects: 27, color: "bg-orange-500" },
+    { id: 13, name: "Climate Action", projects: 36, color: "bg-teal-500" }
+  ];
+  
+  // SDG category distribution
+  const sdgCategories = [
+    { category: "Social", count: 95, color: "bg-blue-500" },
+    { category: "Environmental", count: 78, color: "bg-green-500" },
+    { category: "Economic", count: 62, color: "bg-amber-500" },
+    { category: "Technological", count: 53, color: "bg-purple-500" }
+  ];
+
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchTerm.trim()) {
@@ -32,7 +49,6 @@ const AdminDashboard = ({ userData }) => {
     }
   };
 
-  // Dashboard sections/cards - streamlined for admin
   const dashboardSections = [
     {
       title: 'Manage Hackathons',
@@ -160,60 +176,136 @@ const AdminDashboard = ({ userData }) => {
         ))}
       </div>
       
-      {/* Recent Activity Section */}
+      {/* SDG Mapping Section */}
       <div className="mt-10 bg-[#1A1A1A] rounded-xl shadow-lg border border-gray-800 overflow-hidden">
-        <div className="p-5 border-b border-gray-800">
-          <h2 className="font-bold text-xl text-white font-montserrat">Recent Activity</h2>
+        <div className="p-5 border-b border-gray-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Globe size={24} className="text-[#E8C848]" />
+            <h2 className="font-bold text-xl text-white font-montserrat">SDG Mapping Analytics</h2>
+          </div>
+          <div className="bg-[#E8C848]/20 text-[#E8C848] text-xs font-medium px-3 py-1 rounded-full">
+            158 Projects Mapped
+          </div>
         </div>
+        
         <div className="p-5">
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 pb-3 border-b border-gray-800">
-              <div className="w-10 h-10 rounded-full bg-[#E8C848]/20 flex items-center justify-center flex-shrink-0">
-                <CalendarDays size={20} className="text-[#E8C848]" />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* SDG Progress Chart */}
+            <div className="bg-[#151515] rounded-lg p-4 border border-gray-800">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-gray-300 font-medium">Top SDG Categories</h3>
+                <div className="bg-[#232323] text-gray-400 text-xs px-2 py-1 rounded-full">
+                  Last 30 days
+                </div>
               </div>
-              <div>
-                <p className="text-white">New hackathon <span className="font-medium">AI Innovations 2025</span> created</p>
-                <p className="text-xs text-gray-400">Today at 10:30 AM</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 pb-3 border-b border-gray-800">
-              <div className="w-10 h-10 rounded-full bg-[#E8C848]/20 flex items-center justify-center flex-shrink-0">
-                <FileText size={20} className="text-[#E8C848]" />
-              </div>
-              <div>
-                <p className="text-white"><span className="font-medium">25 student reports</span> generated and published</p>
-                <p className="text-xs text-gray-400">Yesterday at 5:45 PM</p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 pb-3 border-b border-gray-800">
-              <div className="w-10 h-10 rounded-full bg-[#E8C848]/20 flex items-center justify-center flex-shrink-0">
-                <Bell size={20} className="text-[#E8C848]" />
-              </div>
-              <div>
-                <p className="text-white">New workshop <span className="font-medium">Web3 Fundamentals</span> scheduled</p>
-                <p className="text-xs text-gray-400">Yesterday at 2:15 PM</p>
+              <div className="space-y-4">
+                {sdgData.map(sdg => (
+                  <div key={sdg.id} className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-300">SDG {sdg.id}: {sdg.name}</span>
+                      <span className="text-gray-400">{sdg.projects} projects</span>
+                    </div>
+                    <div className="w-full bg-gray-800 rounded-full h-2">
+                      <div 
+                        className={`${sdg.color} h-2 rounded-full`} 
+                        style={{ width: `${(sdg.projects / 50) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#E8C848]/20 flex items-center justify-center flex-shrink-0">
-                <Shield size={20} className="text-[#E8C848]" />
+            {/* SDG Distribution */}
+            <div className="bg-[#151515] rounded-lg p-4 border border-gray-800">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-gray-300 font-medium">Category Distribution</h3>
+                <button className="text-[#E8C848] text-xs hover:underline">Export Data</button>
               </div>
-              <div>
-                <p className="text-white"><span className="font-medium">3 messages</span> flagged for inappropriate content</p>
-                <p className="text-xs text-gray-400">2 days ago</p>
+              
+              <div className="space-y-4">
+                {sdgCategories.map((category, idx) => (
+                  <div key={idx} className="flex items-center">
+                    <div className="w-1/2">
+                      <div className="flex items-center">
+                        <div className={`w-3 h-3 rounded-full ${category.color} mr-2`}></div>
+                        <span className="text-sm text-gray-300">{category.category}</span>
+                      </div>
+                    </div>
+                    <div className="w-1/2">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-xs text-gray-400">{Math.round((category.count / 288) * 100)}%</span>
+                        <span className="text-xs text-gray-400">{category.count}</span>
+                      </div>
+                      <div className="w-full h-2 bg-gray-800 rounded-full">
+                        <div 
+                          className={`${category.color} h-2 rounded-full`} 
+                          style={{ width: `${(category.count / 288) * 100}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-6">
+                <h4 className="text-sm text-gray-300 mb-3">Recent Project Mappings</h4>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between py-2 border-b border-gray-700">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 rounded-full bg-green-900/30 flex items-center justify-center flex-shrink-0 mr-3">
+                        <Target size={16} className="text-green-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-white">Climate Data Hub</p>
+                        <p className="text-xs text-gray-400">SDG 13 • 12 participants</p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-400">Today</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2 border-b border-gray-700">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 rounded-full bg-blue-900/30 flex items-center justify-center flex-shrink-0 mr-3">
+                        <Target size={16} className="text-blue-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-white">EdTech Accessibility</p>
+                        <p className="text-xs text-gray-400">SDG 4 • 8 participants</p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-400">Yesterday</span>
+                  </div>
+                  
+                  <div className="flex items-center justify-between py-2">
+                    <div className="flex items-center">
+                      <div className="w-8 h-8 rounded-full bg-purple-900/30 flex items-center justify-center flex-shrink-0 mr-3">
+                        <Target size={16} className="text-purple-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-white">Health Data Analytics</p>
+                        <p className="text-xs text-gray-400">SDG 3 • 15 participants</p>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gray-400">2 days ago</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-        <div className="px-5 py-3 bg-[#232323] border-t border-gray-800">
+        
+        <div className="px-5 py-3 bg-[#232323] border-t border-gray-800 flex justify-between items-center">
           <button 
-            onClick={() => navigate('/admin/activity')} 
+            onClick={() => navigate('/admin/sdg-analytics')} 
             className="text-[#E8C848] hover:text-[#E8C848]/80 text-sm font-medium"
           >
-            View All Activity →
+            View Full SDG Analytics →
+          </button>
+          
+          <button className="bg-[#E8C848]/20 hover:bg-[#E8C848]/30 text-[#E8C848] px-3 py-1 rounded-lg text-sm transition-colors flex items-center gap-1">
+            <BarChart2 size={16} />
+            <span>Generate Report</span>
           </button>
         </div>
       </div>

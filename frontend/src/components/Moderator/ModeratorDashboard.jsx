@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, Search, Bell, Shield, Flag, File, Ban, MessageSquare, UserCog, UserX, UserCheck, Lock } from 'lucide-react';
+import { Users, Search, Bell, Shield, Flag, File, Ban, MessageSquare, UserCog, UserX, UserCheck, Lock, Globe, Target } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const ModeratorDashboard = ({ userData }) => {
@@ -94,15 +94,15 @@ const ModeratorDashboard = ({ userData }) => {
 
   // Dashboard sections/cards
   const dashboardSections = [
-    {
-      title: 'User Management',
-      description: 'Review, approve and manage student accounts',
-      icon: <Users size={24} className="text-indigo-600" />,
-      path: '/moderator/users',
-      bgColor: 'bg-indigo-50',
-      textColor: 'text-indigo-700',
-      stats: { count: 218, label: 'Active' }
-    },
+    // {
+    //   title: 'User Management',
+    //   description: 'Review, approve and manage student accounts',
+    //   icon: <Users size={24} className="text-indigo-600" />,
+    //   path: '/moderator/users',
+    //   bgColor: 'bg-indigo-50',
+    //   textColor: 'text-indigo-700',
+    //   stats: { count: 218, label: 'Active' }
+    // },
     {
       title: 'Messages Moderation',
       description: 'Review reported messages',
@@ -122,6 +122,15 @@ const ModeratorDashboard = ({ userData }) => {
     },
   ];
 
+  // SDG data for the mapping section
+  const sdgData = [
+    { id: 1, name: "No Poverty", projects: 12, color: "bg-red-600" },
+    { id: 4, name: "Quality Education", projects: 28, color: "bg-red-400" },
+    { id: 7, name: "Affordable & Clean Energy", projects: 15, color: "bg-yellow-500" },
+    { id: 11, name: "Sustainable Cities", projects: 9, color: "bg-orange-600" },
+    { id: 13, name: "Climate Action", projects: 23, color: "bg-green-600" }
+  ];
+
   return (
     <div className="container mx-auto py-8 px-4 bg-[#111111] font-inter">
       {/* Moderator Dashboard Header */}
@@ -131,68 +140,7 @@ const ModeratorDashboard = ({ userData }) => {
           <p className="text-gray-400">Welcome back, {userData?.name || 'Moderator'}</p>
         </div>
         
-        {/* Search Bar */}
-        <form onSubmit={handleSearch} className="relative w-full md:w-96">
-          <input
-            type="text"
-            placeholder="Search for users..."
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E8C848] bg-[#1A1A1A] text-gray-300 placeholder-gray-500"
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              if (e.target.value === '') {
-                setShowSearchResults(false);
-              }
-            }}
-          />
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
-          <button 
-            type="submit" 
-            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#E8C848] hover:text-[#E8C848]/80 transition-colors duration-300"
-          >
-            Go
-          </button>
-          
-          {/* Search Results Dropdown */}
-          {showSearchResults && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-[#1A1A1A] border border-gray-800 rounded-md shadow-lg z-10">
-              {searchResults.length > 0 ? (
-                <div>
-                  <div className="p-2 border-b border-gray-800">
-                    <h3 className="font-medium text-sm text-gray-300">
-                      {searchResults.length} user{searchResults.length !== 1 ? 's' : ''} found
-                    </h3>
-                  </div>
-                  {searchResults.map(student => (
-                    <div 
-                      key={student.id}
-                      className="p-3 hover:bg-[#111111] cursor-pointer border-b border-gray-800 last:border-0 transition-colors duration-300"
-                      onClick={() => {
-                        // In a real app, navigate to student profile
-                        alert(`Viewing profile for ${student.name}`);
-                        setShowSearchResults(false);
-                      }}
-                    >
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 rounded-full bg-[#E8C848]/20 text-[#E8C848] flex items-center justify-center mr-3">
-                          {student.name.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="font-medium text-gray-300">{student.name}</p>
-                          <p className="text-xs text-gray-500">{student.email} • {student.major}</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="p-4 text-center text-gray-500">
-                  No users found matching "{searchTerm}"
-                </div>
-              )}
-            </div>
-          )}
-        </form>
+      
       </div>
       
       {/* Dashboard Sections Grid */}
@@ -221,80 +169,110 @@ const ModeratorDashboard = ({ userData }) => {
         ))}
       </div>
       
-      {/* Recent Reports Section */}
+      {/* SDG Mapping Section */}
       <div className="mt-10 bg-[#1A1A1A] rounded-xl shadow-sm border border-gray-800 overflow-hidden">
-        <div className="p-5 border-b border-gray-800">
-          <h2 className="font-bold text-xl text-white font-montserrat">Recent Reports</h2>
+        <div className="p-5 border-b border-gray-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Globe size={24} className="text-[#E8C848]" />
+            <h2 className="font-bold text-xl text-white font-montserrat">SDG Mapping Dashboard</h2>
+          </div>
+          <div className="bg-[#E8C848]/20 text-[#E8C848] text-xs font-medium px-3 py-1 rounded-full">
+            87 Projects Mapped
+          </div>
         </div>
         <div className="p-5">
-          <div className="space-y-4">
-            <div className="flex items-center gap-4 pb-3 border-b border-gray-800">
-              <div className="w-10 h-10 rounded-full bg-red-900/30 flex items-center justify-center flex-shrink-0">
-                <Flag size={20} className="text-red-400" />
-              </div>
-              <div>
-                <p className="text-gray-300">Message reported by <span className="font-medium text-white">Maria Garcia</span> for harassment</p>
-                <p className="text-xs text-gray-500">Today at 10:30 AM</p>
-              </div>
-              <div className="ml-auto">
-                <button className="bg-red-900/30 text-red-400 px-3 py-1 rounded-lg text-sm hover:bg-red-900/40 transition-colors duration-300">
-                  Review
-                </button>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-4 pb-3 border-b border-gray-800">
-              <div className="w-10 h-10 rounded-full bg-amber-900/30 flex items-center justify-center flex-shrink-0">
-                <UserCog size={20} className="text-amber-400" />
-              </div>
-              <div>
-                <p className="text-gray-300"><span className="font-medium text-white">Team Swift Coders</span> requested dissolution</p>
-                <p className="text-xs text-gray-500">Yesterday at 5:45 PM</p>
-              </div>
-              <div className="ml-auto">
-                <button className="bg-amber-900/30 text-amber-400 px-3 py-1 rounded-lg text-sm hover:bg-amber-900/40 transition-colors duration-300">
-                  Review
-                </button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* SDG Progress Chart */}
+            <div className="bg-[#151515] rounded-lg p-4 border border-gray-800">
+              <h3 className="text-gray-300 font-medium mb-4">Top SDG Categories</h3>
+              <div className="space-y-4">
+                {sdgData.map(sdg => (
+                  <div key={sdg.id} className="space-y-1">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-300">SDG {sdg.id}: {sdg.name}</span>
+                      <span className="text-gray-400">{sdg.projects} projects</span>
+                    </div>
+                    <div className="w-full bg-gray-800 rounded-full h-2">
+                      <div 
+                        className={`${sdg.color} h-2 rounded-full`} 
+                        style={{ width: `${(sdg.projects / 30) * 100}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
             
-            <div className="flex items-center gap-4 pb-3 border-b border-gray-800">
-              <div className="w-10 h-10 rounded-full bg-purple-900/30 flex items-center justify-center flex-shrink-0">
-                <Shield size={20} className="text-purple-400" />
+            {/* Recent SDG Mappings */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 pb-3 border-b border-gray-800">
+                <div className="w-10 h-10 rounded-full bg-green-900/30 flex items-center justify-center flex-shrink-0">
+                  <Target size={20} className="text-green-400" />
+                </div>
+                <div>
+                  <p className="text-gray-300"><span className="font-medium text-white">EcoTeam Project</span> mapped to SDG 13: Climate Action</p>
+                  <p className="text-xs text-gray-500">Today at 11:30 AM</p>
+                </div>
+                <div className="ml-auto">
+                  <button className="bg-green-900/30 text-green-400 px-3 py-1 rounded-lg text-sm hover:bg-green-900/40 transition-colors duration-300">
+                    Review
+                  </button>
+                </div>
               </div>
-              <div>
-                <p className="text-gray-300">Account verification request from <span className="font-medium text-white">David Chen</span></p>
-                <p className="text-xs text-gray-500">Yesterday at 2:15 PM</p>
+              
+              <div className="flex items-center gap-4 pb-3 border-b border-gray-800">
+                <div className="w-10 h-10 rounded-full bg-blue-900/30 flex items-center justify-center flex-shrink-0">
+                  <Target size={20} className="text-blue-400" />
+                </div>
+                <div>
+                  <p className="text-gray-300"><span className="font-medium text-white">Clean Water Initiative</span> mapped to SDG 6: Clean Water</p>
+                  <p className="text-xs text-gray-500">Yesterday at 3:45 PM</p>
+                </div>
+                <div className="ml-auto">
+                  <button className="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-lg text-sm hover:bg-blue-900/40 transition-colors duration-300">
+                    Review
+                  </button>
+                </div>
               </div>
-              <div className="ml-auto">
-                <button className="bg-purple-900/30 text-purple-400 px-3 py-1 rounded-lg text-sm hover:bg-purple-900/40 transition-colors duration-300">
-                  Verify
-                </button>
+              
+              <div className="flex items-center gap-4 pb-3 border-b border-gray-800">
+                <div className="w-10 h-10 rounded-full bg-purple-900/30 flex items-center justify-center flex-shrink-0">
+                  <Target size={20} className="text-purple-400" />
+                </div>
+                <div>
+                  <p className="text-gray-300"><span className="font-medium text-white">Gender Equality Forum</span> mapped to SDG 5: Gender Equality</p>
+                  <p className="text-xs text-gray-500">Yesterday at 2:15 PM</p>
+                </div>
+                <div className="ml-auto">
+                  <button className="bg-purple-900/30 text-purple-400 px-3 py-1 rounded-lg text-sm hover:bg-purple-900/40 transition-colors duration-300">
+                    Review
+                  </button>
+                </div>
               </div>
-            </div>
-            
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-[#E8C848]/20 flex items-center justify-center flex-shrink-0">
-                <Ban size={20} className="text-[#E8C848]" />
-              </div>
-              <div>
-                <p className="text-gray-300"><span className="font-medium text-white">2 accounts</span> flagged for spam activity</p>
-                <p className="text-xs text-gray-500">2 days ago</p>
-              </div>
-              <div className="ml-auto">
-                <button className="bg-[#E8C848]/20 text-[#E8C848] px-3 py-1 rounded-lg text-sm hover:bg-[#E8C848]/30 transition-colors duration-300">
-                  Review
-                </button>
+              
+              <div className="flex items-center gap-4">
+                <div className="w-10 h-10 rounded-full bg-[#E8C848]/20 flex items-center justify-center flex-shrink-0">
+                  <Target size={20} className="text-[#E8C848]" />
+                </div>
+                <div>
+                  <p className="text-gray-300"><span className="font-medium text-white">Tech Education Access</span> mapped to SDG 4: Quality Education</p>
+                  <p className="text-xs text-gray-500">2 days ago</p>
+                </div>
+                <div className="ml-auto">
+                  <button className="bg-[#E8C848]/20 text-[#E8C848] px-3 py-1 rounded-lg text-sm hover:bg-[#E8C848]/30 transition-colors duration-300">
+                    Review
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
         <div className="px-5 py-3 bg-[#111111] border-t border-gray-800">
           <button 
-            onClick={() => navigate('/moderator/reports/all')} 
+            onClick={() => navigate('/moderator/sdg-mapping')} 
             className="text-[#E8C848] hover:text-[#E8C848]/80 text-sm font-medium transition-colors duration-300"
           >
-            View All Reports →
+            View All SDG Mappings →
           </button>
         </div>
       </div>
