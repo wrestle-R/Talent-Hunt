@@ -185,10 +185,10 @@ const DisplayTeammates = ({ userData: propUserData, isFullPage = false, isRecomm
     try {
       setInviteStatus({ type: 'loading', message: 'Sending invitation...' });
       if(isRecommendations){
-        selectedTeamId = selectedTeamId.$oid;
+        setSelectedTeamId(selectedTeamId.$oid);
       }
       else{
-        selectedTeamId = selectedTeamId;
+        setSelectedTeamId(selectedTeamId);
       }
       const response = await axios.post(
         'http://localhost:4000/api/teams/invite',
