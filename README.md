@@ -171,7 +171,6 @@ Talent-Hunt/
 └── README.md
 ```
 
----
 
 ## 🤝 Contributing
 
@@ -183,7 +182,6 @@ Talent-Hunt/
 
 We welcome all ideas, bug fixes, and improvements!
 
----
 
 ## 📄 License
 
