@@ -147,7 +147,7 @@ REACT_APP_PYTHON_API_URL=http://localhost:8000
    ```
 
 4. **Visit the App**  
-   Open your browser: [http://localhost:3000](http://localhost:3000)
+   Open your browser: [http://localhost:5173](http://localhost:5173)
 
 
 ## 📁 Folder Structure
