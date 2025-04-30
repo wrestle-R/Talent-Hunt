@@ -96,7 +96,7 @@ npm install
 
 #### Python Backend
 ```sh
-cd ../backend-python
+cd ../python_backend
 pip install -r requirements.txt
 ```
 
