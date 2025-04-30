@@ -4,13 +4,11 @@
 
 🚀 Build your portfolio. 🤝 Find teammates. 🎓 Get mentored. 🌱 Grow together.
 
----
 
 ## 📽️ Demo
 
 🎥 [Insert Video URL Here]
 
----
 
 ## ✨ Features
 
