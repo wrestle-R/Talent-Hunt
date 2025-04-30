@@ -1,7 +1,3 @@
-Here’s a cleaned-up, visually engaging, and more user-friendly version of your README with emojis, clearer headings, better flow, and a placeholder for a video demo. This version preserves all the technical depth while making it more inviting and easier to navigate.
-
----
-
 # 🎯 Talent Hunt
 
 **Talent Hunt** is a powerful platform built to **empower students** by showcasing their skills, projects, and achievements — while seamlessly connecting them with **mentors, peers**, and **opportunities**.
@@ -59,7 +55,7 @@ Here’s a cleaned-up, visually engaging, and more user-friendly version of your
 
 - **Python Server** (Core APIs):  
   - Framework: FastAPI  
-  - DB: PostgreSQL via SQLAlchemy  
+  - DB: ChromaDB
 
 ### 🔒 Other Tools
 - **Authentication:** JWT  
@@ -122,10 +118,9 @@ MONGO_URI=mongodb://localhost:27017/talent-hunt
 JWT_SECRET=your_jwt_secret
 ```
 
-#### ➤ Python Server (`backend-python/.env`)
+#### ➤ Python Server (`python_backend/.env`)
 ```env
-DATABASE_URL=postgresql://user:password@localhost:5432/talent_hunt
-SECRET_KEY=your_secret_key
+GOOGLE_API_KEY = your_google_api_key
 ```
 
 #### ➤ Frontend (`frontend/.env`)
@@ -201,7 +196,3 @@ We welcome all ideas, bug fixes, and improvements!
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
-
----
-
-Let me know if you want me to write the video script or generate a diagram for system architecture.
