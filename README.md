@@ -36,7 +36,6 @@
 - 🔧 **Moderation Tools**  
   Admin panel for reviewing profiles, flagging content, and tracking user activity.
 
----
 
 ## 🧰 Tech Stack
 
@@ -60,7 +59,6 @@
 - **Deployment:** Docker  
 - **Version Control:** GitHub  
 
----
 
 ## 🛠️ Getting Started
 
@@ -71,7 +69,6 @@
 - MongoDB & PostgreSQL  
 - npm or yarn
 
----
 
 ## ⚙️ Installation
 
@@ -103,7 +100,6 @@ cd ../backend-python
 pip install -r requirements.txt
 ```
 
----
 
 ## 🔐 Configuration
 
@@ -127,7 +123,6 @@ REACT_APP_NODE_API_URL=http://localhost:5000
 REACT_APP_PYTHON_API_URL=http://localhost:8000
 ```
 
----
 
 ## ▶️ Running the Application
 
@@ -154,7 +149,6 @@ REACT_APP_PYTHON_API_URL=http://localhost:8000
 4. **Visit the App**  
    Open your browser: [http://localhost:3000](http://localhost:3000)
 
----
 
 ## 📁 Folder Structure
 
